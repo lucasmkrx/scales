@@ -1,0 +1,36 @@
+# Architecture and scope
+
+`src/catalog.mjs` defines scale intervals, degree formulas, aliases, bilingual
+names, and tuning pitches. Mode structures are computed by interval rotation.
+`src/music.mjs` validates inputs, spells notes, builds the pitch model, and
+computes handed fret coordinates. Both SVG and PDF use those functions.
+
+`src/board.mjs` renders keyboard-accessible SVG. `src/app.mjs` handles the
+interface, URL state, Web Audio, and downloads. `src/pdf.mjs` draws vector PDF
+pages, embeds local fonts, and includes a vector logo and outline navigation.
+No browser-generated data is sent to a server.
+
+Vendored pdf-lib and fontkit are loaded only for PDF export. Keep their version
+and license notices together when updating them. All fonts and branding are
+local assets. The static build copies `public/` and `src/` to `dist/`.
+
+## Validation
+
+Tests independently check every named formula; all 12 roots; every preset
+tuning; sounding note positions; real bass octaves; mode rotation; contextual
+note spelling; mirrored geometry; input rejection; shareable custom settings;
+and playback's root and octave. Before release, exercise the browser at desktop
+and phone widths and visually review representative generated PDFs (including
+left-handed six-string bass and an altered tuning).
+
+The initial UI supports six-string guitar and four-, five-, and six-string bass.
+The engine accepts tuning data independently of prescribed shapes. Additional
+instrument sizes should receive dedicated interface and PDF layout checks.
+
+## Guided books
+
+`public/guides/` contains the four current books. They retain their original
+right/left handedness, language and tuning. Other combinations are available as
+generated scale atlases, not falsely labeled as newly rewritten full courses.
+The footer-branding utility can create branded copies without changing the
+original source PDFs. All guide pages preserve links and bookmarks.
