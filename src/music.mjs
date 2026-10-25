@@ -3,7 +3,8 @@ export { SCALES,TUNINGS,mod };
 export const PALETTE={0:'#cf3039',2:'#ed7d1a',4:'#f7d038',5:'#16834b',7:'#1b6fc2',9:'#5852bc',11:'#963dbc'};
 export const SHARPS=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 export const FLATS=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
-export const DEFAULTS={instrument:'guitar',strings:6,tuning:'guitar-standard',hand:'right',lang:'en',root:0,spelling:'auto',scale:'major',frets:24,labels:'notes',allNotes:false};
+export const DEFAULT_FRETS={guitar:21,bass:20};
+export const DEFAULTS={instrument:'guitar',strings:6,tuning:'guitar-standard',hand:'right',lang:'en',root:0,spelling:'auto',scale:'major',frets:DEFAULT_FRETS.guitar,labels:'notes',allNotes:false};
 export const prettyDegree=s=>s.replaceAll('b','♭').replaceAll('#','♯');
 export const noteName=(pc,preference='sharp')=>(preference==='flat'?FLATS:SHARPS)[mod(pc)];
 export const midiName=(midi,prefer='sharp')=>`${noteName(midi,prefer)}${Math.floor(midi/12)-1}`;
@@ -30,7 +31,7 @@ export function normalizeState(input={}){
  const counts=s.instrument==='guitar'?[6,7]:[4,5,6];s.strings=counts.includes(Number(input.strings))?Number(input.strings):counts[0];
  s.lang=s.lang==='pt'?'pt':'en';s.hand=s.hand==='left'?'left':'right';s.labels=s.labels==='degrees'?'degrees':'notes';s.spelling=['auto','sharp','flat'].includes(s.spelling)?s.spelling:'auto';
  s.root=Number(s.root);if(!Number.isInteger(s.root)||s.root<0||s.root>11)s.root=0;
- s.frets=[20,21,22,24].includes(Number(s.frets))?Number(s.frets):24;
+ s.frets=[20,21,22,24].includes(Number(input.frets))?Number(input.frets):DEFAULT_FRETS[s.instrument];
  s.allNotes=s.allNotes===true||s.allNotes==='true';
  if(s.tuning==='custom'){
   try{s.customNotes=parseTuning(s.customTuning??'',s.strings);}catch{s.tuning='';delete s.customNotes;}
