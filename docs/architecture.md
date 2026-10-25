@@ -8,7 +8,12 @@ computes handed fret coordinates. Both SVG and PDF use those functions.
 `src/scale-picker.mjs` groups common scales and searches bilingual names and aliases
 without changing the musical selection. `src/board.mjs` renders keyboard-accessible SVG. `src/app.mjs` handles the
 interface, URL state, Web Audio, and downloads. `src/pdf.mjs` draws vector PDF
-pages, embeds local fonts, and includes a vector logo and outline navigation.
+pages in the guided-book design, embeds local fonts, and includes a vector logo
+and outline navigation. `src/guide-layout.mjs` supplies continuous tapered-neck
+geometry, mirrored fret positions, pitch-derived bass octave routes, and
+paginated contents. Each scale shares a page with its smaller maps and legend;
+guitar maps are fret-range references, while bass maps are ascending octave
+routes on the two lowest strings. They adapt to the selected tuning.
 No browser-generated data is sent to a server.
 
 Vendored pdf-lib and fontkit are loaded only for PDF export. Keep their version
