@@ -23,7 +23,9 @@ No account, backend, analytics, or external API is required.
 - Click or keyboard-activate a note to hear it; play an ascending/descending scale.
 - Shareable URLs containing the full configuration.
 - Vector PDF atlases for a scale, family, or full catalog; selected scales can
-  also be exported in all 12 keys. Every page has discreet Marques & Co. branding.
+  also be exported in all 12 keys. Downloads match the guided books: a light cover,
+  clickable contents, reading instructions, and a full map with smaller positions
+  and a note/degree legend on each scale page. Every page has discreet Marques & Co. branding.
 - Four guided books from the original project, with eight applied-theory
   studies and six improvisation lessons each.
 
