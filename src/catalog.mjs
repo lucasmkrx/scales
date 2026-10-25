@@ -96,6 +96,14 @@ for (const [id,name,notes,prefer] of [
  ['open-c','Open C',[36,43,48,55,60,64]],['double-drop-d','Double drop D',[38,45,50,55,59,62]]
 ]) tuning(`guitar-${id}`,'guitar',6,name,notes,prefer);
 for (const [id,name,notes,prefer] of [
+ ['standard','B standard',[35,40,45,50,55,59,64]],
+ ['bb-standard','B♭ standard',[34,39,44,49,54,58,63],'flat'],
+ ['a-standard','A standard',[33,38,43,48,53,57,62]],
+ ['drop-a','Drop A',[33,40,45,50,55,59,64]],
+ ['drop-ab','Drop A♭ / G♯',[32,39,44,49,54,58,63],'flat'],
+ ['drop-g','Drop G',[31,38,43,48,53,57,62]]
+]) tuning(`guitar-7-${id}`,'guitar',7,name,notes,prefer);
+for (const [id,name,notes,prefer] of [
  ['standard','E standard',[28,33,38,43]],['eb-standard','E♭ standard',[27,32,37,42],'flat'],
  ['d-standard','D standard',[26,31,36,41]],['c-sharp-standard','C♯ standard',[25,30,35,40]],
  ['c-standard','C standard',[24,29,34,39]],['bead','B standard / BEAD',[23,28,33,38]],

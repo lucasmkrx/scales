@@ -14,7 +14,8 @@ No account, backend, analytics, or external API is required.
 ## What is included
 
 - 67 named scales, modes, and chord arpeggios, transposable to all 12 roots.
-- 38 tuning presets for six-string guitar and four-, five-, and six-string bass.
+- 44 tuning presets for six- and seven-string guitar and four-, five-, and six-string bass.
+- A searchable scale picker with common scales first, the complete catalog, and chord arpeggios.
 - Custom tuning pitches with real octave numbers, and custom scale formulas.
 - Right- and left-handed neck maps, with 20, 21, 22, or 24 frets.
 - American English and Brazilian Portuguese.

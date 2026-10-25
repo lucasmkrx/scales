@@ -5,7 +5,8 @@ names, and tuning pitches. Mode structures are computed by interval rotation.
 `src/music.mjs` validates inputs, spells notes, builds the pitch model, and
 computes handed fret coordinates. Both SVG and PDF use those functions.
 
-`src/board.mjs` renders keyboard-accessible SVG. `src/app.mjs` handles the
+`src/scale-picker.mjs` groups common scales and searches bilingual names and aliases
+without changing the musical selection. `src/board.mjs` renders keyboard-accessible SVG. `src/app.mjs` handles the
 interface, URL state, Web Audio, and downloads. `src/pdf.mjs` draws vector PDF
 pages, embeds local fonts, and includes a vector logo and outline navigation.
 No browser-generated data is sent to a server.
@@ -23,7 +24,7 @@ and playback's root and octave. Before release, exercise the browser at desktop
 and phone widths and visually review representative generated PDFs (including
 left-handed six-string bass and an altered tuning).
 
-The initial UI supports six-string guitar and four-, five-, and six-string bass.
+The UI supports six- and seven-string guitar and four-, five-, and six-string bass.
 The engine accepts tuning data independently of prescribed shapes. Additional
 instrument sizes should receive dedicated interface and PDF layout checks.
 

@@ -26,7 +26,8 @@ export function parseFormula(value){
  return {id:'custom',name:{en:'Custom scale',pt:'Escala personalizada'},family:'custom',intervals,formula};
 }
 export function normalizeState(input={}){
- const s={...DEFAULTS,...input};s.instrument=s.instrument==='bass'?'bass':'guitar';s.strings=s.instrument==='guitar'?6:input.strings===undefined?4:[4,5,6].includes(Number(s.strings))?Number(s.strings):4;
+ const s={...DEFAULTS,...input};s.instrument=s.instrument==='bass'?'bass':'guitar';
+ const counts=s.instrument==='guitar'?[6,7]:[4,5,6];s.strings=counts.includes(Number(input.strings))?Number(input.strings):counts[0];
  s.lang=s.lang==='pt'?'pt':'en';s.hand=s.hand==='left'?'left':'right';s.labels=s.labels==='degrees'?'degrees':'notes';s.spelling=['auto','sharp','flat'].includes(s.spelling)?s.spelling:'auto';
  s.root=Number(s.root);if(!Number.isInteger(s.root)||s.root<0||s.root>11)s.root=0;
  s.frets=[20,21,22,24].includes(Number(s.frets))?Number(s.frets):24;
