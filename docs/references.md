@@ -7,6 +7,10 @@ and implementation in Scales are original.
   https://www.fender.com/articles/setup/standard-tuning-how-eadgbe-came-to-be
 - Common alternate guitar tunings:
   https://www.fender.com/articles/setup/alternate-guitar-tuning
+- Seven-string guitar standard tuning (Ibanez maintenance manual, string 1 to 7):
+  https://files.kraftmusic.com/media/ownersmanual/Ibanez_Guitar_Maintenance_Manual.pdf
+- Seven-string drop A (SIT Strings):
+  https://sitstrings.com/pages/help-center/what-is-drop-tuning-on-a-7-string-guitar
 - Standard four-, five-, and six-string bass pitches:
   https://www.studybass.com/gear/bass-tuning/bass-guitar-tunings/
 - Diatonic chords and Roman-numeral analysis:

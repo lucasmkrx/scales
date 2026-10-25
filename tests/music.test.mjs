@@ -37,3 +37,14 @@ test('URL state round-trips custom configurations and malformed parameters fall 
 test('audio starts on a playable root, reaches its octave, and returns to the root',()=>{
  for(const t of TUNINGS){const sequence=scaleMidiSequence({instrument:t.instrument,strings:t.strings,tuning:t.id,root:1,scale:'major'});assert.ok(sequence[0]>=t.notes[0]);assert.equal(sequence[0]%12,1);assert.equal(sequence[7],sequence[0]+12);assert.equal(sequence.at(-1),sequence[0]);}
 });
+
+test('seven-string presets, custom tuning, and share links retain all seven strings',()=>{
+ const standard=selection({instrument:'guitar',strings:7});
+ assert.equal(standard.tuning,'guitar-7-standard');assert.deepEqual(standard.tuningData.notes,[35,40,45,50,55,59,64]);
+ const drop=selection({instrument:'guitar',strings:7,tuning:'guitar-7-drop-a'});
+ assert.deepEqual(drop.tuningData.notes,[33,40,45,50,55,59,64]);
+ const custom=normalizeState({instrument:'guitar',strings:7,tuning:'custom',customTuning:'G1 D2 G2 C3 F3 A3 D4',hand:'left',root:7,scale:'minor-pentatonic'});
+ assert.equal(custom.tuning,'custom');assert.deepEqual(custom.customNotes,[31,38,43,48,53,57,62]);
+ assert.deepEqual(normalizeState(Object.fromEntries(new URLSearchParams(sharedState(custom)))),custom);
+ assert.equal(normalizeState({strings:8}).strings,6);assert.equal(normalizeState({instrument:'bass',strings:7}).strings,4);
+});
