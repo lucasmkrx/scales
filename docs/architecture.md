@@ -18,7 +18,9 @@ No browser-generated data is sent to a server.
 
 Vendored pdf-lib and fontkit are loaded only for PDF export. Keep their version
 and license notices together when updating them. All fonts and branding are
-local assets. The static build copies `public/` and `src/` to `dist/`.
+local assets. The static build copies `public/` and `src/` to `dist/`, adding a
+content revision to the stylesheet, entry point, and all module imports so
+returning visitors receive each release together.
 
 ## Validation
 
