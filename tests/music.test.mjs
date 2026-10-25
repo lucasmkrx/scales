@@ -32,7 +32,7 @@ test('custom inputs reject missing roots, duplicate pitches, invalid registers, 
 test('URL state round-trips custom configurations and malformed parameters fall back safely',()=>{
  const s=normalizeState({instrument:'bass',strings:6,tuning:'custom',customTuning:'A0 E1 A1 D2 G2 C3',scale:'custom',formula:'1 b2 3 4 5 b6 7',lang:'pt',hand:'left',root:6});assert.equal(s.tuning,'custom');
  const restored=normalizeState(Object.fromEntries(new URLSearchParams(sharedState(s))));assert.equal(restored.customTuning,s.customTuning);assert.equal(restored.formula,s.formula);assert.deepEqual(boardModel(restored).points,boardModel(s).points);
- const bad=normalizeState({root:'oops',frets:'-10',strings:100,instrument:'bass',scale:'unknown',tuning:'../evil'});assert.equal(bad.root,0);assert.equal(bad.frets,24);assert.equal(bad.strings,4);assert.equal(bad.tuning,'bass-4-standard');
+ const bad=normalizeState({root:'oops',frets:'-10',strings:100,instrument:'bass',scale:'unknown',tuning:'../evil'});assert.equal(bad.root,0);assert.equal(bad.frets,20);assert.equal(bad.strings,4);assert.equal(bad.tuning,'bass-4-standard');
 });
 test('audio starts on a playable root, reaches its octave, and returns to the root',()=>{
  for(const t of TUNINGS){const sequence=scaleMidiSequence({instrument:t.instrument,strings:t.strings,tuning:t.id,root:1,scale:'major'});assert.ok(sequence[0]>=t.notes[0]);assert.equal(sequence[0]%12,1);assert.equal(sequence[7],sequence[0]+12);assert.equal(sequence.at(-1),sequence[0]);}
@@ -47,4 +47,18 @@ test('seven-string presets, custom tuning, and share links retain all seven stri
  assert.equal(custom.tuning,'custom');assert.deepEqual(custom.customNotes,[31,38,43,48,53,57,62]);
  assert.deepEqual(normalizeState(Object.fromEntries(new URLSearchParams(sharedState(custom)))),custom);
  assert.equal(normalizeState({strings:8}).strings,6);assert.equal(normalizeState({instrument:'bass',strings:7}).strings,4);
+});
+
+
+test('fret defaults follow the instrument while explicit selections and shared links are preserved',()=>{
+ assert.equal(normalizeState().frets,21);
+ assert.equal(normalizeState({instrument:'guitar',strings:7}).frets,21);
+ assert.equal(normalizeState({instrument:'bass'}).frets,20);
+ assert.equal(normalizeState({instrument:'bass',strings:6}).frets,20);
+ for(const instrument of ['guitar','bass'])for(const frets of [20,21,22,24]){
+  const selected=normalizeState({instrument,frets});assert.equal(selected.frets,frets);
+  assert.equal(normalizeState(Object.fromEntries(new URLSearchParams(sharedState(selected)))).frets,frets);
+ }
+ assert.equal(normalizeState({instrument:'guitar',frets:'invalid'}).frets,21);
+ assert.equal(normalizeState({instrument:'bass',frets:'invalid'}).frets,20);
 });

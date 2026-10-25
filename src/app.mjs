@@ -1,4 +1,4 @@
-import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence} from './music.mjs';
+import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence,DEFAULT_FRETS} from './music.mjs';
 import {scaleGroups,initialScaleView} from './scale-picker.mjs';
 import {FAMILIES} from './catalog.mjs';import {copy} from './i18n.mjs';import {boardSvg,escape} from './board.mjs';import {createAtlas} from './pdf.mjs';
 let state=normalizeState(Object.fromEntries(new URLSearchParams(location.search)));let view=initialScaleView(state.scale);let search='';let audio;let oscillators=[];let playTimer;let exporting;let pdfLibraries;
@@ -35,7 +35,7 @@ function render(){const t=copy[state.lang];document.documentElement.lang=state.l
  $('custom-tuning').hidden=state.tuning!=='custom';$('tuning-input').value=state.customTuning??'';$('tuning-input').placeholder=selection(state).tuningData.notes.map(m=>midiName(m)).join(' ');$('custom-scale').hidden=state.scale!=='custom';$('formula-input').value=state.formula??'1 2 b3 4 5 b6 b7';
  renderScalePicker();bookCards();renderContent();}
 function update(values){stopAudio();state=normalizeState({...state,...values});status('');render();}
-for(const id of ['instrument','strings','hand','frets','root','spelling','labels'])$(id).addEventListener('change',()=>update({[id]:$(id).value,...(id==='instrument'?{strings:$('instrument').value==='bass'?4:6}:{})}));
+for(const id of ['instrument','strings','hand','frets','root','spelling','labels'])$(id).addEventListener('change',()=>update({[id]:$(id).value,...(id==='instrument'?{strings:$('instrument').value==='bass'?4:6,frets:DEFAULT_FRETS[$('instrument').value]}:{})}));
 function applyTuning(){try{parseTuning($('tuning-input').value,state.strings);update({tuning:'custom',customTuning:$('tuning-input').value});}catch{status(copy[state.lang].tuningExample,true);}}
 function applyScale(){try{parseFormula($('formula-input').value);update({scale:'custom',formula:$('formula-input').value});}catch{status(copy[state.lang].formulaHint,true);}}
 function audioContext(){audio??=new (window.AudioContext||window.webkitAudioContext)();return audio.resume().then(()=>audio);}
