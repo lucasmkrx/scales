@@ -20,12 +20,14 @@ No account, backend, analytics, or external API is required.
 - Right- and left-handed neck maps, with 20, 21, 22, or 24 frets.
 - American English and Brazilian Portuguese.
 - Both, sharp, or flat note labels, degrees, roots, and the original seven-note color palette.
-- Click or keyboard-activate a note to hear it; play an ascending/descending scale.
+- Click or keyboard-activate a note to hear a plucked string; play an ascending/descending
+  scale with guitar or bass tone. Audio is synthesized locally without sample downloads.
 - Shareable URLs containing the full configuration.
 - Vector PDF atlases for a scale, family, or full catalog; selected scales can
   also be exported in all 12 keys. Downloads match the guided books: a light cover,
   clickable contents, reading instructions, and a full map with smaller positions
   and a note/degree legend on each scale page. Every page has discreet Marques & Co. branding.
+- Guided books are filtered by the selected page language.
 - Four guided books from the original project, with eight applied-theory
   studies and six improvisation lessons each.
 

@@ -1,7 +1,8 @@
 import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence,DEFAULT_FRETS,pitchPreference} from './music.mjs';
+import {PluckedStringPlayer,STRING_SOUNDS} from './string-audio.mjs';
 import {scaleGroups,initialScaleView} from './scale-picker.mjs';
 import {FAMILIES} from './catalog.mjs';import {copy} from './i18n.mjs';import {boardSvg,escape} from './board.mjs';import {createAtlas} from './pdf.mjs';
-let state=normalizeState(Object.fromEntries(new URLSearchParams(location.search)));let view=initialScaleView(state.scale);let search='';let audio;let oscillators=[];let playTimer;let exporting;let pdfLibraries;
+let state=normalizeState(Object.fromEntries(new URLSearchParams(location.search)));let view=initialScaleView(state.scale);let search='';let instrumentAudio;let playing=false;let playbackVersion=0;let playTimer;let exporting;let pdfLibraries;
 const $=id=>document.getElementById(id);const options=(items,current)=>items.map(([value,label])=>`<option value="${escape(value)}" ${String(value)===String(current)?'selected':''}>${escape(label)}</option>`).join('');
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
 function saveURL(){history.replaceState(null,'',`${location.pathname}?${sharedState(state)}`);}
@@ -20,7 +21,7 @@ function renderScalePicker(){
 function bookCards(){const t=copy[state.lang];const guides=[
  ['guitar','C♯ standard','pt','right',42,'guitar-c-sharp-right-pt.pdf'],['bass','Drop C','pt','right',32,'bass-drop-c-right-pt.pdf'],
  ['guitar','E standard','en','left',42,'guitar-standard-left-en.pdf'],['bass','E standard','en','left',32,'bass-standard-left-en.pdf']];
- $('books-grid').innerHTML=guides.map(([instrument,tuning,lang,hand,pages,file])=>`<article class="book"><p class="eyebrow">${t[lang]} · ${t[hand]}</p><h3>${t[instrument]}</h3><p>${tuning}<br>${pages} ${state.lang==='pt'?'páginas':'pages'} · A4</p><a href="./guides/${file}" download>${t.download} PDF ↗</a></article>`).join('');}
+ $('books-grid').innerHTML=guides.filter(([, ,lang])=>lang===state.lang).map(([instrument,tuning,lang,hand,pages,file])=>`<article class="book"><p class="eyebrow">${t[lang]} · ${t[hand]}</p><h3>${t[instrument]}</h3><p>${tuning}<br>${pages} ${state.lang==='pt'?'páginas':'pages'} · A4</p><a href="./guides/${file}" download>${t.download} PDF ↗</a></article>`).join('');}
 function renderContent(){const s=selection(state),t=copy[state.lang],names=spellScale(s);$('family-label').textContent=FAMILIES[s.scaleData.family]?.[s.lang]??t.custom;$('scale-title').textContent=`${rootName(s)} ${s.scaleData.name[s.lang]}`;
  $('notes-strip').innerHTML=names.map((name,i)=>`<span class="note-chip"><span class="color-dot" style="background:${PALETTE[(s.root+s.scaleData.intervals[i])%12]??'#fff'}"></span>${escape(name)}<small>${prettyDegree(s.scaleData.formula[i])}</small></span>`).join('');
  $('tuning-description').innerHTML=`${t.openStrings}<strong>${s.tuningData.notes.map(m=>midiName(m,pitchPreference(s))).join(' - ')}</strong>`;$('orientation').textContent=s.hand==='left'?t.nutRight:t.nutLeft;$('board').innerHTML=boardSvg(s);$('board').scrollLeft=s.hand==='left'?$('board').scrollWidth-$('board').clientWidth:0;
@@ -38,11 +39,31 @@ function update(values){stopAudio();state=normalizeState({...state,...values});s
 for(const id of ['instrument','strings','hand','frets','root','spelling','labels'])$(id).addEventListener('change',()=>update({[id]:$(id).value,...(id==='instrument'?{strings:$('instrument').value==='bass'?4:6,frets:DEFAULT_FRETS[$('instrument').value]}:{})}));
 function applyTuning(){try{parseTuning($('tuning-input').value,state.strings);update({tuning:'custom',customTuning:$('tuning-input').value});}catch{status(copy[state.lang].tuningExample,true);}}
 function applyScale(){try{parseFormula($('formula-input').value);update({scale:'custom',formula:$('formula-input').value});}catch{status(copy[state.lang].formulaHint,true);}}
-function audioContext(){audio??=new (window.AudioContext||window.webkitAudioContext)();return audio.resume().then(()=>audio);}
-function stopAudio(){oscillators.forEach(o=>{try{o.stop();}catch{}});oscillators=[];clearTimeout(playTimer);$('play').textContent=copy[state.lang].play;$('play').classList.remove('playing');}
-async function sound(midi,when,duration){const ac=await audioContext();const o=ac.createOscillator(),gain=ac.createGain();o.type='triangle';o.frequency.value=440*2**((midi-69)/12);gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(.12,when+.02);gain.gain.setValueAtTime(.10,when+duration*.7);gain.gain.exponentialRampToValueAtTime(.001,when+duration);o.connect(gain);gain.connect(ac.destination);o.start(when);o.stop(when+duration+.02);oscillators.push(o);}
-async function playNote(midi){stopAudio();const ac=await audioContext();$('play').textContent=copy[state.lang].stop;$('play').classList.add('playing');await sound(midi,ac.currentTime+.02,.5);playTimer=setTimeout(stopAudio,560);}
-$('play').addEventListener('click',async()=>{if(oscillators.length){stopAudio();return;}try{const ac=await audioContext();const notes=scaleMidiSequence(state);$('play').textContent=copy[state.lang].stop;$('play').classList.add('playing');for(let i=0;i<notes.length;i++)await sound(notes[i],ac.currentTime+.03+i*.36,.30);playTimer=setTimeout(stopAudio,notes.length*360+300);}catch{status('Audio is not available in this browser.',true);}});
+async function audioPlayer(){
+ if(!instrumentAudio){const Context=window.AudioContext||window.webkitAudioContext;if(!Context)throw new Error('Audio unavailable');instrumentAudio=new PluckedStringPlayer(new Context());}
+ await instrumentAudio.context.resume();return instrumentAudio;
+}
+function stopAudio(){
+ playbackVersion++;playing=false;instrumentAudio?.stop();clearTimeout(playTimer);
+ $('play').textContent=copy[state.lang].play;$('play').classList.remove('playing');
+}
+async function startPlayback(midi){
+ stopAudio();const version=playbackVersion,snapshot={...state};playing=true;
+ $('play').textContent=copy[state.lang].stop;$('play').classList.add('playing');
+ try{
+  const player=await audioPlayer();if(version!==playbackVersion)return;
+  const notes=midi===undefined?scaleMidiSequence(snapshot):[midi];
+  for(const note of new Set(notes))player.buffer(note,snapshot.instrument);
+  const start=player.context.currentTime+.025;
+  const duration=midi===undefined?(snapshot.instrument==='bass'?.95:.78):STRING_SOUNDS[snapshot.instrument].seconds;
+  let end=start;
+  notes.forEach((note,i)=>{end=player.play(note,{instrument:snapshot.instrument,when:start+i*.36,duration});});
+  playTimer=setTimeout(()=>{if(version===playbackVersion)stopAudio();},Math.max(0,(end-player.context.currentTime)*1000)+40);
+ }catch{if(version===playbackVersion){stopAudio();status(copy[state.lang].audioUnavailable,true);}}
+}
+const playNote=midi=>startPlayback(midi);
+$('play').addEventListener('click',()=>{if(playing)stopAudio();else startPlayback();});
+window.addEventListener('pagehide',stopAudio);
 for(const id of ['board','positions']){const el=$(id);el.addEventListener('click',event=>{const note=event.target.closest('[data-midi]');if(note)playNote(Number(note.dataset.midi));});el.addEventListener('keydown',event=>{const note=event.target.closest('[data-midi]');if(note&&['Enter',' '].includes(event.key)){event.preventDefault();playNote(Number(note.dataset.midi));}});}
 $('tuning').addEventListener('change',()=>{if($('tuning').value==='custom'){$('custom-tuning').hidden=false;$('tuning-input').focus();}else update({tuning:$('tuning').value});});
 $('scale-results').addEventListener('click',event=>{const button=event.target.closest('[data-scale]');if(button){const id=button.dataset.scale;update({scale:id});$('scale-results').querySelector(`[data-scale="${id}"]`)?.focus({preventScroll:true});}});
