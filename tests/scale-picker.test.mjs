@@ -28,3 +28,15 @@ test('seven-string note circles retain separation in full and position maps',()=
   for(const a of notes)for(const b of notes)if(a.x===b.x&&a.y<b.y)assert.ok(b.y-a.y>a.r+b.r,'circles on neighboring strings overlap');
  }
 });
+
+test('SVG open-string labels honor explicit spelling and tuning defaults in both layouts',()=>{
+ const state={instrument:'guitar',strings:6,tuning:'guitar-eb-standard',scale:'natural-minor',root:0};
+ for(const hand of ['left','right'])for(const small of [false,true]){
+  const sharp=boardSvg({...state,hand,spelling:'sharp'},{small});
+  const flat=boardSvg({...state,hand,spelling:'flat'},{small});
+  const auto=boardSvg({...state,hand,spelling:'auto'},{small});
+  assert.match(sharp,/>D♯<\/text>/);assert.doesNotMatch(sharp,/>E♭<\/text>/);
+  assert.match(flat,/>E♭<\/text>/);assert.doesNotMatch(flat,/>D♯<\/text>/);
+  assert.match(auto,/>E♭<\/text>/);
+ }
+});
