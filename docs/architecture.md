@@ -21,6 +21,22 @@ and compressor; Stop fades and cancels active and scheduled voices. The app
 invalidates pending audio starts when settings change.
 No browser-generated data is sent to a server.
 
+## Workspace controls
+
+Root and scale remain above the full-width fretboard. Native modal dialogs hold
+instrument setup, the searchable scale catalog, display preferences, and PDF
+export options. Dialogs become bottom sheets at phone widths, retain a visible
+close action, and return focus to their trigger. The scale catalog has a single
+scrolling dialog body, manual selection, and arrow-key navigation through results.
+Custom tuning uses one octave-qualified field per string with inline validation;
+custom tuning and formula edits commit only after Apply succeeds.
+
+`src/workspace.mjs` restores and normalizes device preferences, recalls instrument
+and string-count setups, and computes export page counts through the same contents
+planner as the PDF generator. Versioned localStorage is optional: unavailable or
+invalid storage falls back to defaults. Explicit URL settings override saved
+preferences. Ordinary display changes preserve the fretboard's horizontal position.
+
 Vendored pdf-lib and fontkit are loaded only for PDF export. Keep their version
 and license notices together when updating them. All fonts and branding are
 local assets. The static build copies `public/` and `src/` to `dist/`, adding a

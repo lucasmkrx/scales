@@ -16,6 +16,9 @@ No account, backend, analytics, or external API is required.
 - 67 named scales, modes, and chord arpeggios, transposable to all 12 roots.
 - 44 tuning presets for six- and seven-string guitar and four-, five-, and six-string bass.
 - A searchable scale picker with common scales first, the complete catalog, and chord arpeggios.
+- A full-width fretboard workspace with root and scale controls always available,
+  plus separate instrument, display, and download panels on desktop and mobile.
+- Instrument and string-count setups remembered on the device; shared URLs take priority.
 - Custom tuning pitches with real octave numbers, and custom scale formulas.
 - Right- and left-handed neck maps, with 20, 21, 22, or 24 frets.
 - American English and Brazilian Portuguese.
@@ -24,7 +27,8 @@ No account, backend, analytics, or external API is required.
   scale with guitar or bass tone. Audio is synthesized locally without sample downloads.
 - Shareable URLs containing the full configuration.
 - Vector PDF atlases for a scale, family, or full catalog; selected scales can
-  also be exported in all 12 keys. Downloads match the guided books: a light cover,
+  also be exported in all 12 keys, with a configuration summary and page count before export.
+  Downloads match the guided books: a light cover,
   clickable contents, reading instructions, and a full map with smaller positions
   and a note/degree legend on each scale page. Every page has discreet Marques & Co. branding.
 - Guided books match the selected language, instrument, string count, handedness,
