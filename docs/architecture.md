@@ -14,6 +14,11 @@ geometry, mirrored fret positions, pitch-derived bass octave routes, and
 paginated contents. Each scale shares a page with its smaller maps and legend;
 guitar maps are fret-range references, while bass maps are ascending octave
 routes on the two lowest strings. They adapt to the selected tuning.
+`src/string-audio.mjs` synthesizes plucked strings with a fractional-delay
+Karplus–Strong loop, damping, and body coloration. Guitar and bass use different
+excitation and decay settings. Cached mono buffers play through a gain stage
+and compressor; Stop fades and cancels active and scheduled voices. The app
+invalidates pending audio starts when settings change.
 No browser-generated data is sent to a server.
 
 Vendored pdf-lib and fontkit are loaded only for PDF export. Keep their version
