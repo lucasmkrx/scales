@@ -1,30 +1,440 @@
 <!doctype html>
-<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#20343f"><meta name="description" content="Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, playback, and printable PDFs in English and Portuguese."><title>Scales · Notes, scales, and improvisation</title><link rel="icon" href="./assets/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css"></head>
-<body><a class="skip" href="#explorer" data-i18n="skip">Skip to fretboard</a><div class="spectrum" aria-hidden="true"></div>
-<header class="site-header"><a class="wordmark" href="./">Scales<span class="edition">by Marques &amp; Co.</span></a><div class="header-actions"><a href="#books" data-i18n="downloads">The guided books</a><label class="language"><span class="sr-only" data-i18n="language">Language</span><select id="language"><option value="en" lang="en-US">🇺🇸 English</option><option value="pt" lang="pt-BR">🇧🇷 Português</option></select></label><a href="https://github.com/lucasmkrx/scales" class="source-link" aria-label="GitHub repository">GitHub ↗</a></div></header>
-<main><section class="intro"><div><p class="eyebrow" data-i18n="guitarBass">GUITAR &amp; BASS</p><h1 data-i18n="title">Explore the fretboard</h1><p data-i18n="subtitle">Notes, scales, and improvisation for the instrument in your hands.</p></div><div class="catalog-stats" id="stats"></div></section>
-<section class="instrument-summary" aria-label="Current instrument"><div><p class="eyebrow" data-i18n="yourInstrument">Your instrument</p><p id="instrument-summary"></p></div><button type="button" class="secondary" id="edit-instrument" data-open="instrument-dialog" aria-haspopup="dialog" data-i18n="editInstrument">Edit instrument</button></section>
-<div class="content" id="explorer" tabindex="-1"><section class="panel scale-panel">
-<div class="music-controls"><label class="root-control"><span data-i18n="root">Root note</span><select id="root" aria-describedby="root-hint"></select></label><div class="scale-control"><span class="control-label" id="scale-control-label" data-i18n="scale">Scale or arpeggio</span><button type="button" class="picker-trigger" id="choose-scale" data-open="scale-dialog" aria-haspopup="dialog" aria-labelledby="scale-control-label scale-value"><span id="scale-value"></span><span aria-hidden="true">⌄</span></button></div><div class="toolbar"><button type="button" class="secondary" id="play" data-i18n="play">Play scale</button><button type="button" class="icon-button" id="share" data-i18n="share">Copy link</button><button type="button" class="primary" id="open-export" data-open="export-dialog" aria-haspopup="dialog" data-i18n="pdf">Download PDF</button></div></div>
-<p id="root-hint" class="hint" data-i18n="rootHint">The root is the scale’s home note. Choose it together with a scale.</p>
-<div class="sr-only"><p id="family-label"></p><h2 id="scale-title"></h2></div>
-<div class="notes-strip" id="notes-strip"></div>
-<div class="board-toolbar"><fieldset class="segmented" id="labels"><legend class="sr-only" data-i18n="labels">Diagram labels</legend><label><input type="radio" name="labels" value="notes" checked><span data-i18n="notes">Notes</span></label><label><input type="radio" name="labels" value="degrees"><span data-i18n="degrees">Degrees</span></label></fieldset><button type="button" class="secondary" id="open-display" data-open="display-dialog" aria-haspopup="dialog"><span data-i18n="display">Display</span> <span aria-hidden="true">⌄</span></button></div>
-<p id="degrees-hint" class="hint" hidden data-i18n="degreesHint">1 is the root. Other numbers describe each note’s place in the scale.</p>
-<div class="tuning-description" id="tuning-description"></div><div class="board-scroll" id="board"></div><div class="board-foot"><span id="orientation"></span><span data-i18n="scrollHint"></span></div><p class="hint" data-i18n="playHint"></p><p class="legend" data-i18n="legend"></p></section>
-<section class="positions-section"><div class="section-heading"><h2 data-i18n="positions">Explore nearby positions</h2><p data-i18n="positionHint"></p></div><div class="positions" id="positions"></div></section>
-<section class="panel practice"><p class="eyebrow">01 / 02 / 03</p><h2 data-i18n="practice">Turn the map into music</h2><ol><li data-i18n="practice1"></li><li data-i18n="practice2"></li><li data-i18n="practice3"></li></ol></section><p id="status" class="status" role="status" aria-live="polite"></p></div>
-<section class="books" id="books"><div class="section-heading"><h2 data-i18n="downloads">The guided books</h2><p data-i18n="downloadIntro"></p><p class="configuration-caption" id="books-configuration"></p></div><div id="books-grid" class="books-grid"></div></section></main>
-<dialog id="instrument-dialog" aria-labelledby="instrument-heading"><div class="dialog-header"><div><p class="eyebrow" data-i18n="setup">Setup</p><h2 id="instrument-heading" data-i18n="yourInstrument">Your instrument</h2></div><button type="button" class="close-dialog" data-close aria-label="Close"><span aria-hidden="true">×</span></button></div><div class="dialog-body"><form id="instrument-form">
-<fieldset class="segmented instrument-toggle" id="instrument"><legend class="sr-only" data-i18n="instrument">Instrument</legend><label><input type="radio" name="instrument" value="guitar" checked><span data-i18n="guitar">Guitar</span></label><label><input type="radio" name="instrument" value="bass"><span data-i18n="bass">Bass</span></label></fieldset>
-<div class="two-columns"><label><span data-i18n="strings">Strings</span><select id="strings"></select></label><label><span data-i18n="hand">Handedness</span><select id="hand"><option value="right" data-i18n="right">Right-handed</option><option value="left" data-i18n="left">Left-handed</option></select></label></div>
-<label><span data-i18n="tuning">Tuning</span><select id="tuning"></select></label><p id="preset-notes" class="tuning-preview"></p><p id="setup-status" class="hint" role="status" aria-live="polite"></p>
-<div id="custom-tuning" class="editor" hidden><p class="control-label" data-i18n="customTuning">Open-string pitches, low to high</p><p class="hint" data-i18n="tuningFieldsHint">One pitch per string, lowest to highest. The number is the octave (for example, E2).</p><div id="tuning-fields" class="tuning-fields"></div><p id="tuning-error" class="hint error" role="alert"></p><div class="editor-actions"><button type="button" class="secondary" id="apply-tuning" data-i18n="applyTuning">Apply tuning</button><button type="button" class="text-button" id="cancel-tuning" data-i18n="cancelEdit">Cancel edit</button></div></div>
-<label class="frets-control"><span data-i18n="frets">Frets</span><select id="frets"><option>20</option><option>21</option><option>22</option><option>24</option></select></label><p class="hint" data-i18n="setupHint">Your setup is remembered on this device. Shared links take priority.</p></form></div><div class="dialog-footer"><button type="button" class="primary" data-close data-i18n="done">Done</button></div></dialog>
-<dialog id="scale-dialog" class="scale-dialog" aria-labelledby="scale-heading"><div class="dialog-header"><div><p class="eyebrow" data-i18n="explore">Explore</p><h2 id="scale-heading" data-i18n="chooseScale">Choose a scale</h2></div><button type="button" class="close-dialog" data-close aria-label="Close"><span aria-hidden="true">×</span></button></div><div class="dialog-body">
-<p id="scale-selection" class="selection-summary"></p><label class="scale-search"><span data-i18n="search">Find a scale</span><input id="search" type="search" autocomplete="off" aria-describedby="search-hint" aria-controls="scale-results"></label><p id="search-hint" class="hint" data-i18n="searchHint"></p>
-<div class="scale-tabs" id="scale-tabs" role="group" aria-label="Scale collections"><button type="button" data-view="common" data-i18n="common">Common</button><button type="button" data-view="all" data-i18n="allScales">All scales</button><button type="button" data-view="arpeggios" data-i18n="arpeggios">Arpeggios</button></div><p id="scale-results-count" class="hint" role="status" aria-live="polite"></p><div id="scale-results" class="scale-results" role="group" aria-label="Scale choices"></div>
-<details class="advanced-scale" id="advanced-scale"><summary data-i18n="advancedScale">Advanced · custom scale</summary><div id="custom-scale" class="editor"><label><span data-i18n="customScale">Scale degrees</span><input id="formula-input" value="1 2 b3 4 5 b6 b7" autocomplete="off" aria-describedby="formula-hint formula-error"></label><p id="formula-hint" class="hint" data-i18n="formulaHint"></p><p id="formula-error" class="hint error" role="alert"></p><button type="button" class="secondary" id="apply-scale" data-i18n="applyScale">Use custom scale</button></div></details></div><div class="dialog-footer"><button type="button" class="secondary" data-close data-i18n="close">Close</button></div></dialog>
-<dialog id="display-dialog" aria-labelledby="display-heading"><div class="dialog-header"><div><p class="eyebrow" data-i18n="fretboard">Fretboard</p><h2 id="display-heading" data-i18n="display">Display</h2></div><button type="button" class="close-dialog" data-close aria-label="Close"><span aria-hidden="true">×</span></button></div><div class="dialog-body"><label><span data-i18n="spelling">Note spelling</span><select id="spelling"><option value="both" data-i18n="both">Both</option><option value="sharp" data-i18n="sharp">Sharps</option><option value="flat" data-i18n="flat">Flats</option></select></label><details class="inline-help"><summary data-i18n="spellingHelp">Why do some notes have two names?</summary><p class="hint" data-i18n="spellingHint"></p></details><label class="check"><input id="allNotes" type="checkbox"><span data-i18n="showAll">Show notes outside the scale</span></label><p class="hint" data-i18n="outsideHint">Other notes appear faded so the selected scale stays easy to see.</p></div><div class="dialog-footer"><button type="button" class="primary" data-close data-i18n="done">Done</button></div></dialog>
-<dialog id="export-dialog" aria-labelledby="export-heading"><div class="dialog-header"><div><p class="eyebrow">PDF</p><h2 id="export-heading" data-i18n="pdf">Download PDF</h2></div><button type="button" class="close-dialog" data-close aria-label="Close"><span aria-hidden="true">×</span></button></div><div class="dialog-body"><p id="export-configuration" class="export-configuration"></p><p class="hint" data-i18n="exportStyle"></p><label><span data-i18n="scope">PDF contents</span><select id="scope"><option value="selected" data-i18n="selected">Selected scale</option><option value="family" data-i18n="familyScope">Current family</option><option value="catalog" data-i18n="catalogScope">Full named catalog</option></select></label><label class="check" id="all-keys-control"><input type="checkbox" id="all-keys"><span data-i18n="allKeys">Include all 12 keys</span></label><p class="hint" id="export-keys-hint" hidden data-i18n="currentKeyExport">Family and catalog PDFs use the current root note.</p><p class="export-estimate" id="export-estimate" role="status" aria-live="polite"></p><p id="export-status" class="hint" role="status" aria-live="polite"></p></div><div class="dialog-footer export-footer"><button class="primary" id="export" type="button" data-i18n="pdf">Download PDF</button><button id="cancel-export" type="button" class="secondary" hidden data-i18n="cancel">Cancel export</button></div></dialog>
-<footer class="site-footer"><img src="./assets/marques-and-co.svg" alt="Marques & Co." width="120" height="17"><p data-i18n="license"></p><a href="https://github.com/lucasmkrx/scales" data-i18n="source">Source &amp; contributions</a></footer><noscript><p>This interactive explorer needs JavaScript. The guided PDFs are available in the repository's public/guides folder.</p></noscript><script type="module" src="./src/app.mjs"></script></body></html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#20343f" />
+    <meta
+      name="description"
+      content="Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, playback, and printable PDFs in English and Portuguese."
+    />
+    <title>Scales · Notes, scales, and improvisation</title>
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#explorer" data-i18n="skip">Skip to fretboard</a>
+    <div class="spectrum" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="wordmark" href="./"
+        >Scales<span class="edition">by Marques &amp; Co.</span></a
+      >
+      <div class="header-actions">
+        <a href="#books" data-i18n="downloads">The guided books</a
+        ><label class="language"
+          ><span class="sr-only" data-i18n="language">Language</span
+          ><select id="language">
+            <option value="en" lang="en-US">🇺🇸 English</option>
+            <option value="pt" lang="pt-BR">🇧🇷 Português</option>
+          </select></label
+        ><a
+          href="https://github.com/lucasmkrx/scales"
+          class="source-link"
+          aria-label="GitHub repository"
+          >GitHub ↗</a
+        >
+      </div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow" data-i18n="guitarBass">GUITAR &amp; BASS</p>
+          <h1 data-i18n="title">Explore the fretboard</h1>
+          <p data-i18n="subtitle">
+            Notes, scales, and improvisation for the instrument in your hands.
+          </p>
+        </div>
+        <div class="catalog-stats" id="stats"></div>
+      </section>
+      <section class="instrument-summary" aria-label="Current instrument">
+        <div>
+          <p class="eyebrow" data-i18n="yourInstrument">Your instrument</p>
+          <p id="instrument-summary"></p>
+        </div>
+        <button
+          type="button"
+          class="secondary"
+          id="edit-instrument"
+          data-open="instrument-dialog"
+          aria-haspopup="dialog"
+          data-i18n="editInstrument"
+        >
+          Edit instrument
+        </button>
+      </section>
+      <div class="content" id="explorer" tabindex="-1">
+        <section class="panel scale-panel">
+          <div class="music-controls">
+            <label class="root-control"
+              ><span data-i18n="root">Root note</span
+              ><select id="root" aria-describedby="root-hint"></select
+            ></label>
+            <div class="scale-control">
+              <span class="control-label" id="scale-control-label" data-i18n="scale"
+                >Scale or arpeggio</span
+              ><button
+                type="button"
+                class="picker-trigger"
+                id="choose-scale"
+                data-open="scale-dialog"
+                aria-haspopup="dialog"
+                aria-labelledby="scale-control-label scale-value"
+              >
+                <span id="scale-value"></span><span aria-hidden="true">⌄</span>
+              </button>
+            </div>
+            <div class="toolbar">
+              <button type="button" class="secondary" id="play" data-i18n="play">
+                Play scale</button
+              ><button type="button" class="icon-button" id="share" data-i18n="share">
+                Copy link</button
+              ><button
+                type="button"
+                class="primary"
+                id="open-export"
+                data-open="export-dialog"
+                aria-haspopup="dialog"
+                data-i18n="pdf"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+          <p id="root-hint" class="hint" data-i18n="rootHint">
+            The root is the scale’s home note. Choose it together with a scale.
+          </p>
+          <div class="sr-only">
+            <p id="family-label"></p>
+            <h2 id="scale-title"></h2>
+          </div>
+          <div class="notes-strip" id="notes-strip"></div>
+          <div class="board-toolbar">
+            <fieldset class="segmented" id="labels">
+              <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
+              <label
+                ><input type="radio" name="labels" value="notes" checked /><span
+                  data-i18n="notes"
+                  >Notes</span
+                ></label
+              ><label
+                ><input type="radio" name="labels" value="degrees" /><span
+                  data-i18n="degrees"
+                  >Degrees</span
+                ></label
+              >
+            </fieldset>
+            <button
+              type="button"
+              class="secondary"
+              id="open-display"
+              data-open="display-dialog"
+              aria-haspopup="dialog"
+            >
+              <span data-i18n="display">Display</span> <span aria-hidden="true">⌄</span>
+            </button>
+          </div>
+          <p id="degrees-hint" class="hint" hidden data-i18n="degreesHint">
+            1 is the root. Other numbers describe each note’s place in the scale.
+          </p>
+          <div class="tuning-description" id="tuning-description"></div>
+          <div class="board-scroll" id="board"></div>
+          <div class="board-foot">
+            <span id="orientation"></span><span data-i18n="scrollHint"></span>
+          </div>
+          <p class="hint" data-i18n="playHint"></p>
+          <p class="legend" data-i18n="legend"></p>
+        </section>
+        <section class="positions-section">
+          <div class="section-heading">
+            <h2 data-i18n="positions">Explore nearby positions</h2>
+            <p data-i18n="positionHint"></p>
+          </div>
+          <div class="positions" id="positions"></div>
+        </section>
+        <section class="panel practice">
+          <p class="eyebrow">01 / 02 / 03</p>
+          <h2 data-i18n="practice">Turn the map into music</h2>
+          <ol>
+            <li data-i18n="practice1"></li>
+            <li data-i18n="practice2"></li>
+            <li data-i18n="practice3"></li>
+          </ol>
+        </section>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+      <section class="books" id="books">
+        <div class="section-heading">
+          <h2 data-i18n="downloads">The guided books</h2>
+          <p data-i18n="downloadIntro"></p>
+          <p class="configuration-caption" id="books-configuration"></p>
+        </div>
+        <div id="books-grid" class="books-grid"></div>
+      </section>
+    </main>
+    <dialog id="instrument-dialog" aria-labelledby="instrument-heading">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow" data-i18n="setup">Setup</p>
+          <h2 id="instrument-heading" data-i18n="yourInstrument">Your instrument</h2>
+        </div>
+        <button type="button" class="close-dialog" data-close aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <form id="instrument-form">
+          <fieldset class="segmented instrument-toggle" id="instrument">
+            <legend class="sr-only" data-i18n="instrument">Instrument</legend>
+            <label
+              ><input type="radio" name="instrument" value="guitar" checked /><span
+                data-i18n="guitar"
+                >Guitar</span
+              ></label
+            ><label
+              ><input type="radio" name="instrument" value="bass" /><span data-i18n="bass"
+                >Bass</span
+              ></label
+            >
+          </fieldset>
+          <div class="two-columns">
+            <label
+              ><span data-i18n="strings">Strings</span
+              ><select id="strings"></select></label
+            ><label
+              ><span data-i18n="hand">Handedness</span
+              ><select id="hand">
+                <option value="right" data-i18n="right">Right-handed</option>
+                <option value="left" data-i18n="left">Left-handed</option>
+              </select></label
+            >
+          </div>
+          <label
+            ><span data-i18n="tuning">Tuning</span
+            ><select id="tuning"></select
+          ></label>
+          <p id="preset-notes" class="tuning-preview"></p>
+          <p id="setup-status" class="hint" role="status" aria-live="polite"></p>
+          <div id="custom-tuning" class="editor" hidden>
+            <p class="control-label" data-i18n="customTuning">
+              Open-string pitches, low to high
+            </p>
+            <p class="hint" data-i18n="tuningFieldsHint">
+              One pitch per string, lowest to highest. The number is the octave (for
+              example, E2).
+            </p>
+            <div id="tuning-fields" class="tuning-fields"></div>
+            <p id="tuning-error" class="hint error" role="alert"></p>
+            <div class="editor-actions">
+              <button
+                type="button"
+                class="secondary"
+                id="apply-tuning"
+                data-i18n="applyTuning"
+              >
+                Apply tuning</button
+              ><button
+                type="button"
+                class="text-button"
+                id="cancel-tuning"
+                data-i18n="cancelEdit"
+              >
+                Cancel edit
+              </button>
+            </div>
+          </div>
+          <label class="frets-control"
+            ><span data-i18n="frets">Frets</span
+            ><select id="frets">
+              <option>20</option>
+              <option>21</option>
+              <option>22</option>
+              <option>24</option>
+            </select></label
+          >
+          <p class="hint" data-i18n="setupHint">
+            Your setup is remembered on this device. Shared links take priority.
+          </p>
+        </form>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="primary" data-close data-i18n="done">Done</button>
+      </div>
+    </dialog>
+    <dialog id="scale-dialog" class="scale-dialog" aria-labelledby="scale-heading">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow" data-i18n="explore">Explore</p>
+          <h2 id="scale-heading" data-i18n="chooseScale">Choose a scale</h2>
+        </div>
+        <button type="button" class="close-dialog" data-close aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="scale-selection" class="selection-summary"></p>
+        <label class="scale-search"
+          ><span data-i18n="search">Find a scale</span
+          ><input
+            id="search"
+            type="search"
+            autocomplete="off"
+            aria-describedby="search-hint"
+            aria-controls="scale-results"
+        /></label>
+        <p id="search-hint" class="hint" data-i18n="searchHint"></p>
+        <div
+          class="scale-tabs"
+          id="scale-tabs"
+          role="group"
+          aria-label="Scale collections"
+        >
+          <button type="button" data-view="common" data-i18n="common">Common</button
+          ><button type="button" data-view="all" data-i18n="allScales">All scales</button
+          ><button type="button" data-view="arpeggios" data-i18n="arpeggios">
+            Arpeggios
+          </button>
+        </div>
+        <p id="scale-results-count" class="hint" role="status" aria-live="polite"></p>
+        <div
+          id="scale-results"
+          class="scale-results"
+          role="group"
+          aria-label="Scale choices"
+        ></div>
+        <details class="advanced-scale" id="advanced-scale">
+          <summary data-i18n="advancedScale">Advanced · custom scale</summary>
+          <div id="custom-scale" class="editor">
+            <label
+              ><span data-i18n="customScale">Scale degrees</span
+              ><input
+                id="formula-input"
+                value="1 2 b3 4 5 b6 b7"
+                autocomplete="off"
+                aria-describedby="formula-hint formula-error"
+            /></label>
+            <p id="formula-hint" class="hint" data-i18n="formulaHint"></p>
+            <p id="formula-error" class="hint error" role="alert"></p>
+            <button
+              type="button"
+              class="secondary"
+              id="apply-scale"
+              data-i18n="applyScale"
+            >
+              Use custom scale
+            </button>
+          </div>
+        </details>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="secondary" data-close data-i18n="close">
+          Close
+        </button>
+      </div>
+    </dialog>
+    <dialog id="display-dialog" aria-labelledby="display-heading">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow" data-i18n="fretboard">Fretboard</p>
+          <h2 id="display-heading" data-i18n="display">Display</h2>
+        </div>
+        <button type="button" class="close-dialog" data-close aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <label
+          ><span data-i18n="spelling">Note spelling</span
+          ><select id="spelling">
+            <option value="both" data-i18n="both">Both</option>
+            <option value="sharp" data-i18n="sharp">Sharps</option>
+            <option value="flat" data-i18n="flat">Flats</option>
+          </select></label
+        >
+        <details class="inline-help">
+          <summary data-i18n="spellingHelp">Why do some notes have two names?</summary>
+          <p class="hint" data-i18n="spellingHint"></p>
+        </details>
+        <label class="check"
+          ><input id="allNotes" type="checkbox" /><span data-i18n="showAll"
+            >Show notes outside the scale</span
+          ></label
+        >
+        <p class="hint" data-i18n="outsideHint">
+          Other notes appear faded so the selected scale stays easy to see.
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="primary" data-close data-i18n="done">Done</button>
+      </div>
+    </dialog>
+    <dialog id="export-dialog" aria-labelledby="export-heading">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">PDF</p>
+          <h2 id="export-heading" data-i18n="pdf">Download PDF</h2>
+        </div>
+        <button type="button" class="close-dialog" data-close aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="export-configuration" class="export-configuration"></p>
+        <p class="hint" data-i18n="exportStyle"></p>
+        <label
+          ><span data-i18n="scope">PDF contents</span
+          ><select id="scope">
+            <option value="selected" data-i18n="selected">Selected scale</option>
+            <option value="family" data-i18n="familyScope">Current family</option>
+            <option value="catalog" data-i18n="catalogScope">Full named catalog</option>
+          </select></label
+        ><label class="check" id="all-keys-control"
+          ><input type="checkbox" id="all-keys" /><span data-i18n="allKeys"
+            >Include all 12 keys</span
+          ></label
+        >
+        <p class="hint" id="export-keys-hint" hidden data-i18n="currentKeyExport">
+          Family and catalog PDFs use the current root note.
+        </p>
+        <p
+          class="export-estimate"
+          id="export-estimate"
+          role="status"
+          aria-live="polite"
+        ></p>
+        <p id="export-status" class="hint" role="status" aria-live="polite"></p>
+      </div>
+      <div class="dialog-footer export-footer">
+        <button class="primary" id="export" type="button" data-i18n="pdf">
+          Download PDF</button
+        ><button
+          id="cancel-export"
+          type="button"
+          class="secondary"
+          hidden
+          data-i18n="cancel"
+        >
+          Cancel export
+        </button>
+      </div>
+    </dialog>
+    <footer class="site-footer">
+      <img
+        src="./assets/marques-and-co.svg"
+        alt="Marques & Co."
+        width="120"
+        height="17"
+      />
+      <p data-i18n="license"></p>
+      <a href="https://github.com/lucasmkrx/scales" data-i18n="source"
+        >Source &amp; contributions</a
+      >
+    </footer>
+    <noscript
+      ><p>
+        This interactive explorer needs JavaScript. The guided PDFs are available in the
+        repository's public/guides folder.
+      </p></noscript
+    >
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>
