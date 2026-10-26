@@ -1,14 +1,19 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {SCALES,TUNINGS,parseFormula,parseNote,parseTuning,selection,spellScale,boardModel,layoutBoard,normalizeState,scaleMidiSequence,sharedState} from '../src/music.mjs';import {mode} from '../src/catalog.mjs';
+import {SCALES,TUNINGS,parseFormula,parseNote,parseTuning,selection,spellScale,boardModel,layoutBoard,normalizeState,scaleMidiSequence,sharedState,noteName,midiName} from '../src/music.mjs';import {mode} from '../src/catalog.mjs';
 test('every named scale has unique ascending intervals consistent with its degree formula',()=>{
  assert.equal(new Set(SCALES.map(s=>s.id)).size,SCALES.length);
  for(const scale of SCALES){assert.deepEqual(parseFormula(scale.formula.join(' ')).intervals,scale.intervals,scale.id);assert.equal(scale.intervals[0],0);assert.equal(new Set(scale.intervals).size,scale.intervals.length);}
 });
 test('modes are rotated interval structures, not merely renamed roots',()=>{assert.deepEqual(mode([0,2,4,5,7,9,11],1),[0,2,3,5,7,9,10]);assert.deepEqual(mode([0,2,3,5,7,8,11],4),[0,1,4,5,7,8,10]);});
-test('enharmonic spelling preserves scale degrees including E-sharp and C-flat',()=>{
- assert.deepEqual(spellScale(selection({root:6,spelling:'auto',scale:'major'})),['F♯','G♯','A♯','B','C♯','D♯','E♯']);
- assert.deepEqual(spellScale(selection({root:8,spelling:'auto',scale:'natural-minor'})),['A♭','B♭','C♭','D♭','E♭','F♭','G♭']);
- for(const s of SCALES)for(let root=0;root<12;root++){const state=selection({scale:s.id,root});spellScale(state).forEach((n,i)=>assert.equal(parseNote(`${n}4`)%12,(root+s.intervals[i])%12,`${s.id} ${root} ${n}`));}
+test('Both labels name the same sounding pitch in every scale and key',()=>{
+ assert.equal(noteName(1,'both'),'C♯/D♭');assert.equal(noteName(0,'both'),'C');
+ for(const scale of SCALES)for(let root=0;root<12;root++){
+  const state=selection({scale:scale.id,root});
+  spellScale(state).forEach((name,i)=>{
+   for(const alternative of name.split('/'))assert.equal(parseNote(`${alternative}4`)%12,(root+scale.intervals[i])%12);
+  });
+ }
+ for(let midi=0;midi<128;midi++)for(const name of midiName(midi,'both').split('/'))assert.equal(parseNote(name),midi);
 });
 test('standard, drop, and extended-range tuning pitches include their real octaves',()=>{
  const get=id=>TUNINGS.find(t=>t.id===id).notes;
@@ -64,8 +69,9 @@ test('fret defaults follow the instrument while explicit selections and shared l
 });
 
 
-test('explicit spelling changes all note names while automatic retains scale-degree spelling',()=>{
- assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'auto'}),['C','D','E♭','F','G','A♭','B♭']);
+test('Both is the default and legacy Automatic links migrate without changing pitches',()=>{
+ assert.equal(normalizeState().spelling,'both');assert.equal(normalizeState({spelling:'auto'}).spelling,'both');
+ assert.deepEqual(spellScale({root:0,scale:'natural-minor'}),['C','D','D♯/E♭','F','G','G♯/A♭','A♯/B♭']);
  assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'sharp'}),['C','D','D♯','F','G','G♯','A♯']);
  assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'flat'}),['C','D','E♭','F','G','A♭','B♭']);
  for(const scale of SCALES)for(let root=0;root<12;root++)for(const spelling of ['sharp','flat']){
@@ -81,6 +87,8 @@ test('spelling changes labels but preserves pitches, degrees, colors, geometry, 
  assert.equal(sharp.points.find(n=>n.pc===3).name,'D♯');assert.equal(flat.points.find(n=>n.pc===3).name,'E♭');
  assert.equal(sharp.points.find(n=>n.pc===1).name,'C♯');assert.equal(flat.points.find(n=>n.pc===1).name,'D♭');
  assert.deepEqual(sharp.points.map(({name,...note})=>note),flat.points.map(({name,...note})=>note));
+ const both=boardModel({...input,spelling:'both'});assert.deepEqual(sharp.points.map(({name,...note})=>note),both.points.map(({name,...note})=>note));
+ assert.equal(both.points.length,sharp.points.length);assert.equal(both.points.find(n=>n.pc===3).name,'D♯/E♭');
  assert.deepEqual(scaleMidiSequence({...input,spelling:'sharp'}),scaleMidiSequence({...input,spelling:'flat'}));
  assert.equal(normalizeState(Object.fromEntries(new URLSearchParams(sharedState({...input,spelling:'flat'})))).spelling,'flat');
 });
