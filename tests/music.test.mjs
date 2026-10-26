@@ -6,8 +6,8 @@ test('every named scale has unique ascending intervals consistent with its degre
 });
 test('modes are rotated interval structures, not merely renamed roots',()=>{assert.deepEqual(mode([0,2,4,5,7,9,11],1),[0,2,3,5,7,9,10]);assert.deepEqual(mode([0,2,3,5,7,8,11],4),[0,1,4,5,7,8,10]);});
 test('enharmonic spelling preserves scale degrees including E-sharp and C-flat',()=>{
- assert.deepEqual(spellScale(selection({root:6,spelling:'sharp',scale:'major'})),['F♯','G♯','A♯','B','C♯','D♯','E♯']);
- assert.deepEqual(spellScale(selection({root:8,spelling:'flat',scale:'natural-minor'})),['A♭','B♭','C♭','D♭','E♭','F♭','G♭']);
+ assert.deepEqual(spellScale(selection({root:6,spelling:'auto',scale:'major'})),['F♯','G♯','A♯','B','C♯','D♯','E♯']);
+ assert.deepEqual(spellScale(selection({root:8,spelling:'auto',scale:'natural-minor'})),['A♭','B♭','C♭','D♭','E♭','F♭','G♭']);
  for(const s of SCALES)for(let root=0;root<12;root++){const state=selection({scale:s.id,root});spellScale(state).forEach((n,i)=>assert.equal(parseNote(`${n}4`)%12,(root+s.intervals[i])%12,`${s.id} ${root} ${n}`));}
 });
 test('standard, drop, and extended-range tuning pitches include their real octaves',()=>{
@@ -61,4 +61,26 @@ test('fret defaults follow the instrument while explicit selections and shared l
  }
  assert.equal(normalizeState({instrument:'guitar',frets:'invalid'}).frets,21);
  assert.equal(normalizeState({instrument:'bass',frets:'invalid'}).frets,20);
+});
+
+
+test('explicit spelling changes all note names while automatic retains scale-degree spelling',()=>{
+ assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'auto'}),['C','D','E♭','F','G','A♭','B♭']);
+ assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'sharp'}),['C','D','D♯','F','G','G♯','A♯']);
+ assert.deepEqual(spellScale({root:0,scale:'natural-minor',spelling:'flat'}),['C','D','E♭','F','G','A♭','B♭']);
+ for(const scale of SCALES)for(let root=0;root<12;root++)for(const spelling of ['sharp','flat']){
+  const s=selection({scale:scale.id,root,spelling});spellScale(s).forEach((name,i)=>{
+   assert.equal(parseNote(`${name}4`)%12,(root+scale.intervals[i])%12);
+   assert.ok(!name.includes(spelling==='sharp'?'♭':'♯'));
+  });
+ }
+});
+test('spelling changes labels but preserves pitches, degrees, colors, geometry, and playback',()=>{
+ const input={instrument:'bass',root:0,scale:'natural-minor',allNotes:true};
+ const sharp=boardModel({...input,spelling:'sharp'}),flat=boardModel({...input,spelling:'flat'});
+ assert.equal(sharp.points.find(n=>n.pc===3).name,'D♯');assert.equal(flat.points.find(n=>n.pc===3).name,'E♭');
+ assert.equal(sharp.points.find(n=>n.pc===1).name,'C♯');assert.equal(flat.points.find(n=>n.pc===1).name,'D♭');
+ assert.deepEqual(sharp.points.map(({name,...note})=>note),flat.points.map(({name,...note})=>note));
+ assert.deepEqual(scaleMidiSequence({...input,spelling:'sharp'}),scaleMidiSequence({...input,spelling:'flat'}));
+ assert.equal(normalizeState(Object.fromEntries(new URLSearchParams(sharedState({...input,spelling:'flat'})))).spelling,'flat');
 });

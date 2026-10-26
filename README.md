@@ -72,9 +72,12 @@ in time.** Position windows show available notes, not a prescribed fingering or
 a universal CAGED shape; shapes change with the tuning.
 
 The generator derives every note from `open-string pitch + fret`. It never
-relabels a standard-tuning image to simulate another tuning. Seven-note scales
-and explicitly supplied formulas retain their diatonic letter spellings,
-including enharmonic forms such as E♯ and C♭.
+relabels a standard-tuning image to simulate another tuning. Automatic spelling
+retains the degree-based letter names of seven-note scales
+and explicitly supplied formulas, including E♯ and C♭. The Sharps and Flats
+settings instead show equivalent pitch names consistently across note strips,
+fretboards, open-string labels, and PDF exports. Pitches, colors, and degrees
+stay the same.
 
 ## Deploy
 

@@ -1,4 +1,4 @@
-import {selection,boardModel,rootName,spellScale,midiName,prettyDegree,fretFill,PALETTE,SCALES,mod} from './music.mjs';
+import {selection,boardModel,rootName,spellScale,midiName,prettyDegree,fretFill,PALETTE,SCALES,mod,pitchPreference} from './music.mjs';
 import {FAMILIES} from './catalog.mjs';
 import {guideBoardLayout,guitarWindows,bassRoute,guidePlan} from './guide-layout.mjs';
 import {copy} from './i18n.mjs';
@@ -46,7 +46,7 @@ export async function createAtlas(input,{scope='selected',allKeys=false,asset,pr
  }
  const instrument=s=>t[s.instrument],hand=s=>t[s.hand];
  const tuningName=s=>pt?s.tuningData.name.replace('standard','padrão'):s.tuningData.name;
- const pitches=(s,octaves=false)=>s.tuningData.notes.map(m=>midiName(m,s.tuningData.preferred).replace(octaves?/$^/:/-?\d+$/,'')).join(' - ');
+ const pitches=(s,octaves=false)=>s.tuningData.notes.map(m=>midiName(m,pitchPreference(s)).replace(octaves?/$^/:/-?\d+$/,'')).join(' - ');
  function footer(page,n,caption=t.oneFret){
   text(page,M,566,caption,6.8,body,muted,620);
   text(page,R,566,`${String(n).padStart(2,'0')} / ${String(pages.length).padStart(2,'0')}`,7.1,body,muted,undefined,'right');
@@ -73,7 +73,7 @@ export async function createAtlas(input,{scope='selected',allKeys=false,asset,pr
    const stroke=color('#94a5af'),thickness=miniature?.3:small?.45+row*.05:.5+row*.07;
    if(!small)line(page,l.left,l.stringY(row,l.left),l.nut,l.stringY(row,l.nut),stroke,thickness);
    line(page,!small?l.nut:l.left,l.stringY(row,!small?l.nut:l.left),l.end,l.stringY(row,l.end),stroke,thickness);
-   const name=midiName(m,state.tuningData.preferred).replace(/-?\d+$/,'');
+   const name=midiName(m,pitchPreference(state)).replace(/-?\d+$/,'');
    if(!miniature){
     if(small)text(page,l.labelX,l.y(row,lo)+2,name,5.8,body,ink,14,'center');
     else{text(page,l.labelX,l.y(row,0)-2,row+1,9.4,bold,ink,undefined,'center');text(page,l.labelX,l.y(row,0)+9,name,6.7,body,ink,30,'center');}
@@ -152,12 +152,12 @@ export async function createAtlas(input,{scope='selected',allKeys=false,asset,pr
   const columns=[
    [tr('Read the neck','Leia o braço'),[
     initial.hand==='left'?tr('The nut is on the right. Frets and pitches increase toward the left. Fret 0 is an open string.','A pestana fica à direita. As casas e os sons ficam mais agudos para a esquerda. A casa 0 é a corda solta.'):tr('The nut is on the left. Frets and pitches increase toward the right. Fret 0 is an open string.','A pestana fica à esquerda. As casas e os sons ficam mais agudos para a direita. A casa 0 é a corda solta.'),
-    tr(`Top to bottom: ${[...initial.tuningData.notes].reverse().map(m=>midiName(m,initial.tuningData.preferred).replace(/-?\d+$/,'')).join(', ')}. String 1 is the highest-pitched string. The bottom line is the lowest.`,`De cima para baixo: ${[...initial.tuningData.notes].reverse().map(m=>midiName(m,initial.tuningData.preferred).replace(/-?\d+$/,'')).join(', ')}. A corda 1 é a mais aguda; a linha de baixo é a mais grave.`),
+    tr(`Top to bottom: ${[...initial.tuningData.notes].reverse().map(m=>midiName(m,pitchPreference(initial)).replace(/-?\d+$/,'')).join(', ')}. String 1 is the highest-pitched string. The bottom line is the lowest.`,`De cima para baixo: ${[...initial.tuningData.notes].reverse().map(m=>midiName(m,pitchPreference(initial)).replace(/-?\d+$/,'')).join(', ')}. A corda 1 é a mais aguda; a linha de baixo é a mais grave.`),
     tr('One fret raises the pitch a half step. The dots mark fret positions; the double dot marks an octave at fret 12.','Uma casa sobe um semitom. Os pontos marcam posições; o ponto duplo indica uma oitava na casa 12.')]],
    [tr('Read the symbols','Leia os símbolos'),[
     tr('Each pitch keeps its color, even with another spelling. Pitches between the natural-note colors use white circles. The black ring marks the tonic or chord root.','Cada som mantém sua cor, mesmo com outra grafia. Os sons entre as notas naturais usam círculos brancos. O anel preto marca a tônica ou fundamental do acorde.'),
     tr('R marks a root on the small maps. Degrees such as 1, 2, and ♭3 are intervals from the root, not fingers. ♯ means sharp; ♭ means flat.','T marca a tônica nos mapas pequenos. Graus como 1, 2 e ♭3 são intervalos a partir da tônica, não dedos. ♯ indica sustenido; ♭ indica bemol.'),
-    tr('Letter names: A B C D E F G. The note strip on every map gives the exact spelling and degrees of the selection.','A = Lá, B = Si, C = Dó, D = Ré, E = Mi, F = Fá, G = Sol. A faixa de notas mostra a grafia e os graus da seleção.')]],
+    tr('The note strip pairs names and degrees. Automatic follows scale spelling; Sharps and Flats display equivalent pitch names.','A = Lá, B = Si, C = Dó, D = Ré, E = Mi, F = Fá, G = Sol. A grafia automática segue os graus; sustenidos e bemóis mostram nomes equivalentes.')]],
    [tr('Use the maps','Use os mapas'),[
     initial.instrument==='bass'?tr('The full map shows every scale or chord tone. Small maps give ascending octave routes from the two lowest strings. Follow the degrees, then reverse. If an octave is out of reach in your tuning, a nearby note map takes its place.','O mapa completo mostra todas as notas da escala ou acorde. As rotas pequenas sobem uma oitava a partir das duas cordas graves. Siga os graus e volte. Se a afinação não permitir uma oitava, aparece um mapa de notas próximas.'):tr('The full map shows every scale or chord tone. The five smaller maps show all available notes in each fret range. They are position references, not prescribed fingerings or universal chord shapes.','O mapa completo mostra todas as notas da escala ou acorde. Os cinco mapas pequenos mostram as notas em cada região. São referências de posição, não digitações obrigatórias nem formas universais de acordes.'),
     tr('TAB still reads left to right in time. Changing the tuning changes the shapes; the notes here are calculated for your selected tuning.','A TAB continua sendo lida da esquerda para a direita no tempo. Mudar a afinação muda os desenhos; aqui, as notas são calculadas para a afinação escolhida.'),
@@ -196,7 +196,7 @@ export async function createAtlas(input,{scope='selected',allKeys=false,asset,pr
   }else{
    const lower=s.strings>4?13:0;let complete=true;
    for(const [i,row] of [s.strings-1,s.strings-2].entries()){
-    const route=bassRoute(s,row),x=M+i*260,name=midiName(s.tuningData.notes[s.strings-row-1],s.tuningData.preferred).replace(/-?\d+$/,'');
+    const route=bassRoute(s,row),x=M+i*260,name=midiName(s.tuningData.notes[s.strings-row-1],pitchPreference(s)).replace(/-?\d+$/,'');
     text(page,x,347+lower,tr(`Root on string ${row+1} · ${name}`,`Tônica na corda ${row+1} · ${name}`),10.3,bold,ink,245);
     const rootFret=mod(s.root-s.tuningData.notes[s.strings-row-1]);
     const range=route??{lo:Math.max(0,rootFret-2),hi:Math.min(s.frets,rootFret+2)};if(!route)complete=false;

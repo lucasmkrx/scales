@@ -42,14 +42,17 @@ export function normalizeState(input={}){
 }
 export function selection(input){const s=normalizeState(input);const tuning=s.tuning==='custom'?{id:'custom',name:s.lang==='pt'?'Personalizada':'Custom',notes:s.customNotes,instrument:s.instrument,strings:s.strings,preferred:'sharp'}:TUNINGS.find(t=>t.id===s.tuning);const scale=s.scale==='custom'?parseFormula(s.formula):SCALES.find(t=>t.id===s.scale);return {...s,tuningData:tuning,scaleData:scale};}
 export function rootName(state){const prefer=state.spelling==='auto'?([1,3,8,10].includes(state.root)?'flat':'sharp'):state.spelling;return noteName(state.root,prefer);}
+export function pitchPreference(input){const state=input.tuningData?input:selection(input);return state.spelling==='auto'?state.tuningData.preferred:state.spelling;}
 export function spellScale(input){
  const state=input.scaleData?input:selection(input);const scale=state.scaleData;const root=rootName(state);const letter=root[0];const letters=['C','D','E','F','G','A','B'];const natural=[0,2,4,5,7,9,11];
+ // Explicit display choices apply to every pitch; automatic retains degree-based spelling.
+ if(state.spelling!=='auto')return scale.intervals.map(interval=>noteName(state.root+interval,state.spelling));
  return scale.formula.map((degree,i)=>{const number=Number(degree.at(-1));const letterIndex=mod(letters.indexOf(letter)+number-1,7);const pitch=mod(state.root+scale.intervals[i]);let accidental=mod(pitch-natural[letterIndex]);if(accidental>6)accidental-=12;return letters[letterIndex]+(accidental<0?'♭'.repeat(-accidental):'♯'.repeat(accidental));});
 }
 export function fretFill(fret){if(fret===0)return '#eff3f5';if(fret%12===0)return '#dde6ed';if([3,5,7,9].includes(fret%12))return '#e8eef3';return fret>=12?'#f0f4f7':'#fafbfc';}
 export function boardModel(input,{lo=0,hi,all=false}={}){
  const s=selection(input);hi=hi??s.frets;const rows=[...s.tuningData.notes].reverse();const spellings=spellScale(s);const points=[];
- rows.forEach((open,row)=>{for(let fret=lo;fret<=hi;fret++){const midi=open+fret;const pc=mod(midi);const index=s.scaleData.intervals.indexOf(mod(pc-s.root));if(index<0&&!all&&!s.allNotes)continue;points.push({row,string:row+1,fret,midi,pc,root:pc===s.root,inScale:index>=0,name:index>=0?spellings[index]:noteName(pc,s.tuningData.preferred),degree:index>=0?prettyDegree(s.scaleData.formula[index]):'',fill:PALETTE[pc]??'#ffffff',lightText:[0,5,7,9,11].includes(pc),active:index>=0});}});
+ rows.forEach((open,row)=>{for(let fret=lo;fret<=hi;fret++){const midi=open+fret;const pc=mod(midi);const index=s.scaleData.intervals.indexOf(mod(pc-s.root));if(index<0&&!all&&!s.allNotes)continue;points.push({row,string:row+1,fret,midi,pc,root:pc===s.root,inScale:index>=0,name:index>=0?spellings[index]:noteName(pc,pitchPreference(s)),degree:index>=0?prettyDegree(s.scaleData.formula[index]):'',fill:PALETTE[pc]??'#ffffff',lightText:[0,5,7,9,11].includes(pc),active:index>=0});}});
  return {state:s,rows,lo,hi,points};
 }
 export function layoutBoard(model,{width=1100,height=270,small=false}={}){

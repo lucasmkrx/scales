@@ -1,4 +1,4 @@
-import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence,DEFAULT_FRETS} from './music.mjs';
+import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence,DEFAULT_FRETS,pitchPreference} from './music.mjs';
 import {scaleGroups,initialScaleView} from './scale-picker.mjs';
 import {FAMILIES} from './catalog.mjs';import {copy} from './i18n.mjs';import {boardSvg,escape} from './board.mjs';import {createAtlas} from './pdf.mjs';
 let state=normalizeState(Object.fromEntries(new URLSearchParams(location.search)));let view=initialScaleView(state.scale);let search='';let audio;let oscillators=[];let playTimer;let exporting;let pdfLibraries;
@@ -23,7 +23,7 @@ function bookCards(){const t=copy[state.lang];const guides=[
  $('books-grid').innerHTML=guides.map(([instrument,tuning,lang,hand,pages,file])=>`<article class="book"><p class="eyebrow">${t[lang]} · ${t[hand]}</p><h3>${t[instrument]}</h3><p>${tuning}<br>${pages} ${state.lang==='pt'?'páginas':'pages'} · A4</p><a href="./guides/${file}" download>${t.download} PDF ↗</a></article>`).join('');}
 function renderContent(){const s=selection(state),t=copy[state.lang],names=spellScale(s);$('family-label').textContent=FAMILIES[s.scaleData.family]?.[s.lang]??t.custom;$('scale-title').textContent=`${rootName(s)} ${s.scaleData.name[s.lang]}`;
  $('notes-strip').innerHTML=names.map((name,i)=>`<span class="note-chip"><span class="color-dot" style="background:${PALETTE[(s.root+s.scaleData.intervals[i])%12]??'#fff'}"></span>${escape(name)}<small>${prettyDegree(s.scaleData.formula[i])}</small></span>`).join('');
- $('tuning-description').innerHTML=`${t.openStrings}<strong>${s.tuningData.notes.map(m=>midiName(m,s.tuningData.preferred)).join(' - ')}</strong>`;$('orientation').textContent=s.hand==='left'?t.nutRight:t.nutLeft;$('board').innerHTML=boardSvg(s);$('board').scrollLeft=s.hand==='left'?$('board').scrollWidth-$('board').clientWidth:0;
+ $('tuning-description').innerHTML=`${t.openStrings}<strong>${s.tuningData.notes.map(m=>midiName(m,pitchPreference(s))).join(' - ')}</strong>`;$('orientation').textContent=s.hand==='left'?t.nutRight:t.nutLeft;$('board').innerHTML=boardSvg(s);$('board').scrollLeft=s.hand==='left'?$('board').scrollWidth-$('board').clientWidth:0;
  $('positions').innerHTML=[[0,4],[3,7],[5,9],[8,12]].map(([lo,hi])=>`<article class="position"><h3>${t.range} ${lo}-${hi}</h3>${boardSvg({...s,allNotes:false},{lo,hi,width:400,height:s.strings===7?190:170,small:true})}</article>`).join('');saveURL();}
 function render(){const t=copy[state.lang];document.documentElement.lang=state.lang==='pt'?'pt-BR':'en-US';document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t[el.dataset.i18n]??el.textContent;});$('language').value=state.lang;$('search').placeholder=t.searchPlaceholder;
  $('stats').innerHTML=`<strong>${SCALES.length}</strong> ${t.catalog}<br><strong>${TUNINGS.length}</strong> ${t.tunings}`;
@@ -32,7 +32,7 @@ function render(){const t=copy[state.lang];document.documentElement.lang=state.l
  $('tuning').innerHTML=options([...TUNINGS.filter(v=>v.instrument===state.instrument&&v.strings===state.strings).map(v=>[v.id,v.name]),['custom',t.custom]],state.tuning);
  $('root').innerHTML=options(Array.from({length:12},(_,i)=>[i,SHARPS[i]===FLATS[i]?SHARPS[i]:`${SHARPS[i]} / ${FLATS[i]}`]),state.root);
  $('allNotes').checked=state.allNotes;
- $('custom-tuning').hidden=state.tuning!=='custom';$('tuning-input').value=state.customTuning??'';$('tuning-input').placeholder=selection(state).tuningData.notes.map(m=>midiName(m)).join(' ');$('custom-scale').hidden=state.scale!=='custom';$('formula-input').value=state.formula??'1 2 b3 4 5 b6 b7';
+ $('custom-tuning').hidden=state.tuning!=='custom';$('tuning-input').value=state.customTuning??'';$('tuning-input').placeholder=selection(state).tuningData.notes.map(m=>midiName(m,pitchPreference(state))).join(' ');$('custom-scale').hidden=state.scale!=='custom';$('formula-input').value=state.formula??'1 2 b3 4 5 b6 b7';
  renderScalePicker();bookCards();renderContent();}
 function update(values){stopAudio();state=normalizeState({...state,...values});status('');render();}
 for(const id of ['instrument','strings','hand','frets','root','spelling','labels'])$(id).addEventListener('change',()=>update({[id]:$(id).value,...(id==='instrument'?{strings:$('instrument').value==='bass'?4:6,frets:DEFAULT_FRETS[$('instrument').value]}:{})}));
