@@ -1,5 +1,6 @@
 import {SCALES,TUNINGS,selection,normalizeState,rootName,spellScale,prettyDegree,midiName,PALETTE,SHARPS,FLATS,parseTuning,parseFormula,sharedState,scaleMidiSequence,DEFAULT_FRETS,pitchPreference} from './music.mjs';
 import {PluckedStringPlayer,STRING_SOUNDS} from './string-audio.mjs';
+import {matchingGuides} from './guides.mjs';
 import {scaleGroups,initialScaleView} from './scale-picker.mjs';
 import {FAMILIES} from './catalog.mjs';import {copy} from './i18n.mjs';import {boardSvg,escape} from './board.mjs';import {createAtlas} from './pdf.mjs';
 let state=normalizeState(Object.fromEntries(new URLSearchParams(location.search)));let view=initialScaleView(state.scale);let search='';let instrumentAudio;let playing=false;let playbackVersion=0;let playTimer;let exporting;let pdfLibraries;
@@ -18,10 +19,17 @@ function renderScalePicker(){
  $('scale-selection').textContent=`${t.currentScale}: ${rootName(state)} ${selected.name[state.lang]}`;
  $('create-scale').setAttribute('aria-expanded',String(!$('custom-scale').hidden));
 }
-function bookCards(){const t=copy[state.lang];const guides=[
- ['guitar','C♯ standard','pt','right',42,'guitar-c-sharp-right-pt.pdf'],['bass','Drop C','pt','right',32,'bass-drop-c-right-pt.pdf'],
- ['guitar','E standard','en','left',42,'guitar-standard-left-en.pdf'],['bass','E standard','en','left',32,'bass-standard-left-en.pdf']];
- $('books-grid').innerHTML=guides.filter(([, ,lang])=>lang===state.lang).map(([instrument,tuning,lang,hand,pages,file])=>`<article class="book"><p class="eyebrow">${t[lang]} · ${t[hand]}</p><h3>${t[instrument]}</h3><p>${tuning}<br>${pages} ${state.lang==='pt'?'páginas':'pages'} · A4</p><a href="./guides/${file}" download>${t.download} PDF ↗</a></article>`).join('');}
+function bookCards(){
+ const t=copy[state.lang],guides=matchingGuides(state);
+ $('books-grid').innerHTML=guides.length?guides.map(({instrument,strings,tuning,lang,hand,pages,file})=>{
+  const preset=TUNINGS.find(v=>v.id===tuning),name=state.lang==='pt'?preset.name.replace('standard','padrão'):preset.name;
+  return `<article class="book"><p class="eyebrow">${t[lang]} · ${t[hand]}</p><h3>${t[instrument]}</h3><p>${strings} ${t.strings.toLowerCase()} · ${escape(name)}<br>${pages} ${state.lang==='pt'?'páginas':'pages'} · A4</p><a href="./guides/${file}" download>${t.download} PDF ↗</a></article>`;
+ }).join(''):`<article class="book book-empty"><h3>${t.noMatchingBook}</h3><p>${t.bookExportHint}</p><button type="button" class="secondary" data-open-export>${t.openExport}</button></article>`;
+}
+$('books-grid').addEventListener('click',event=>{
+ if(!event.target.closest('[data-open-export]'))return;
+ $('settings-details').open=true;$('scope').focus({preventScroll:true});$('pdf-export').scrollIntoView({behavior:'smooth',block:'start'});
+});
 function renderContent(){const s=selection(state),t=copy[state.lang],names=spellScale(s);$('family-label').textContent=FAMILIES[s.scaleData.family]?.[s.lang]??t.custom;$('scale-title').textContent=`${rootName(s)} ${s.scaleData.name[s.lang]}`;
  $('notes-strip').innerHTML=names.map((name,i)=>`<span class="note-chip"><span class="color-dot" style="background:${PALETTE[(s.root+s.scaleData.intervals[i])%12]??'#fff'}"></span>${escape(name)}<small>${prettyDegree(s.scaleData.formula[i])}</small></span>`).join('');
  $('tuning-description').innerHTML=`${t.openStrings}<strong>${s.tuningData.notes.map(m=>midiName(m,pitchPreference(s))).join(' - ')}</strong>`;$('orientation').textContent=s.hand==='left'?t.nutRight:t.nutLeft;$('board').innerHTML=boardSvg(s);$('board').scrollLeft=s.hand==='left'?$('board').scrollWidth-$('board').clientWidth:0;

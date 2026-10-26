@@ -27,7 +27,8 @@ No account, backend, analytics, or external API is required.
   also be exported in all 12 keys. Downloads match the guided books: a light cover,
   clickable contents, reading instructions, and a full map with smaller positions
   and a note/degree legend on each scale page. Every page has discreet Marques & Co. branding.
-- Guided books are filtered by the selected page language.
+- Guided books match the selected language, instrument, string count, handedness,
+  and tuning. When no book matches, the section links to scale PDF export.
 - Four guided books from the original project, with eight applied-theory
   studies and six improvisation lessons each.
 

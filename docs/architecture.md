@@ -42,6 +42,10 @@ instrument sizes should receive dedicated interface and PDF layout checks.
 
 ## Guided books
 
+`src/guides.mjs` matches books by language, instrument, string count, handedness,
+and sounding open-string pitches, including equivalent custom tunings. An empty
+result links to scale export rather than showing a mismatched full course.
+
 `public/guides/` contains the four current books. They retain their original
 right/left handedness, language and tuning. Other combinations are available as
 generated scale atlases, not falsely labeled as newly rewritten full courses.
