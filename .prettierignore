@@ -1,0 +1,8 @@
+dist/
+work/
+output/
+node_modules/
+public/vendor/
+public/assets/
+public/guides/
+package-lock.json
