@@ -29,14 +29,15 @@ test('seven-string note circles retain separation in full and position maps',()=
  }
 });
 
-test('SVG open-string labels honor explicit spelling and tuning defaults in both layouts',()=>{
+test('SVG open-string labels show both names on one marker in either orientation',()=>{
  const state={instrument:'guitar',strings:6,tuning:'guitar-eb-standard',scale:'natural-minor',root:0};
  for(const hand of ['left','right'])for(const small of [false,true]){
   const sharp=boardSvg({...state,hand,spelling:'sharp'},{small});
   const flat=boardSvg({...state,hand,spelling:'flat'},{small});
-  const auto=boardSvg({...state,hand,spelling:'auto'},{small});
+  const both=boardSvg({...state,hand,spelling:'both'},{small});
   assert.match(sharp,/>D♯<\/text>/);assert.doesNotMatch(sharp,/>E♭<\/text>/);
   assert.match(flat,/>E♭<\/text>/);assert.doesNotMatch(flat,/>D♯<\/text>/);
-  assert.match(auto,/>E♭<\/text>/);
+  assert.match(both,/>E♭<\/text>/);assert.match(both,/>D♯<\/text>/);
+  assert.equal([...both.matchAll(/<g class="note /g)].length,[...sharp.matchAll(/<g class="note /g)].length);
  }
 });

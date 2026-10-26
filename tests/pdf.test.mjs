@@ -6,7 +6,7 @@ import {createAtlas} from '../src/pdf.mjs';
 for(const name of ['pdf-lib.min.js','fontkit.umd.min.js'])runInThisContext(await readFile(new URL(`../public/vendor/${name}`,import.meta.url),'utf8'),{filename:name});
 const asset=async path=>new Uint8Array(await readFile(new URL(`../public/${path}`,import.meta.url)));
 test('downloaded guides embed the book fonts and link the contents to real pages',async()=>{
- for(const state of [{instrument:'bass',strings:4,hand:'left',root:0,scale:'natural-minor',spelling:'sharp',lang:'en'},{instrument:'guitar',strings:7,tuning:'guitar-7-drop-a',root:6,lang:'pt',scale:'harmonic-minor',spelling:'flat'},{instrument:'bass',strings:4,tuning:'custom',customTuning:'C0 C4 C5 C6',frets:20,root:11,lang:'en',scale:'major'}]){
+ for(const state of [{instrument:'bass',strings:4,hand:'left',root:0,scale:'natural-minor',spelling:'sharp',lang:'en'},{instrument:'guitar',strings:7,tuning:'guitar-7-drop-a',root:6,lang:'pt',scale:'harmonic-minor',spelling:'both'},{instrument:'bass',strings:4,tuning:'custom',customTuning:'C0 C4 C5 C6',frets:20,root:11,lang:'en',scale:'major'}]){
   const bytes=await createAtlas(state,{asset}),doc=await PDFLib.PDFDocument.load(bytes);
   assert.equal(doc.getPageCount(),3);assert.deepEqual(doc.getPage(2).getSize(),{width:841.89,height:595.28});
   assert.equal(doc.catalog.get(PDFLib.PDFName.of('Lang')).decodeText(),state.lang==='pt'?'pt-BR':'en-US');

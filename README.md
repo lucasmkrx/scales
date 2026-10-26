@@ -19,7 +19,7 @@ No account, backend, analytics, or external API is required.
 - Custom tuning pitches with real octave numbers, and custom scale formulas.
 - Right- and left-handed neck maps, with 20, 21, 22, or 24 frets.
 - American English and Brazilian Portuguese.
-- Contextual note spelling, degrees, roots, and the original seven-note color palette.
+- Both, sharp, or flat note labels, degrees, roots, and the original seven-note color palette.
 - Click or keyboard-activate a note to hear it; play an ascending/descending scale.
 - Shareable URLs containing the full configuration.
 - Vector PDF atlases for a scale, family, or full catalog; selected scales can
@@ -72,12 +72,12 @@ in time.** Position windows show available notes, not a prescribed fingering or
 a universal CAGED shape; shapes change with the tuning.
 
 The generator derives every note from `open-string pitch + fret`. It never
-relabels a standard-tuning image to simulate another tuning. Automatic spelling
-retains the degree-based letter names of seven-note scales
-and explicitly supplied formulas, including E♯ and C♭. The Sharps and Flats
-settings instead show equivalent pitch names consistently across note strips,
-fretboards, open-string labels, and PDF exports. Pitches, colors, and degrees
-stay the same.
+relabels a standard-tuning image to simulate another tuning. Both spelling is the default: notes such as C♯/D♭ share a single marker and
+sound. Natural notes have one label. Sharps and Flats show just the chosen
+spelling across note strips, fretboards, open-string labels, and PDF exports.
+Degrees describe intervals from the root; note labels use common pitch names
+rather than less familiar spellings such as E♯ or C♭. Pitches, colors, and
+degrees stay the same across display settings.
 
 ## Deploy
 
