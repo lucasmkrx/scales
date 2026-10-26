@@ -1,52 +1,76 @@
 # Scales
 
-**Notes, scales, and improvisation for guitar and bass.**
+**Explore guitar and bass scales, hear the notes, and take the same fretboard into a printable guide.**
 
-[Open the interactive tool](https://lucasmkrx.github.io/scales/) ·
-[Português](https://lucasmkrx.github.io/scales/?lang=pt) ·
-[Guided books](public/guides/)
+[![Tests, formatting, and deployment](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml)
+[![Code license: MIT](https://img.shields.io/badge/code-MIT-20343f)](LICENSE)
 
-Scales is for players who already learn songs from TAB and want to understand
-their notes, learn scales, and improvise over backing tracks. The explorer,
-audio playback, and PDF generator run entirely in the browser on GitHub Pages.
-No account, backend, analytics, or external API is required.
+[**Try the live app**](https://lucasmkrx.github.io/scales/) · [Português](https://lucasmkrx.github.io/scales/?lang=pt) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
 
-## What is included
+![Scales showing a left-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
 
-- 67 named scales, modes, and chord arpeggios, transposable to all 12 roots.
-- 44 tuning presets for six- and seven-string guitar and four-, five-, and six-string bass.
-- A searchable scale picker with common scales first, the complete catalog, and chord arpeggios.
-- A full-width fretboard workspace with root and scale controls always available,
-  plus separate instrument, display, and download panels on desktop and mobile.
-- Instrument and string-count setups remembered on the device; shared URLs take priority.
-- Custom tuning pitches with real octave numbers, and custom scale formulas.
-- Right- and left-handed neck maps, with 20, 21, 22, or 24 frets.
-- American English and Brazilian Portuguese.
-- Both, sharp, or flat note labels, degrees, roots, and the original seven-note color palette.
-- Click or keyboard-activate a note to hear a plucked string; play an ascending/descending
-  scale with guitar or bass tone. Audio is synthesized locally without sample downloads.
-- Shareable URLs containing the full configuration.
-- Vector PDF atlases for a scale, family, or full catalog; selected scales can
-  also be exported in all 12 keys, with a configuration summary and page count before export.
-  Downloads match the guided books: a light cover,
-  clickable contents, reading instructions, and a full map with smaller positions
-  and a note/degree legend on each scale page. Every page has discreet Marques & Co. branding.
-- Guided books match the selected language, instrument, string count, handedness,
-  and tuning. When no book matches, the section links to scale PDF export.
-- Four guided books from the original project, with eight applied-theory
-  studies and six improvisation lessons each.
+Scales helps players who learned songs from TAB connect familiar fret positions
+with notes, scale degrees, and improvisation. Change the instrument, tuning, or
+handedness and every diagram is recalculated from the sounding pitches. Playback
+and PDF generation happen in the browser; the deployed app needs no account,
+backend, analytics, or external API.
 
-The catalog covers all seven modes of major, harmonic minor, jazz/ascending
-melodic minor, harmonic major, and double harmonic major; pentatonics, blues,
-whole tone, diminished, augmented, chromatic, bebop, and common chord arpeggios.
-“All scales” is not a claim to catalog every named tradition or every possible
-pitch collection. Custom formulas cover other 12-tone collections. Pelog is
-explicitly labeled as a 12-tone approximation; traditional tuning systems are
-not reduced to a claim of exact equivalence.
+## See it work
+
+![A short walkthrough of choosing a scale, exploring the fretboard, and opening PDF export](docs/assets/walkthrough.gif)
+
+Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
+or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
+Play the scale, switch between notes and degrees, then download the selected map.
+These examples demonstrate the controls; choosing a scale for a backing track
+also depends on its chords.
+
+<details>
+<summary>Mobile workspace and printable output</summary>
+
+<p>
+<img src="docs/assets/mobile.png" alt="Scales on a phone, with root and scale controls above the fretboard" width="320">
+<img src="docs/assets/mobile-picker.png" alt="The searchable scale picker presented as a mobile sheet" width="320">
+</p>
+
+![A generated A4 landscape reference page with a full neck, nearby positions, notes, and degrees](docs/assets/pdf-reference.png)
+
+</details>
+
+## What you can explore
+
+- **67 scales, modes, and chord arpeggios**, transposable to all 12 roots.
+- **44 tuning presets** for 6- and 7-string guitar and 4-, 5-, and 6-string bass,
+  plus custom tuning pitches and scale formulas.
+- Left- and right-handed fretboards, 20–24 fret options, note or degree labels,
+  and shared sharp/flat names on a single pitch marker.
+- American English and Brazilian Portuguese, remembered instrument setups,
+  keyboard controls, and shareable URLs.
+- Locally synthesized guitar and bass playback, plus vector PDF atlases for a
+  scale, a family, or the named catalog.
+- Four [guided books](public/guides/), matched to language, instrument, string
+  count, handedness, and tuning. Other combinations use generated scale atlases.
+
+## Engineering highlights
+
+| Decision                       | Purpose                                                                | Where to look                                                      |
+| ------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Shared pitch model             | Keep web and PDF notes consistent across tunings and handedness        | [Music engine](src/music.mjs)                                      |
+| Separate drawing geometry      | Mirror coordinates while keeping text and string order readable        | [SVG rendering](src/board.mjs), [PDF layout](src/guide-layout.mjs) |
+| Procedural plucked strings     | Provide instrument-specific playback without recorded sample downloads | [Audio engine](src/string-audio.mjs)                               |
+| Validated URL and device state | Make links reproducible while remembering local setups                 | [Workspace state](src/workspace.mjs)                               |
+| Lazy PDF dependencies          | Load PDF tooling when a download is requested                          | [App controller](src/app.mjs), [PDF generator](src/pdf.mjs)        |
+| Revisioned module graph        | Prevent a new entry point from loading stale JavaScript dependencies   | [Static build](scripts/build.mjs)                                  |
+
+The app uses native browser modules, SVG, Web Audio, and local font assets.
+Node.js provides the test runner, static build, preview server, and PDF CLI.
+pdf-lib and fontkit are vendored with their license notices; Prettier is the only
+npm development dependency. See the [design tradeoffs](docs/architecture.md#decisions-and-tradeoffs)
+and [project case study](docs/case-study.md) for the reasoning behind this approach.
 
 ## Run locally
 
-Install Node.js 22 or newer. There are no package-install steps.
+Use **Node.js 22 or newer**. Running the app and its tests does not require npm installation:
 
 ```sh
 node --test tests/*.test.mjs
@@ -54,10 +78,32 @@ node scripts/build.mjs
 node scripts/serve.mjs
 ```
 
-Open http://127.0.0.1:4173. The portable build is in `dist/`; all paths are
-relative so the same build works under GitHub Pages' `/scales/` project path.
+Open **http://127.0.0.1:4173**. The build goes into `dist/` and uses relative paths,
+so it also works under GitHub Pages' `/scales/` project path.
 
-## Generate PDFs from the command line
+To install the pinned formatting tool:
+
+```sh
+npm ci
+npm run format:check
+```
+
+Use `npm run format` to format maintained source, tests, and documentation.
+Vendored libraries, fonts, generated files, and guide PDFs are excluded.
+
+## Validation
+
+The current suite has **34 automated tests**. Pitch-model tests enumerate
+**35,376 tuning/scale/root combinations**; other checks cover mirrored geometry,
+custom input rejection, shared state, PDF navigation and font embedding, and
+synthesized pitch at two sample rates. GitHub Actions runs formatting checks,
+tests, and the build before publishing pushes to `main`.
+
+Browser flows and visual output receive separate manual checks. See
+[testing and known limits](docs/testing.md) for the evidence, reproduction
+commands, release checklist, and current limits.
+
+## Generate a PDF
 
 ```sh
 node scripts/generate.mjs --instrument=bass --strings=6 \
@@ -66,36 +112,24 @@ node scripts/generate.mjs --instrument=bass --strings=6 \
 ```
 
 Use `--scope=family` or `--scope=catalog` for an atlas. `--allKeys=true` applies
-to a selected scale. `--frets=24` and `--labels=degrees` customize the maps.
-To add a predefined scale or tuning, edit `src/catalog.mjs` and run the tests.
+to one selected scale. The CLI shares the browser's PDF generator.
 
-## How the diagrams work
+## Project notes
 
-Tuning arrays list sounding MIDI pitches from the lowest string to the highest.
-Diagrams put the thinnest string at the top. Right-handed neck maps have the nut
-on the left; left-handed maps have it on the right. Handedness changes the neck
-coordinates, not the pitches or string order. **TAB always reads left to right
-in time.** Position windows show available notes, not a prescribed fingering or
-a universal CAGED shape; shapes change with the tuning.
+- [Case study: from learning PDFs to an interactive explorer](docs/case-study.md)
+- [Architecture, data flow, and tradeoffs](docs/architecture.md)
+- [Testing, release checks, and limitations](docs/testing.md)
+- [Roadmap](docs/roadmap.md)
+- [Contributing](CONTRIBUTING.md)
+- [Musical and implementation references](docs/references.md)
 
-The generator derives every note from `open-string pitch + fret`. It never
-relabels a standard-tuning image to simulate another tuning. Both spelling is the default: notes such as C♯/D♭ share a single marker and
-sound. Natural notes have one label. Sharps and Flats show just the chosen
-spelling across note strips, fretboards, open-string labels, and PDF exports.
-Degrees describe intervals from the root; note labels use common pitch names
-rather than less familiar spellings such as E♯ or C♭. Pitches, colors, and
-degrees stay the same across display settings.
-
-## Deploy
-
-Enable **Settings → Pages → Source → GitHub Actions**. The included workflow
-tests the music engine, builds the static site, and deploys pushes to `main`.
-Pull requests run checks without publishing. See [architecture](docs/architecture.md)
-and [musical references](docs/references.md).
+Maintained by [Lucas Marques](https://github.com/lucasmkrx). The
+[case study](docs/case-study.md#development-process) describes the project's
+iterative development and AI assistance.
 
 ## Licenses
 
 - Code: [MIT](LICENSE).
 - Original educational content and guides: [CC BY 4.0](CONTENT-LICENSE.md).
 - Marques & Co. logo: [separate branding terms](BRANDING.md).
-- Fonts and bundled libraries: [third-party notices](THIRD-PARTY-NOTICES.md).
+- Fonts and vendored libraries: [third-party notices](THIRD-PARTY-NOTICES.md).

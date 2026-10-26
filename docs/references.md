@@ -35,7 +35,7 @@ one key-scale label; the guides emphasize listening and chord tones.
 
 ## Audio synthesis
 
-- Jaffe and Smith, *Extensions of the Karplus–Strong Plucked-String Algorithm*:
+- Jaffe and Smith, _Extensions of the Karplus–Strong Plucked-String Algorithm_:
   https://musicweb.ucsd.edu/~trsmyth/papers/KSExtensions.pdf
 - Stanford explanation of fractional tuning and damping:
   https://theory.stanford.edu/~blynn/sound/karplusstrong.html
