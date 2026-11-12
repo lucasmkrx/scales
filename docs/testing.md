@@ -1,7 +1,6 @@
 # Testing and known limits
 
 Scales separates automated model checks from browser interaction and visual review.
-The current suite has **34 tests**. That count is a snapshot, not a coverage percentage.
 
 ## Run the checks
 
@@ -25,19 +24,20 @@ are not automated by that workflow.
 
 ## What the automated tests establish
 
-| Area                        | Evidence                                                                                                                    | Test source                                                                                        |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Catalog and formulas        | Unique, ascending pitch collections agree with their degree formulas; mode rotation is checked against expected intervals   | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Pitch calculation           | 44 tunings × 67 catalog entries × 12 roots = 35,376 configurations; each point agrees with string pitch plus fret           | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Handedness                  | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                     | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
-| Custom input and URLs       | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                       | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Enharmonic labels           | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                            | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
-| Search                      | Common choices are curated; every catalog entry remains reachable; bilingual and accent-insensitive search works            | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
-| Workspace preferences       | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                          | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
-| Guided books                | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents        | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
-| PDF geometry and navigation | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                    | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
-| Audio                       | Test seven pitches at 44.1 and 48 kHz with a 3-cent tolerance, decay, repeatability, caching, and stopping scheduled voices | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
-| Published assets            | Check that entry point, stylesheet, and module imports use one revision                                                     | [build.test.mjs](../tests/build.test.mjs)                                                          |
+| Area                          | Evidence                                                                                                                    | Test source                                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Catalog and formulas          | Unique, ascending pitch collections agree with their degree formulas; mode rotation is checked against expected intervals   | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Pitch calculation             | 44 tunings × 67 catalog entries × 12 roots = 35,376 configurations; each point agrees with string pitch plus fret           | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Handedness                    | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                     | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
+| Custom input and URLs         | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                       | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Enharmonic labels             | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                            | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
+| Search                        | Common choices are curated; every catalog entry remains reachable; bilingual and accent-insensitive search works            | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
+| Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
+| Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                          | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
+| Guided books                  | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents        | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
+| PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                    | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
+| Audio                         | Test seven pitches at 44.1 and 48 kHz with a 3-cent tolerance, decay, repeatability, caching, and stopping scheduled voices | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
+| Published assets              | Check that entry point, stylesheet, and module imports use one revision                                                     | [build.test.mjs](../tests/build.test.mjs)                                                          |
 
 Some checks enumerate the full finite catalog; others use representative cases.
 The tests do not independently certify the cultural naming of every scale,
@@ -59,7 +59,8 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   during playback. No old scheduled sequence should continue.
 - Download a selected scale, preview larger scopes, and cancel an export.
   Compare the page estimate with the output and inspect representative pages.
-- Confirm guided books match the configuration or show the explicit empty state.
+- Open a practice position, navigate the board with arrow keys, and reopen a copied link to confirm the range.
+- Confirm the matched edition or empty state, then browse the other guided books.
 - Check 320, 390, 720, 860, and 1280 CSS-pixel layouts. Only the fretboard should
   scroll horizontally; controls and dialogs must stay within the page width.
 

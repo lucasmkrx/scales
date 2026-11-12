@@ -21,7 +21,7 @@ backend, analytics, or external API.
 
 Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
-Play the scale, switch between notes and degrees, then download the selected map.
+Choose a practice position to zoom the map. Play the scale, switch between notes and degrees, or copy a link to the current range.
 These examples demonstrate the controls; choosing a scale for a backing track
 also depends on its chords.
 
@@ -49,7 +49,7 @@ also depends on its chords.
 - Locally synthesized guitar and bass playback, plus vector PDF atlases for a
   scale, a family, or the named catalog.
 - Four [guided books](public/guides/), matched to language, instrument, string
-  count, handedness, and tuning. Other combinations use generated scale atlases.
+  count, handedness, and tuning. Browse all editions or generate a scale atlas for your setup.
 
 ## Engineering highlights
 
@@ -93,7 +93,7 @@ Vendored libraries, fonts, generated files, and guide PDFs are excluded.
 
 ## Validation
 
-The current suite has **34 automated tests**. Pitch-model tests enumerate
+The automated pitch-model tests enumerate
 **35,376 tuning/scale/root combinations**; other checks cover mirrored geometry,
 custom input rejection, shared state, PDF navigation and font embedding, and
 synthesized pitch at two sample rates. GitHub Actions runs formatting checks,

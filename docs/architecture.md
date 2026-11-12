@@ -101,7 +101,7 @@ horizontal fretboard position; a new setup starts at its open-string end.
 
 ### Focused controls and progressive disclosure
 
-Root and scale sit above the full-width board. Instrument setup, scale browsing,
+Root and scale sit beside the board on desktop and above it on phones. The fret-range selector and position cards focus the same interactive diagram. Shared links include the range. The main board has one tab stop, with arrow keys moving along strings and frets in the displayed orientation. Instrument setup, scale browsing,
 display, and export use native modal dialogs, presented as sheets at phone widths.
 Dialogs return focus to their triggers. Scale results support arrow-key browsing
 and explicit selection; search alone never changes the active scale.
