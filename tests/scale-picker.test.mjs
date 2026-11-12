@@ -85,8 +85,8 @@ test('SVG open-string labels show both names on one marker in either orientation
       assert.match(both, />E♭<\/text>/);
       assert.match(both, />D♯<\/text>/);
       assert.equal(
-        [...both.matchAll(/<g class="note /g)].length,
-        [...sharp.matchAll(/<g class="note /g)].length,
+        [...both.matchAll(/<g class="(?:note|preview-note) /g)].length,
+        [...sharp.matchAll(/<g class="(?:note|preview-note) /g)].length,
       );
     }
 });

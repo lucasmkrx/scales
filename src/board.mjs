@@ -6,6 +6,13 @@ import {
   pitchPreference,
 } from './music.mjs';
 import { copy } from './i18n.mjs';
+const screenFretColors = {
+  open: '#ece9dc',
+  octave: '#dddcca',
+  marker: '#ecebdd',
+  upper: '#f5f3e9',
+  lower: '#fcfaf3',
+};
 export const escape = (s) =>
   String(s)
     .replaceAll('&', '&amp;')
@@ -21,7 +28,7 @@ export function boardSvg(state, options = {}) {
   const l = layoutBoard(model, { width: options.width ?? 1100, height, small });
   const { points, rows, lo, hi } = model;
   const t = copy[model.state.lang];
-  const ink = '#20343f';
+  const ink = '#28372e';
   const el = [];
   const text = (x, y, s, size = 12, fill = ink, weight = 400) =>
     `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" fill="${fill}" font-weight="${weight}">${escape(s)}</text>`;
@@ -39,15 +46,15 @@ export function boardSvg(state, options = {}) {
     const top = l.top - 12 - (hi - f) * 0.12;
     const bottom = l.bottom + 12 + (hi - f) * 0.12;
     el.push(
-      `<rect x="${x}" y="${top}" width="${z - x}" height="${bottom - top}" fill="${fretFill(f)}" stroke="#bbc7ce" stroke-width=".5"/>`,
+      `<rect x="${x}" y="${top}" width="${z - x}" height="${bottom - top}" fill="${fretFill(f, screenFretColors)}" stroke="#b7b8a8" stroke-width=".8"/>`,
     );
     el.push(
-      text(l.center(f), height - 10, f === 0 ? t.open : f, small ? 10 : 12, '#465865'),
+      text(l.center(f), height - 10, f === 0 ? t.open : f, small ? 10 : 12, '#565e51'),
     );
   }
   rows.forEach((m, row) => {
     el.push(
-      `<line x1="${l.left}" x2="${l.right}" y1="${l.y(row)}" y2="${l.y(row)}" stroke="#94a5af" stroke-width="${0.6 + row * 0.12}"/>`,
+      `<line x1="${l.left}" x2="${l.right}" y1="${l.y(row)}" y2="${l.y(row)}" stroke="#959988" stroke-width="${0.8 + row * 0.14}"/>`,
     );
     el.push(
       labelText(
@@ -79,10 +86,29 @@ export function boardSvg(state, options = {}) {
         : n.name;
     if (!n.active && state.labels === 'degrees') label = '';
     const fg = n.lightText ? 'white' : ink;
-    const spoken = `${n.name}, ${state.lang === 'pt' ? 'corda' : 'string'} ${n.string}, ${state.lang === 'pt' ? 'casa' : 'fret'} ${n.fret}`;
+    let interactive = '';
+    if (!small) {
+      const fret =
+        n.fret === 0
+          ? t.open
+          : `${model.state.lang === 'pt' ? 'Casa' : 'Fret'} ${n.fret}`;
+      const description = [
+        n.name,
+        n.root ? t.root : '',
+        n.active ? `${t.degree} ${n.degree}` : t.outsideScale,
+        `${t.string} ${n.string}`,
+        fret,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      interactive = ` role="button" tabindex="${n === points[0] ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}"`;
+    }
     el.push(
-      `<g class="note ${n.active ? '' : 'outside'}" role="button" tabindex="0" data-midi="${n.midi}" aria-label="${escape(spoken)}"><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? '#111111' : n.fill}" stroke="${n.root ? '#111111' : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="white"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${n.fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
+      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? '#111111' : n.fill}" stroke="${n.root ? '#111111' : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="white"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${n.fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
     );
   }
-  return `<svg viewBox="0 0 ${l.width} ${height}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="${escape(t.title)}">${el.join('')}</svg>`;
+  const accessibility = small
+    ? 'aria-hidden="true" focusable="false"'
+    : `role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="play-hint" data-hand="${model.state.hand}"`;
+  return `<svg viewBox="0 0 ${l.width} ${height}" xmlns="http://www.w3.org/2000/svg" ${accessibility}>${el.join('')}</svg>`;
 }

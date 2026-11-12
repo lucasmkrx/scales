@@ -156,11 +156,18 @@ export function spellScale(input) {
     noteName(state.root + interval, pitchPreference(state)),
   );
 }
-export function fretFill(fret) {
-  if (fret === 0) return '#eff3f5';
-  if (fret % 12 === 0) return '#dde6ed';
-  if ([3, 5, 7, 9].includes(fret % 12)) return '#e8eef3';
-  return fret >= 12 ? '#f0f4f7' : '#fafbfc';
+const printFretColors = {
+  open: '#eff3f5',
+  octave: '#dde6ed',
+  marker: '#e8eef3',
+  upper: '#f0f4f7',
+  lower: '#fafbfc',
+};
+export function fretFill(fret, colors = printFretColors) {
+  if (fret === 0) return colors.open;
+  if (fret % 12 === 0) return colors.octave;
+  if ([3, 5, 7, 9].includes(fret % 12)) return colors.marker;
+  return fret >= 12 ? colors.upper : colors.lower;
 }
 export function boardModel(input, { lo = 0, hi, all = false } = {}) {
   const s = selection(input);

@@ -32,15 +32,14 @@ changes the actual notes and patterns rather than relabeling a standard diagram.
 
 The initial interface collected setup, scale browsing, display settings, and PDF
 export in one sidebar. As the catalog grew, frequent musical choices competed
-with rarely changed configuration. The revised workspace keeps root and scale
-above the board, with focused dialogs for instrument setup, display, and export.
+with rarely changed configuration. The revised workspace groups root and scale in one settings panel, with focused dialogs for instrument setup, display, and export.
 Those dialogs become sheets at phone widths. Browsing a scale leaves the current
 selection intact until the player explicitly chooses a result.
 
 PDF exports evolved into a complete reference layout: cover, clickable contents,
 reading instructions, a full neck, smaller position maps, and note/degree legends.
 The four original guided books remain distinct from generated scale atlases;
-the site only offers a book when its configuration matches.
+the library identifies matching editions and lets players browse the other books.
 
 Playback uses a procedural plucked-string model with different guitar and bass
 settings. This adds an audible connection to the diagram without introducing a
@@ -62,7 +61,7 @@ The [architecture document](architecture.md) explains these choices in more deta
 
 ## Evidence and remaining work
 
-The current automated suite contains 34 tests. Its pitch-model loop checks
+The automated pitch-model loop checks
 35,376 tuning/scale/root combinations, while targeted tests cover geometry,
 state restoration, actual bass octaves, PDF links, and generated audio pitch.
 Manual browser checks cover setup changes, scale search, keyboard navigation,
