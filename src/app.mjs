@@ -12,15 +12,15 @@ import {
   parseTuning,
   parseFormula,
   sharedState,
-  scaleMidiSequence,
+  boardModel,
   pitchPreference,
 } from './music.mjs';
 import { PluckedStringPlayer, STRING_SOUNDS } from './string-audio.mjs';
-import { GUIDED_BOOKS, matchingGuides } from './guides.mjs';
 import { scaleGroups, initialScaleView } from './scale-picker.mjs';
 import {
   readPreferences,
   restoreWorkspace,
+  restoreRange,
   rememberWorkspace,
   changeSetup,
   exportPreview,
@@ -28,9 +28,11 @@ import {
 } from './workspace.mjs';
 import { FAMILIES } from './catalog.mjs';
 import { copy } from './i18n.mjs';
+import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardSvg, escape } from './board.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { createAtlas } from './pdf.mjs';
+import { positionSequence, practiceExercise, intervalName } from './practice.mjs';
 const STORAGE_KEY = 'scales.preferences.v1';
 let saved = {};
 try {
@@ -46,29 +48,31 @@ const positions = [
 ];
 const rangeIds = [
   'full',
+  ...positions.map(([lo, hi]) => `${lo}-${hi}`),
   'lower',
   'upper',
-  ...positions.map(([lo, hi]) => `${lo}-${hi}`),
 ];
-// Older shared setups described the entire neck. New phone sessions start in open position.
-const startingRange = query.has('frets')
-  ? 'full'
-  : matchMedia('(max-width: 560px)').matches
-    ? '0-4'
-    : 'lower';
-let range = rangeIds.includes(query.get('range')) ? query.get('range') : startingRange;
-let boardWidth;
+let range = restoreRange(Object.fromEntries(query), saved, {
+  mobile: matchMedia('(max-width: 560px)').matches,
+});
+let boardWidth,
+  boardRightOffset = 0;
 
 let view = initialScaleView(state.scale),
   search = '',
   instrumentAudio,
   playing = false,
+  playbackMode = null,
+  inspectedNote = null,
+  inspectedPitch = null,
+  tempo = 100,
   playbackVersion = 0,
   soundingMidi = null,
   playTimer,
   exporting,
   pdfLibraries,
-  tuningDraft = false;
+  tuningDraft = false,
+  formulaDirty = false;
 const $ = (id) => document.getElementById(id);
 const options = (items, current) =>
   items
@@ -77,10 +81,9 @@ const options = (items, current) =>
         `<option value="${escape(value)}" ${String(value) === String(current) ? 'selected' : ''}>${escape(label)}</option>`,
     )
     .join('');
-const tuningName = (tuning) =>
-  state.lang === 'pt' ? tuning.name.replace('standard', 'padrão') : tuning.name;
+const tuningName = (tuning) => localizedTuningName(tuning, state.lang);
 function persist() {
-  saved = rememberWorkspace(saved, state);
+  saved = rememberWorkspace(saved, { ...state, range });
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   } catch {}
@@ -99,55 +102,6 @@ function configuration() {
     t = copy[state.lang];
   return `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()} · ${tuningName(s.tuningData)} · ${t[s.hand]} · ${s.frets} ${t.frets.toLowerCase()}`;
 }
-function openDialog(id, trigger) {
-  const dialog = $(id);
-  dialog.returnFocus = trigger ?? document.activeElement;
-  if (id === 'scale-dialog') {
-    view = initialScaleView(state.scale);
-    search = '';
-    $('search').value = '';
-    $('formula-input').value = selection(state).scaleData.formula.join(' ');
-    $('formula-error').textContent = '';
-    $('formula-input').removeAttribute('aria-invalid');
-    showScaleEditor(false);
-    renderScalePicker();
-  }
-  if (id === 'export-dialog') renderExport();
-  dialog.showModal();
-  dialog.querySelector('.dialog-body').scrollTop = 0;
-  if (id === 'scale-dialog') $('search').focus({ preventScroll: true });
-  else if (id === 'instrument-dialog')
-    document
-      .querySelector('input[name=instrument]:checked')
-      .focus({ preventScroll: true });
-  else if (id === 'display-dialog') $('spelling').focus({ preventScroll: true });
-  else $('scope').focus({ preventScroll: true });
-}
-function closeDialog(dialog) {
-  if (dialog.id === 'instrument-dialog' && tuningDraft) {
-    $('tuning-error').textContent = copy[state.lang].closeEditorHint;
-    $('tuning-fields').querySelector('input')?.focus();
-    return;
-  }
-  dialog.close();
-}
-document
-  .querySelectorAll('[data-open]')
-  .forEach((button) =>
-    button.addEventListener('click', () => openDialog(button.dataset.open, button)),
-  );
-document.querySelectorAll('dialog').forEach((dialog) => {
-  dialog.addEventListener('cancel', (event) => {
-    event.preventDefault();
-    closeDialog(dialog);
-  });
-  dialog.addEventListener('click', (event) => {
-    if (event.target.closest('[data-close]')) closeDialog(dialog);
-  });
-  dialog.addEventListener('close', () =>
-    dialog.returnFocus?.focus({ preventScroll: true }),
-  );
-});
 function scaleChoiceMarkup(scale) {
   const t = copy[state.lang];
   const description =
@@ -164,6 +118,11 @@ function scaleGroupMarkup(group) {
 }
 
 function renderScalePicker() {
+  const results = $('scale-results');
+  const scroll = results.scrollTop;
+  const focused = results.contains(document.activeElement)
+    ? document.activeElement.dataset.scale
+    : null;
   const t = copy[state.lang],
     groups = scaleGroups({ view, search, lang: state.lang });
   const searching = Boolean(search.trim());
@@ -184,53 +143,15 @@ function renderScalePicker() {
     : `<div class="empty-results"><strong>${t.noResults}</strong><p>${t.retrySearch}</p></div>`;
   const buttons = [...$('scale-results').querySelectorAll('[data-scale]')],
     entry =
+      buttons.find((button) => button.dataset.scale === focused) ||
       (!searching && buttons.find((button) => button.dataset.scale === state.scale)) ||
       buttons[0];
   buttons.forEach((button) => (button.tabIndex = button === entry ? 0 : -1));
+  if (focused) entry?.focus({ preventScroll: true });
+  results.scrollTop = scroll;
   const selected = selection(state).scaleData;
   $('scale-selection').textContent =
     `${t.currentScale} · ${rootName(state)} ${scaleName(selected, state.lang)}`;
-}
-function showScaleEditor(editing) {
-  const t = copy[state.lang];
-  $('scale-catalog').hidden = editing;
-  $('custom-scale').hidden = !editing;
-  $('scale-selection').hidden = editing;
-  $('apply-scale').hidden = !editing;
-  $('scale-heading').textContent = editing ? t.customScaleTitle : t.chooseScale;
-  $('custom-scale-toggle').setAttribute('aria-expanded', String(editing));
-  $('custom-scale-toggle').textContent = editing
-    ? t.backToScales
-    : state.scale === 'custom'
-      ? t.editScale
-      : t.createScale;
-}
-function guideCard({ instrument, strings, tuning, lang, hand, pages, file }) {
-  const t = copy[state.lang];
-  const preset = TUNINGS.find((item) => item.id === tuning);
-  const title = `${t[instrument]} · ${tuningName(preset)}`;
-  const edition = `${strings} ${t.strings.toLowerCase()} · ${t[hand]} · ${t[lang]}`;
-  return `<li class="guide-edition">
-    <div><strong>${escape(title)}</strong><p>${escape(edition)}</p><small>A4 · ${pages} ${t.pages}</small></div>
-    <a href="./guides/${file}" download aria-label="${escape(`${t.pdf} · ${title} · ${edition}`)}">${t.pdf}</a>
-  </li>`;
-}
-function bookCards() {
-  const t = copy[state.lang];
-  const setup = selection(state);
-  const matches = matchingGuides(state);
-  const others = GUIDED_BOOKS.filter((book) => !matches.includes(book)).sort(
-    (a, b) => Number(b.lang === state.lang) - Number(a.lang === state.lang),
-  );
-  $('books-configuration').textContent =
-    `${t[setup.instrument]} · ${setup.strings} ${t.strings.toLowerCase()} · ${tuningName(setup.tuningData)} · ${t[setup.hand]} · ${t[setup.lang]}`;
-  $('books-match').textContent = matches.length ? t.matchingEdition : t.noMatchingBook;
-  $('book-export').hidden = matches.length > 0;
-  $('books-matched').hidden = matches.length === 0;
-  $('books-matched').innerHTML = matches.map(guideCard).join('');
-  $('books-browse').textContent =
-    `${matches.length ? t.otherEditions : t.allEditions} (${others.length})`;
-  $('books-other').innerHTML = others.map(guideCard).join('');
 }
 function fretBounds(id) {
   if (id === 'full') return [0, state.frets];
@@ -241,7 +162,7 @@ function fretBounds(id) {
 function renderBoard() {
   const board = $('board');
   const [lo, hi] = fretBounds(range);
-  const width = Math.max(board.clientWidth, 72 + (hi - lo + 1) * 45);
+  const width = 72 + (hi - lo + 1) * 45;
   const height = 74 + (state.strings - 1) * 31;
   const setup = [
     state.instrument,
@@ -260,6 +181,7 @@ function renderBoard() {
   boardWidth = board.clientWidth;
   board.style.setProperty('--board-width', `${width}px`);
   board.innerHTML = boardSvg(state, { lo, hi, width, height });
+  highlightSelection();
   if (soundingMidi !== null) highlightPitch(soundingMidi);
   board.dataset.setup = setup;
   board.scrollLeft = reset
@@ -267,6 +189,7 @@ function renderBoard() {
       ? board.scrollWidth - board.clientWidth
       : 0
     : scroll;
+  boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
   if (active?.fret) {
     const note =
       board.querySelector(`[data-row="${active.row}"][data-fret="${active.fret}"]`) ??
@@ -274,11 +197,16 @@ function renderBoard() {
     note?.focus({ preventScroll: true });
   }
   $('scroll-hint').hidden = width <= board.clientWidth;
-  $('play-hint').querySelector('[data-i18n="tapNote"]').textContent = board.querySelector(
-    '.note:not(.outside)',
-  )
-    ? copy[state.lang].tapNote
-    : copy[state.lang].emptyRange;
+  renderNoteReadout();
+}
+function rangeButtonMarkup(id) {
+  const t = copy[state.lang];
+  const [start, end] = fretBounds(id);
+  const bounds = state.hand === 'left' ? `${end}–${start}` : `${start}–${end}`;
+  const label = id === 'full' ? t.fullNeck : bounds;
+  const kind =
+    id === 'full' ? 'full' : ['lower', 'upper'].includes(id) ? 'half' : 'position';
+  return `<button type="button" class="range-button" data-range-kind="${kind}" data-range="${id}" aria-controls="board" aria-pressed="${range === id}" aria-label="${escape(`${id === 'full' ? t.fullNeck : t.range} ${bounds}`)}">${escape(label)}</button>`;
 }
 function renderContent() {
   const s = selection(state),
@@ -288,7 +216,6 @@ function renderContent() {
   $('note-count').textContent =
     `${names.length} ${names.length === 1 ? t.singleNote : t.noteCount}`;
   $('scale-title').textContent = `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
-  $('scale-value').textContent = scaleName(s.scaleData, s.lang);
   // Keep the pitch and its degree in the same column, including long chromatic formulas.
   const tables = [];
   for (let start = 0; start < names.length; start += 7) {
@@ -298,10 +225,10 @@ function renderContent() {
     for (const [index, name] of group.entries()) {
       const pitch = (s.root + s.scaleData.intervals[start + index]) % 12;
       notes.push(
-        `<td data-pitch="${pitch}"><i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>${escape(name).replace('/', '/<wbr>')}</td>`,
+        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(s.scaleData.formula[start + index], s.lang)}`)}"><i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>${escape(name).replace('/', '/<wbr>')}</button></td>`,
       );
       degrees.push(
-        `<td data-pitch="${pitch}">${prettyDegree(s.scaleData.formula[start + index])}</td>`,
+        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${prettyDegree(s.scaleData.formula[start + index])} · ${intervalName(s.scaleData.formula[start + index], s.lang)} · ${name}`)}">${prettyDegree(s.scaleData.formula[start + index])}</button></td>`,
       );
     }
     tables.push(
@@ -309,57 +236,93 @@ function renderContent() {
     );
   }
   $('notes-strip').innerHTML = tables.join('');
-  $('tuning-description').textContent = s.tuningData.notes
-    .map((m) => midiName(m, pitchPreference(s)))
-    .join(' · ');
-  $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
-  $('fret-range').innerHTML = options(
-    rangeIds.map((id) => {
-      const [lo, hi] = fretBounds(id);
-      return [id, id === 'full' ? `${t.fullNeck} (0–${hi})` : `${t.range} ${lo}–${hi}`];
-    }),
-    range,
+  const [lo, hi] = fretBounds(range);
+  const exercise = practiceExercise(s, { lo, hi });
+  $('practice-exercise').hidden = !exercise.length;
+  $('practice-exercise').textContent = t.exerciseHint.replace(
+    '{notes}',
+    exercise.join('–'),
   );
+  $('playback-hint').textContent = positionSequence(s, { lo, hi }).complete
+    ? t.playbackHint
+    : t.partialPosition;
+  $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
+  const pairedRanges = ['full', '0-4'];
+  const otherRanges = rangeIds.filter((id) => !pairedRanges.includes(id));
+  if (s.hand === 'left') {
+    pairedRanges.reverse();
+    otherRanges.reverse();
+  }
+  const pair = `<div class="range-pair">${pairedRanges.map(rangeButtonMarkup).join('')}</div>`;
+  const others = otherRanges.map(rangeButtonMarkup).join('');
+  $('fret-ranges').innerHTML = s.hand === 'left' ? others + pair : pair + others;
   renderBoard();
-  $('positions').innerHTML = positions
-    .map(
-      ([lo, hi]) =>
-        `<button type="button" class="position" data-range="${lo}-${hi}" aria-controls="board" aria-pressed="${range === `${lo}-${hi}`}"><span class="position-label">${t.range} ${lo}–${hi}<svg class="icon" aria-hidden="true"><use href="./assets/controls.svg#arrow"></use></svg></span>${boardSvg({ ...s, allNotes: false }, { lo, hi, width: 400, height: s.strings === 7 ? 175 : 150, small: true })}</button>`,
-    )
-    .join('');
   $('degrees-hint').hidden = s.labels !== 'degrees';
   saveURL();
 }
 function changeRange(id) {
   range = id;
+  inspectedNote = inspectedPitch = null;
   stopAudio();
+  persist();
   status('');
   $('share-fallback').hidden = true;
   renderContent();
 }
-$('fret-range').addEventListener('change', (event) => changeRange(event.target.value));
-$('positions').addEventListener('click', (event) => {
+$('fret-ranges').addEventListener('click', (event) => {
   const button = event.target.closest('[data-range]');
   if (!button) return;
-  changeRange(button.dataset.range);
-  const entry = $('board').querySelector('[tabindex="0"]') ?? $('fret-range');
-  entry.focus({ preventScroll: true });
-  $('board').scrollIntoView({ block: 'center', inline: 'nearest' });
+  const id = button.dataset.range;
+  changeRange(id);
+  $('fret-ranges').querySelector(`[data-range="${id}"]`).focus({ preventScroll: true });
+});
+$('board').addEventListener('scroll', () => {
+  const board = $('board');
+  if (board.clientWidth === boardWidth)
+    boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
 });
 new ResizeObserver(() => {
-  if ($('board').clientWidth !== boardWidth) renderBoard();
+  const board = $('board');
+  if (board.clientWidth === boardWidth) return;
+  boardWidth = board.clientWidth;
+  // Preserve the visible position measured from the nut side of a left-handed neck.
+  if (state.hand === 'left')
+    board.scrollLeft = board.scrollWidth - board.clientWidth - boardRightOffset;
+  boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
+  $('scroll-hint').hidden = board.scrollWidth <= board.clientWidth;
 }).observe($('board'));
+function validationMessage(id, key) {
+  const element = $(id);
+  element.textContent = key ? copy[state.lang][key] : '';
+  if (key) element.dataset.i18n = key;
+  else delete element.dataset.i18n;
+}
+function renderTuningLabels() {
+  const t = copy[state.lang];
+  $('tuning-fields')
+    .querySelectorAll('label')
+    .forEach((label, i) => {
+      const name = `${t.string} ${state.strings - i}`;
+      const end = i === 0 ? t.lowest : i === state.strings - 1 ? t.highest : '';
+      label.querySelector('span').textContent = `${name}${end ? ` · ${end}` : ''}`;
+      label
+        .querySelector('input')
+        .setAttribute('aria-label', `${name}${end ? `, ${end}` : ''}`);
+    });
+}
 function renderTuningFields() {
-  const s = selection(state),
-    t = copy[state.lang];
+  const s = selection(state);
   $('tuning-fields').innerHTML = s.tuningData.notes
     .map(
       (m, i) =>
-        `<label><span>${t.string} ${s.strings - i}${i === 0 ? ` · ${t.lowest}` : i === s.strings - 1 ? ` · ${t.highest}` : ''}</span><input id="string-pitch-${i}" data-string-pitch value="${midiName(m, s.spelling === 'flat' ? 'flat' : 'sharp')}" autocomplete="off" spellcheck="false" aria-describedby="tuning-error" aria-label="${t.string} ${s.strings - i}, ${i === 0 ? t.lowest : i === s.strings - 1 ? t.highest : ''}"></label>`,
+        `<label><span></span><input id="string-pitch-${i}" data-string-pitch value="${midiName(m, s.spelling === 'flat' ? 'flat' : 'sharp')}" autocomplete="off" spellcheck="false" aria-describedby="tuning-error"></label>`,
     )
     .join('');
+  renderTuningLabels();
 }
-function renderExport() {
+function renderExport({ resetStatus = true } = {}) {
+  if (exporting) return;
+  if (resetStatus) $('export-status').textContent = '';
   const s = selection(state),
     t = copy[state.lang];
   const familyOption = $('scope').querySelector('[value=family]');
@@ -382,26 +345,27 @@ function renderExport() {
   $('export-configuration').innerHTML =
     `<strong>${escape(title)}</strong>${escape(configuration())}<br>${s.tuningData.notes.map((m) => midiName(m, pitchPreference(s))).join(' – ')}<br>${escape(t[s.lang])}`;
   $('export-estimate').textContent =
-    `${estimate.pages} ${t.pages} · ${estimate.count} ${estimate.count === 1 ? t.scaleMap : t.scaleMaps}${allKeys ? '' : ` · ${t.currentRoot}: ${rootName(s)}`}`;
+    `${estimate.pages} ${t.pages} · ${estimate.count} ${estimate.count === 1 ? t.scaleMap : t.scaleMaps}${allKeys ? '' : ` · ${s.scaleData.family === 'arpeggio' ? t.chordRoot : t.currentRoot}: ${rootName(s)}`}`;
 }
 function render() {
   const t = copy[state.lang],
     s = selection(state);
-  document.documentElement.lang = state.lang === 'pt' ? 'pt-BR' : 'en-US';
+  document.documentElement.lang = LANGUAGES[state.lang].tag;
+  document.title = t.pageTitle;
+  document.querySelector('meta[name=description]').content = t.metaDescription;
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     el.textContent = t[el.dataset.i18n] ?? el.textContent;
   });
-  if (playing) $('play-label').textContent = t.stop;
-  document
-    .querySelectorAll('.close-dialog')
-    .forEach((button) => button.setAttribute('aria-label', t.close));
-  $('open-display').title = t.display;
+  const arpeggio = s.scaleData.family === 'arpeggio';
+  $('play-label').textContent = playing ? t.stop : arpeggio ? t.playArpeggio : t.play;
+  document.querySelectorAll('[data-i18n="root"]').forEach((el) => {
+    el.textContent = arpeggio ? t.chordRoot : t.root;
+  });
+  $('root-hint').textContent = arpeggio ? t.chordRootHint : t.rootHint;
+  $('degrees-hint').textContent = arpeggio ? t.chordDegreesHint : t.degreesHint;
+  $('play').title = $('play-label').textContent;
   $('language').value = state.lang;
   $('search').placeholder = t.searchPlaceholder;
-  $('instrument-summary').textContent =
-    `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()}`;
-  $('instrument-detail').textContent =
-    `${tuningName(s.tuningData)} · ${t[s.hand]} · ${s.frets} ${t.frets.toLowerCase()}`;
   for (const name of ['instrument', 'labels'])
     document
       .querySelectorAll(`input[name="${name}"]`)
@@ -434,14 +398,16 @@ function render() {
   );
   $('allNotes').checked = state.allNotes;
   $('custom-tuning').hidden = !tuningDraft;
+  if (tuningDraft) renderTuningLabels();
   $('edit-pitches').hidden = tuningDraft || state.tuning !== 'custom';
   $('preset-notes').hidden = tuningDraft;
+  if (!formulaDirty) $('formula-input').value = s.scaleData.formula.join(' ');
   renderScalePicker();
-  bookCards();
   renderContent();
   renderExport();
 }
 function update(values, { setup = false } = {}) {
+  inspectedNote = inspectedPitch = null;
   stopAudio();
   const previous = state;
   state = changeSetup(state, values, saved);
@@ -457,7 +423,7 @@ function update(values, { setup = false } = {}) {
 }
 function cancelTuning() {
   tuningDraft = false;
-  $('tuning-error').textContent = '';
+  validationMessage('tuning-error');
   $('custom-tuning').hidden = true;
   render();
   (state.tuning === 'custom' ? $('edit-pitches') : $('tuning')).focus();
@@ -476,7 +442,7 @@ function applyTuning() {
   });
   if (invalid.length) {
     invalid.forEach((field) => field.setAttribute('aria-invalid', 'true'));
-    $('tuning-error').textContent = copy[state.lang].tuningExample;
+    validationMessage('tuning-error', 'tuningExample');
     invalid[0].focus();
     return;
   }
@@ -484,24 +450,25 @@ function applyTuning() {
     parseTuning(text, state.strings);
     tuningDraft = false;
     update({ tuning: 'custom', customTuning: text });
-    $('tuning-error').textContent = '';
+    validationMessage('tuning-error');
     $('setup-status').textContent = copy[state.lang].tuningApplied;
     $('tuning').focus();
   } catch {
     fields.forEach((field) => field.setAttribute('aria-invalid', 'true'));
-    $('tuning-error').textContent = copy[state.lang].tuningOrder;
+    validationMessage('tuning-error', 'tuningOrder');
     fields[0]?.focus();
   }
 }
 function applyScale() {
   try {
     parseFormula($('formula-input').value);
-    $('formula-error').textContent = '';
+    validationMessage('formula-error');
     $('formula-input').removeAttribute('aria-invalid');
+    formulaDirty = false;
     update({ scale: 'custom', formula: $('formula-input').value });
-    closeDialog($('scale-dialog'));
+    $('formula-input').focus({ preventScroll: true });
   } catch {
-    $('formula-error').textContent = copy[state.lang].formulaHint;
+    validationMessage('formula-error', 'formulaHint');
     $('formula-input').setAttribute('aria-invalid', 'true');
     $('formula-input').focus();
   }
@@ -515,67 +482,142 @@ async function audioPlayer() {
   await instrumentAudio.context.resume();
   return instrumentAudio;
 }
+function visibleNotes() {
+  const [lo, hi] = fretBounds(range);
+  return boardModel(state, { lo, hi }).points;
+}
+function renderNoteReadout(note = inspectedNote, location = true) {
+  const t = copy[state.lang];
+  if (!note) {
+    $('note-readout-text').textContent = visibleNotes().some((point) => point.active)
+      ? t.tapNote
+      : t.emptyRange;
+    return;
+  }
+  const details = [
+    midiName(note.midi, pitchPreference(state)),
+    note.degree
+      ? intervalName(note.degree, state.lang)
+      : selection(state).scaleData.family === 'arpeggio'
+        ? t.outsideChord
+        : t.outsideScale,
+  ];
+  if (location) {
+    details.push(
+      `${t.string.toLowerCase()} ${note.string}`,
+      `${t.fret.toLowerCase()} ${note.fret}`,
+    );
+    if (!note.visible) details.push(t.noteOutsideRange);
+  }
+  $('note-readout-text').textContent = details.join(' · ');
+}
+function highlightSelection() {
+  $('board')
+    .querySelectorAll('[data-midi]')
+    .forEach((note) =>
+      note.classList.toggle(
+        'selected-pitch',
+        inspectedPitch !== null && Number(note.dataset.midi) % 12 === inspectedPitch,
+      ),
+    );
+  $('notes-strip')
+    .querySelectorAll('[data-pitch]')
+    .forEach((el) => {
+      const selected = Number(el.dataset.pitch) === inspectedPitch;
+      el.classList.toggle('selected-pitch', selected);
+      if (el.matches('button')) el.setAttribute('aria-pressed', String(selected));
+    });
+}
+function inspectNote(note) {
+  inspectedNote = note;
+  inspectedPitch = note.midi % 12;
+  highlightSelection();
+  renderNoteReadout();
+}
 function highlightPitch(midi) {
   soundingMidi = midi;
   document.querySelectorAll('.sounding').forEach((el) => el.classList.remove('sounding'));
-  if (midi === null) return;
+  if (midi === null) {
+    renderNoteReadout();
+    return;
+  }
   document
     .querySelectorAll(
-      `#board [data-midi="${midi}"], #notes-strip [data-pitch="${midi % 12}"]`,
+      `#board [data-midi="${midi}"], #notes-strip td[data-pitch="${midi % 12}"]`,
     )
     .forEach((el) => el.classList.add('sounding'));
+  if (playbackMode === 'sequence') {
+    const note = visibleNotes().find((point) => point.midi === midi);
+    if (note) renderNoteReadout(note, false);
+  }
 }
 function stopAudio() {
   playbackVersion++;
   playing = false;
+  playbackMode = null;
   instrumentAudio?.stop();
   clearTimeout(playTimer);
   highlightPitch(null);
-  $('play-label').textContent = copy[state.lang].play;
+  const t = copy[state.lang];
+  $('play-label').textContent =
+    selection(state).scaleData.family === 'arpeggio' ? t.playArpeggio : t.play;
+  $('play').title = $('play-label').textContent;
   $('play').classList.remove('playing');
 }
 async function startPlayback(midi) {
   stopAudio();
   const version = playbackVersion,
     snapshot = { ...state };
+  const [lo, hi] = fretBounds(range);
+  const notes =
+    midi === undefined ? positionSequence(snapshot, { lo, hi }).notes : [midi];
+  if (!notes.length) {
+    status(copy[state.lang].emptyRange);
+    return;
+  }
+  status('');
   playing = true;
+  playbackMode = midi === undefined ? 'sequence' : 'note';
   $('play-label').textContent = copy[state.lang].stop;
+  $('play').title = copy[state.lang].stop;
   $('play').classList.add('playing');
   try {
     const player = await audioPlayer();
     if (version !== playbackVersion) return;
-    const notes = midi === undefined ? scaleMidiSequence(snapshot) : [midi];
     for (const note of new Set(notes)) player.buffer(note, snapshot.instrument);
-    const start = player.context.currentTime + 0.025;
-    const step = 0.36;
+    const step = 60 / tempo;
     const duration =
       midi === undefined
-        ? snapshot.instrument === 'bass'
-          ? 0.95
-          : 0.78
+        ? Math.min(step * 0.9, snapshot.instrument === 'bass' ? 0.95 : 0.78)
         : STRING_SOUNDS[snapshot.instrument].seconds;
-    let end = start;
-    notes.forEach((note, i) => {
-      end = player.play(note, {
-        instrument: snapshot.instrument,
-        when: start + i * step,
-        duration,
+    let start, end;
+    function schedulePass() {
+      start = player.context.currentTime + 0.025;
+      notes.forEach((note, index) => {
+        end = player.play(note, {
+          instrument: snapshot.instrument,
+          when: start + index * step,
+          duration,
+        });
       });
-    });
-    // Re-read the audio clock after each wake-up, including after background throttling.
+    }
     function followAudio() {
       if (version !== playbackVersion) return;
       const now = player.context.currentTime;
       if (now >= end) {
-        stopAudio();
-        return;
+        if (soundingMidi !== null) highlightPitch(null);
+        if (midi !== undefined || !$('repeat').checked) {
+          stopAudio();
+          return;
+        }
+        if (now >= end + step) schedulePass();
       }
-      const index = Math.min(notes.length - 1, Math.floor((now - start) / step));
-      const pitch = notes[index] ?? null;
+      const index = Math.floor((now - start) / step);
+      const pitch = now < end ? (notes[Math.min(notes.length - 1, index)] ?? null) : null;
       if (pitch !== soundingMidi) highlightPitch(pitch);
-      const next = index === notes.length - 1 ? end : start + (index + 1) * step;
-      playTimer = setTimeout(followAudio, Math.max(12, (next - now) * 1000));
+      playTimer = setTimeout(followAudio, 25);
     }
+    schedulePass();
     followAudio();
   } catch {
     if (version === playbackVersion) {
@@ -584,7 +626,47 @@ async function startPlayback(midi) {
     }
   }
 }
-const playNote = (midi) => startPlayback(midi);
+function playNote(midi, element) {
+  const note = visibleNotes().find(
+    (point) =>
+      point.midi === midi &&
+      (!element ||
+        (point.row === Number(element.dataset.row) &&
+          point.fret === Number(element.dataset.fret))),
+  );
+  if (note) inspectNote({ ...note, visible: true });
+  startPlayback(midi);
+}
+$('notes-strip').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-pitch]');
+  if (!button) return;
+  const pitch = Number(button.dataset.pitch);
+  let note = visibleNotes()
+    .filter((point) => point.pc === pitch)
+    .sort((a, b) => a.midi - b.midi)[0];
+  const visible = Boolean(note);
+  note ??= boardModel(state)
+    .points.filter((point) => point.pc === pitch)
+    .sort((a, b) => a.midi - b.midi)[0];
+  if (!note) return;
+  inspectNote({ ...note, visible });
+  startPlayback(note.midi);
+});
+$('board').addEventListener('focusin', (event) => {
+  const note = event.target.closest('[data-midi]');
+  if (!note) return;
+  const point = visibleNotes().find(
+    (point) =>
+      point.row === Number(note.dataset.row) && point.fret === Number(note.dataset.fret),
+  );
+  if (point) inspectNote({ ...point, visible: true });
+});
+$('tempo').addEventListener('input', () => {
+  tempo = Number($('tempo').value);
+  $('tempo-value').value = `${tempo} BPM`;
+  $('tempo').setAttribute('aria-valuetext', `${tempo} BPM`);
+  if (playing && playbackMode === 'sequence') startPlayback();
+});
 $('play').addEventListener('click', () => {
   if (playing) stopAudio();
   else startPlayback();
@@ -593,12 +675,12 @@ window.addEventListener('pagehide', stopAudio);
 enableBoardNavigation($('board'), playNote);
 $('instrument').addEventListener('change', (event) => {
   tuningDraft = false;
-  $('tuning-error').textContent = '';
+  validationMessage('tuning-error');
   update({ instrument: event.target.value }, { setup: true });
 });
 $('strings').addEventListener('change', () => {
   tuningDraft = false;
-  $('tuning-error').textContent = '';
+  validationMessage('tuning-error');
   update({ strings: $('strings').value }, { setup: true });
 });
 for (const id of ['hand', 'frets', 'root', 'spelling'])
@@ -608,7 +690,7 @@ $('tuning').addEventListener('change', () => {
   if ($('tuning').value === 'custom') editTuning();
   else {
     tuningDraft = false;
-    $('tuning-error').textContent = '';
+    validationMessage('tuning-error');
     update({ tuning: $('tuning').value });
   }
 });
@@ -619,7 +701,7 @@ function editTuning() {
   $('edit-pitches').hidden = true;
   $('preset-notes').hidden = true;
   $('setup-status').textContent = '';
-  $('tuning-error').textContent = '';
+  validationMessage('tuning-error');
   $('tuning-fields').querySelector('input').focus();
 }
 $('edit-pitches').addEventListener('click', editTuning);
@@ -638,8 +720,10 @@ $('formula-input').addEventListener('keydown', (event) => {
 $('scale-results').addEventListener('click', (event) => {
   const button = event.target.closest('[data-scale]');
   if (button) {
+    formulaDirty = false;
+    validationMessage('formula-error');
+    $('formula-input').removeAttribute('aria-invalid');
     update({ scale: button.dataset.scale });
-    closeDialog($('scale-dialog'));
   }
 });
 $('scale-results').addEventListener('keydown', (event) => {
@@ -661,7 +745,7 @@ $('search').addEventListener('keydown', (event) => {
   if (event.isComposing) return;
   if (event.key === 'Escape') {
     event.preventDefault();
-    closeDialog($('scale-dialog'));
+    $('clear-search').click();
   }
   if (event.key === 'ArrowDown' || (event.key === 'Enter' && search.trim())) {
     event.preventDefault();
@@ -680,26 +764,29 @@ $('scale-tabs').addEventListener('click', (event) => {
     search = '';
     $('search').value = '';
     renderScalePicker();
+    $('scale-results').scrollTop = 0;
   }
 });
 $('apply-tuning').addEventListener('click', applyTuning);
 $('cancel-tuning').addEventListener('click', cancelTuning);
 $('apply-scale').addEventListener('click', applyScale);
-$('custom-scale-toggle').addEventListener('click', () => {
-  const editing = $('custom-scale').hidden;
-  showScaleEditor(editing);
-  (editing ? $('formula-input') : $('search')).focus();
+$('formula-input').addEventListener('input', () => {
+  formulaDirty = true;
+  validationMessage('formula-error');
+  $('formula-input').removeAttribute('aria-invalid');
 });
 $('clear-search').addEventListener('click', () => {
   search = '';
   $('search').value = '';
   renderScalePicker();
+  $('scale-results').scrollTop = 0;
   $('search').focus();
 });
 $('instrument-form').addEventListener('submit', (event) => event.preventDefault());
 $('search').addEventListener('input', () => {
   search = $('search').value;
   renderScalePicker();
+  $('scale-results').scrollTop = 0;
 });
 $('language').addEventListener('change', () => update({ lang: $('language').value }));
 $('allNotes').addEventListener('change', () =>
@@ -744,6 +831,7 @@ async function ensurePdf() {
 }
 $('export').addEventListener('click', async () => {
   if (exporting) return;
+  renderExport();
   const snapshot = { ...state },
     scope = $('scope').value,
     allKeys = scope === 'selected' && $('all-keys').checked,
@@ -781,17 +869,9 @@ $('export').addEventListener('click', async () => {
     $('all-keys').disabled = false;
     $('cancel-export').hidden = true;
     exporting = null;
+    renderExport({ resetStatus: sharedState(snapshot) !== sharedState(state) });
   }
 });
 $('cancel-export').addEventListener('click', () => exporting?.abort());
-const booksNav = document.querySelector('.main-nav a[href="#books"]');
-const explorerNav = document.querySelector('.main-nav a[href="#explorer"]');
-new IntersectionObserver(([entry]) => {
-  const active = entry.isIntersecting ? booksNav : explorerNav;
-  for (const link of [booksNav, explorerNav]) {
-    if (link === active) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
-  }
-}).observe($('books'));
 persist();
 render();

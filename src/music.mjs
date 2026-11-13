@@ -1,4 +1,5 @@
 import { SCALES, TUNINGS, mod } from './catalog.mjs';
+import { normalizeLanguage } from './locales.mjs';
 export { SCALES, TUNINGS, mod };
 export const PALETTE = {
   0: '#cf3039',
@@ -78,7 +79,7 @@ export function parseFormula(value) {
     throw new Error('Start with 1 and list distinct degrees in ascending pitch order');
   return {
     id: 'custom',
-    name: { en: 'Custom scale', pt: 'Escala personalizada' },
+    name: { en: 'Custom scale', pt: 'Escala personalizada', es: 'Escala personalizada' },
     family: 'custom',
     intervals,
     formula,
@@ -89,7 +90,7 @@ export function normalizeState(input = {}) {
   s.instrument = s.instrument === 'bass' ? 'bass' : 'guitar';
   const counts = s.instrument === 'guitar' ? [6, 7] : [4, 5, 6];
   s.strings = counts.includes(Number(input.strings)) ? Number(input.strings) : counts[0];
-  s.lang = s.lang === 'pt' ? 'pt' : 'en';
+  s.lang = normalizeLanguage(s.lang);
   s.hand = s.hand === 'left' ? 'left' : 'right';
   s.labels = s.labels === 'degrees' ? 'degrees' : 'notes';
   s.spelling = ['both', 'sharp', 'flat'].includes(s.spelling) ? s.spelling : 'both';
@@ -133,7 +134,7 @@ export function selection(input) {
     s.tuning === 'custom'
       ? {
           id: 'custom',
-          name: s.lang === 'pt' ? 'Personalizada' : 'Custom',
+          name: { en: 'Custom', pt: 'Personalizada', es: 'Personalizada' }[s.lang],
           notes: s.customNotes,
           instrument: s.instrument,
           strings: s.strings,

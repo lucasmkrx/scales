@@ -28,6 +28,7 @@ export function boardSvg(state, options = {}) {
   const l = layoutBoard(model, { width: options.width ?? 1100, height, small });
   const { points, rows, lo, hi } = model;
   const t = copy[model.state.lang];
+  const arpeggio = model.state.scaleData.family === 'arpeggio';
   const ink = '#28372e';
   const el = [];
   const text = (x, y, s, size = 12, fill = ink, weight = 400) =>
@@ -79,7 +80,9 @@ export function boardSvg(state, options = {}) {
       y = l.y(n.row);
     let label = small
       ? n.root
-        ? t.rootMarker
+        ? arpeggio
+          ? t.chordRootMarker
+          : t.rootMarker
         : ''
       : state.labels === 'degrees'
         ? n.degree
@@ -88,14 +91,11 @@ export function boardSvg(state, options = {}) {
     const fg = n.lightText ? 'white' : ink;
     let interactive = '';
     if (!small) {
-      const fret =
-        n.fret === 0
-          ? t.open
-          : `${model.state.lang === 'pt' ? 'Casa' : 'Fret'} ${n.fret}`;
+      const fret = n.fret === 0 ? t.open : `${t.fret} ${n.fret}`;
       const description = [
         n.name,
-        n.root ? t.root : '',
-        n.active ? `${t.degree} ${n.degree}` : t.outsideScale,
+        n.root ? (arpeggio ? t.chordRoot : t.root) : '',
+        n.active ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
         `${t.string} ${n.string}`,
         fret,
       ]

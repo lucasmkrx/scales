@@ -18,7 +18,7 @@ keep consistent.
 ## Product constraints
 
 - Support guitar and bass, including extended string counts and altered tunings.
-- Keep both handedness options and both languages equally usable.
+- Keep both handedness options and all three languages equally usable.
 - Preserve the light fretboard design, pitch colors, Literata headings, and
   discreet Marques & Co. branding in printable output.
 - Serve the tool directly from a public GitHub repository with no application server.
@@ -31,15 +31,18 @@ pitch model feeds the web drawing and the PDF generator. A new tuning therefore
 changes the actual notes and patterns rather than relabeling a standard diagram.
 
 The initial interface collected setup, scale browsing, display settings, and PDF
-export in one sidebar. As the catalog grew, frequent musical choices competed
-with rarely changed configuration. The revised workspace groups root and scale in one settings panel, with focused dialogs for instrument setup, display, and export.
-Those dialogs become sheets at phone widths. Browsing a scale leaves the current
-selection intact until the player explicitly chooses a result.
+export in one sidebar. The current workspace keeps instrument setup and a
+searchable scale catalog above the fretboard, with the custom formula editor
+visible in the scale card. Tempo, repeat, and display controls sit beside the
+playing surface. Compact position buttons select nearby ranges, frets 0–12, or
+the full neck and follow the selected handedness. These groups stack on phones.
+Browsing retains the current musical selection until the player chooses a result.
 
 PDF exports evolved into a complete reference layout: cover, clickable contents,
 reading instructions, a full neck, smaller position maps, and note/degree legends.
-The four original guided books remain distinct from generated scale atlases;
-the library identifies matching editions and lets players browse the other books.
+The four original lesson books are available as repository source assets. The
+browser now centers on the interactive fretboard and an inline PDF section below
+it, where the contents, reference notes, and estimate are visible before download.
 
 Playback uses a procedural plucked-string model with different guitar and bass
 settings. This adds an audible connection to the diagram without introducing a

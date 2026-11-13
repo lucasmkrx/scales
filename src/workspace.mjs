@@ -3,6 +3,9 @@ import { guidePlan } from './guide-layout.mjs';
 
 const setupKeys = ['instrument', 'strings', 'tuning', 'customTuning', 'hand', 'frets'];
 const preferenceKeys = ['lang', 'spelling', 'labels', 'allNotes'];
+const musicKeys = ['root', 'scale', 'formula'];
+const ranges = ['full', 'lower', 'upper', '0-4', '3-7', '5-9', '8-12'];
+const hasMusic = (query) => musicKeys.some((key) => query[key] !== undefined);
 const pick = (value, keys) =>
   Object.fromEntries(
     keys.filter((key) => value?.[key] !== undefined).map((key) => [key, value[key]]),
@@ -25,9 +28,19 @@ export function restoreWorkspace(query = {}, saved = {}) {
   return normalizeState({
     ...pick(saved.preferences, preferenceKeys),
     ...pick(setup, setupKeys),
+    ...(!hasMusic(query) ? pick(saved.practice, musicKeys) : {}),
     instrument,
     ...query,
   });
+}
+export function restoreRange(query = {}, saved = {}, { mobile = false } = {}) {
+  const fallback = mobile ? '0-4' : 'lower';
+  if (query.range !== undefined)
+    return ranges.includes(query.range) ? query.range : fallback;
+  // Earlier shared URLs described the whole neck without a separate range field.
+  if (query.frets !== undefined) return 'full';
+  if (hasMusic(query)) return fallback;
+  return ranges.includes(saved.practice?.range) ? saved.practice.range : fallback;
 }
 export function rememberWorkspace(saved, state) {
   const s = normalizeState(state),
@@ -36,6 +49,11 @@ export function rememberWorkspace(saved, state) {
     version: 1,
     instrument: s.instrument,
     preferences: pick(s, preferenceKeys),
+    practice: {
+      ...pick(s, ['root', 'scale']),
+      ...(s.scale === 'custom' ? { formula: s.formula } : {}),
+      ...(ranges.includes(state.range) ? { range: state.range } : {}),
+    },
     setups: { ...saved.setups, [s.instrument]: setup },
     stringSetups: { ...saved.stringSetups, [`${s.instrument}:${s.strings}`]: setup },
   };

@@ -28,14 +28,14 @@ export function enableBoardNavigation(board, playNote) {
     const note = event.target.closest('[data-midi]');
     if (!note) return;
     note.focus({ preventScroll: true });
-    playNote(Number(note.dataset.midi));
+    playNote(Number(note.dataset.midi), note);
   });
   board.addEventListener('keydown', (event) => {
     const note = event.target.closest('[data-midi]');
     if (!note || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (!event.repeat) playNote(Number(note.dataset.midi));
+      if (!event.repeat) playNote(Number(note.dataset.midi), note);
       return;
     }
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;

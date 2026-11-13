@@ -37,7 +37,7 @@ test('arrows follow the visible neck orientation and skip missing positions', ()
   assert.equal(adjacentNote(notes, notes[0], 'ArrowLeft', 'right'), undefined);
 });
 
-test('spoken note labels identify scale degrees, the root, and outside pitches in both languages', () => {
+test('spoken note labels identify scale degrees, the root, and outside pitches in all supported languages', () => {
   for (const [lang, t] of Object.entries(copy)) {
     const board = boardSvg({ lang, allNotes: true, scale: 'major', root: 0 });
     const labels = [...board.matchAll(/role="button"[^>]*aria-label="([^"]*)"/g)].map(

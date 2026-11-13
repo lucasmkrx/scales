@@ -20,6 +20,7 @@ import {
   guidePlan,
 } from './guide-layout.mjs';
 import { copy } from './i18n.mjs';
+import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 const W = 841.89,
   H = 595.28,
   M = 44,
@@ -40,9 +41,8 @@ export async function createAtlas(
       return new Uint8Array(await r.arrayBuffer());
     });
   const initial = selection({ ...input, allNotes: false }),
-    t = copy[initial.lang],
-    pt = initial.lang === 'pt';
-  const tr = (en, br) => (pt ? br : en),
+    t = copy[initial.lang];
+  const tr = (en, pt, es) => ({ en, pt, es })[initial.lang],
     doc = await PDFDocument.create();
   doc.registerFontkit(globalThis.fontkit);
   const [bodyBytes, boldBytes, headBytes, logoBytes] = await Promise.all(
@@ -85,9 +85,13 @@ export async function createAtlas(
     )
     .map((s) => ({ ...s, title: `${rootName(s)} ${s.scaleData.name[s.lang]}` }));
   const plan = guidePlan(variants, {
-    coverTitle: tr('Cover and contents', 'Capa e sumário'),
-    readTitle: tr('How to use this guide', 'Como usar este guia'),
-    contentsTitle: tr('Contents, continued', 'Continuação do sumário'),
+    coverTitle: tr('Cover and contents', 'Capa e sumário', 'Portada e índice'),
+    readTitle: tr('How to use this guide', 'Como usar este guia', 'Cómo usar esta guía'),
+    contentsTitle: tr(
+      'Contents, continued',
+      'Continuação do sumário',
+      'Continuación del índice',
+    ),
   });
   const pages = plan.entries.map(() => {
     const p = doc.addPage([W, H]);
@@ -232,8 +236,11 @@ export async function createAtlas(
   }
   const instrument = (s) => t[s.instrument],
     hand = (s) => t[s.hand];
-  const tuningName = (s) =>
-    pt ? s.tuningData.name.replace('standard', 'padrão') : s.tuningData.name;
+  const tuningName = (s) => localizedTuningName(s.tuningData, s.lang);
+  const rootTerm = (s) =>
+    s.scaleData.family === 'arpeggio' ? t.chordRoot : tr('Tonic', 'Tônica', 'Tónica');
+  const rootMarker = (s) =>
+    s.scaleData.family === 'arpeggio' ? t.chordRootMarker : t.rootMarker;
   const pitchNames = (s, octaves = false) =>
     s.tuningData.notes.map((m) =>
       octaves ? midiName(m, pitchPreference(s)) : noteName(m, pitchPreference(s)),
@@ -296,7 +303,11 @@ export async function createAtlas(
       page,
       R,
       70,
-      tr('lowest-pitched string to highest', 'da corda mais grave à mais aguda'),
+      tr(
+        'lowest-pitched string to highest',
+        'da corda mais grave à mais aguda',
+        'de la cuerda más grave a la más aguda',
+      ),
       7.2,
       body,
       muted,
@@ -450,10 +461,10 @@ export async function createAtlas(
         : small
           ? route
             ? n.root
-              ? t.rootMarker
+              ? rootMarker(state)
               : n.degree
             : n.root
-              ? t.rootMarker
+              ? rootMarker(state)
               : ''
           : state.labels === 'degrees'
             ? n.degree
@@ -475,7 +486,7 @@ export async function createAtlas(
           page,
           l.labelX,
           top - 11,
-          tr('STRING', 'CORDA'),
+          tr('STRING', 'CORDA', 'CUERDA'),
           6.4,
           bold,
           muted,
@@ -486,7 +497,7 @@ export async function createAtlas(
           page,
           l.center(0),
           top - 4,
-          tr('OPEN', 'SOLTA'),
+          tr('OPEN', 'SOLTA', 'AL AIRE'),
           6.6,
           bold,
           muted,
@@ -524,7 +535,7 @@ export async function createAtlas(
           page,
           l.center(0),
           l.edgeY(l.center(0), true) + 35,
-          tr('NUT', 'PESTANA'),
+          tr('NUT', 'PESTANA', 'CEJUELA'),
           6,
           bold,
           muted,
@@ -575,7 +586,11 @@ export async function createAtlas(
       page,
       M,
       39,
-      tr('SCALE MAPS + GUIDED PRACTICE', 'MAPAS DE ESCALAS + PRÁTICA GUIADA'),
+      tr(
+        'SCALE MAPS + GUIDED PRACTICE',
+        'MAPAS DE ESCALAS + PRÁTICA GUIADA',
+        'MAPAS DE ESCALAS + PRÁCTICA GUIADA',
+      ),
       7.1,
       bold,
       muted,
@@ -591,8 +606,26 @@ export async function createAtlas(
       ink,
       211,
     );
-    text(page, M, 158, tr('Notes, scales,', 'Notas, escalas'), 22.5, heading, ink, 214);
-    text(page, M, 190, tr('and improvisation', 'e improvisação'), 24, heading, ink, 214);
+    text(
+      page,
+      M,
+      158,
+      tr('Notes, scales,', 'Notas, escalas', 'Notas, escalas'),
+      22.5,
+      heading,
+      ink,
+      214,
+    );
+    text(
+      page,
+      M,
+      190,
+      tr('and improvisation', 'e improvisação', 'e improvisación'),
+      24,
+      heading,
+      ink,
+      214,
+    );
     para(
       page,
       M,
@@ -600,6 +633,7 @@ export async function createAtlas(
       tr(
         'For experienced TAB players who want to understand the notes and create their own phrases.',
         'Para quem já toca por TAB e quer entender as notas e criar suas frases.',
+        'Para quienes ya leen tablaturas y quieren comprender las notas y crear sus propias frases.',
       ),
       212,
       9.5,
@@ -612,7 +646,11 @@ export async function createAtlas(
       page,
       M,
       328,
-      tr('lowest-pitched string to highest', 'da corda mais grave à mais aguda'),
+      tr(
+        'lowest-pitched string to highest',
+        'da corda mais grave à mais aguda',
+        'de la cuerda más grave a la más aguda',
+      ),
       7.3,
       body,
       muted,
@@ -633,7 +671,7 @@ export async function createAtlas(
       page,
       M,
       368,
-      `${hand(initial).toUpperCase()} ${tr('FRETBOARD', '/ MAPA DO BRAÇO')}`,
+      `${hand(initial).toUpperCase()} ${tr('FRETBOARD', '/ MAPA DO BRAÇO', '/ DIAPASÓN')}`,
       6.7,
       bold,
       muted,
@@ -652,7 +690,11 @@ export async function createAtlas(
       page,
       M,
       493,
-      tr('NOTES / DEGREES / POSITIONS / PHRASING', 'NOTAS / GRAUS / POSIÇÕES / FRASEADO'),
+      tr(
+        'NOTES / DEGREES / POSITIONS / PHRASING',
+        'NOTAS / GRAUS / POSIÇÕES / FRASEADO',
+        'NOTAS / GRADOS / POSICIONES / FRASEO',
+      ),
       6.4,
       bold,
       muted,
@@ -665,6 +707,7 @@ export async function createAtlas(
       tr(
         'Full fretboard maps, nearby positions, and a practical starting point for backing tracks.',
         'Mapas completos, posições próximas e um ponto de partida para praticar com backing tracks.',
+        'Mapas del diapasón, posiciones cercanas y un punto de partida para practicar con pistas de acompañamiento.',
       ),
       211,
       9.2,
@@ -674,7 +717,7 @@ export async function createAtlas(
       page,
       M,
       558,
-      `${hand(initial).toUpperCase()} / ${pt ? 'PORTUGUÊS DO BRASIL' : 'AMERICAN ENGLISH'}`,
+      `${hand(initial).toUpperCase()} / ${LANGUAGES[initial.lang].label.toUpperCase()}`,
       6.8,
       bold,
       muted,
@@ -684,13 +727,26 @@ export async function createAtlas(
       page,
       cx,
       39,
-      tr('FOR PLAYERS WHO WANT TO UNDERSTAND', 'PARA QUEM JÁ TOCA E QUER ENTENDER'),
+      tr(
+        'FOR PLAYERS WHO WANT TO UNDERSTAND',
+        'PARA QUEM JÁ TOCA E QUER ENTENDER',
+        'PARA QUIENES QUIEREN COMPRENDER',
+      ),
       7.2,
       bold,
       muted,
       cw,
     );
-    text(page, cx, 87, tr('Inside this guide', 'Conteúdo do guia'), 28, heading, ink, cw);
+    text(
+      page,
+      cx,
+      87,
+      tr('Inside this guide', 'Conteúdo do guia', 'Contenido de esta guía'),
+      28,
+      heading,
+      ink,
+      cw,
+    );
     text(
       page,
       cx,
@@ -698,6 +754,7 @@ export async function createAtlas(
       tr(
         'Your instrument, tuning, and scales in the guided-book format.',
         'Seu instrumento, afinação e escalas no formato dos cadernos guiados.',
+        'Tu instrumento, afinación y escalas en el formato de las guías de práctica.',
       ),
       8.7,
       body,
@@ -705,7 +762,15 @@ export async function createAtlas(
       cw,
     );
     line(page, cx, 138, R, 138);
-    text(page, cx, 162, tr('CONTENTS / PAGES', 'SUMÁRIO / PÁGINAS'), 7.6, bold, muted);
+    text(
+      page,
+      cx,
+      162,
+      tr('CONTENTS / PAGES', 'SUMÁRIO / PÁGINAS', 'ÍNDICE / PÁGINAS'),
+      7.6,
+      bold,
+      muted,
+    );
     const entries = plan.entries.slice(0, 32);
     contents(page, entries, {
       x: cx,
@@ -714,14 +779,26 @@ export async function createAtlas(
       step: Math.min(25, 310 / Math.max(1, Math.ceil(entries.length / 2) - 1)),
     });
     if (entries.length <= 8) {
-      text(page, cx, 285, tr('YOUR SELECTION', 'SUA SELEÇÃO'), 7.3, bold, muted);
+      text(
+        page,
+        cx,
+        285,
+        tr('YOUR SELECTION', 'SUA SELEÇÃO', 'TU SELECCIÓN'),
+        7.3,
+        bold,
+        muted,
+      );
       text(
         page,
         cx,
         315,
         variants.length === 1
           ? variants[0].title
-          : tr('Explore the selected collection', 'Explore a coleção selecionada'),
+          : tr(
+              'Explore the selected collection',
+              'Explore a coleção selecionada',
+              'Explora la colección seleccionada',
+            ),
         20,
         heading,
         ink,
@@ -742,16 +819,19 @@ export async function createAtlas(
       }
       for (const [i, value] of [
         tr(
-          'Find the roots. Play a few notes slowly.',
-          'Encontre as tônicas. Toque poucas notas devagar.',
+          'Find the notes with a black ring. Play a few slowly.',
+          'Encontre as notas com anel preto. Toque algumas devagar.',
+          'Busca las notas con un anillo negro. Toca unas pocas lentamente.',
         ),
         tr(
           'Repeat a rhythm, leave space, and change the ending.',
           'Repita um ritmo, deixe espaço e mude o final.',
+          'Repite un ritmo, deja espacio y cambia el final.',
         ),
         tr(
           'Check the track’s chords and aim for a chord tone.',
           'Confira os acordes da base e mire em uma nota do acorde.',
+          'Revisa los acordes de la pista y busca una nota del acorde.',
         ),
       ].entries())
         text(page, cx, 407 + i * 24, `0${i + 1}   ${value}`, 8.7, body, ink, cw);
@@ -761,10 +841,15 @@ export async function createAtlas(
       cx,
       517,
       cw,
-      tr('START WITH THE READING GUIDE', 'COMECE PELAS INSTRUÇÕES'),
+      tr(
+        'START WITH THE READING GUIDE',
+        'COMECE PELAS INSTRUÇÕES',
+        'COMIENZA CON LAS INSTRUCCIONES',
+      ),
       tr(
         'Then use the maps to make short phrases and follow the chords.',
         'Depois, use os mapas para criar frases curtas e acompanhar os acordes.',
+        'Después, usa los mapas para crear frases cortas y seguir los acordes.',
       ),
     );
     addLink(page, [cx, 517, R, 551], plan.readingPage);
@@ -772,7 +857,7 @@ export async function createAtlas(
       page,
       cx,
       566,
-      `${pages.length} ${tr('pages / clickable contents', 'páginas / sumário clicável')}`,
+      `${pages.length} ${tr('pages / clickable contents', 'páginas / sumário clicável', 'páginas / índice con enlaces')}`,
       7,
       body,
       muted,
@@ -784,79 +869,83 @@ export async function createAtlas(
     head(
       page,
       initial,
-      tr('How to use this guide', 'Como usar este guia'),
+      tr('How to use this guide', 'Como usar este guia', 'Cómo usar esta guía'),
       tr(
         'Connect what you already play with the notes, degrees, and harmony.',
         'Conecte o que você já toca com as notas, os graus e a harmonia.',
+        'Relaciona lo que ya tocas con las notas, los grados y la armonía.',
       ),
     );
     const columns = [
       [
-        tr('Read the neck', 'Leia o braço'),
+        tr('Read the neck', 'Leia o braço', 'Lee el diapasón'),
         [
           initial.hand === 'left'
             ? tr(
-                'The nut is on the right. Frets and pitches increase toward the left. Fret 0 is an open string.',
-                'A pestana fica à direita. As casas e os sons ficam mais agudos para a esquerda. A casa 0 é a corda solta.',
+                'The nut is on the right. Fret numbers and pitches rise toward the left. Fret 0 is an open string.',
+                'A pestana fica à direita. A numeração das casas aumenta e as notas ficam mais agudas para a esquerda. A casa 0 é a corda solta.',
+                'La cejuela está a la derecha. Los números de traste y la altura de las notas aumentan hacia la izquierda. El traste 0 es la cuerda al aire.',
               )
             : tr(
-                'The nut is on the left. Frets and pitches increase toward the right. Fret 0 is an open string.',
-                'A pestana fica à esquerda. As casas e os sons ficam mais agudos para a direita. A casa 0 é a corda solta.',
+                'The nut is on the left. Fret numbers and pitches rise toward the right. Fret 0 is an open string.',
+                'A pestana fica à esquerda. A numeração das casas aumenta e as notas ficam mais agudas para a direita. A casa 0 é a corda solta.',
+                'La cejuela está a la izquierda. Los números de traste y la altura de las notas aumentan hacia la derecha. El traste 0 es la cuerda al aire.',
               ),
           tr(
-            `Top to bottom: ${[...initial.tuningData.notes]
-              .reverse()
-              .map((m) => noteName(m, pitchPreference(initial)))
-              .join(
-                ', ',
-              )}. String 1 is the highest-pitched string. The bottom line is the lowest.`,
-            `De cima para baixo: ${[...initial.tuningData.notes]
-              .reverse()
-              .map((m) => noteName(m, pitchPreference(initial)))
-              .join(', ')}. A corda 1 é a mais aguda; a linha de baixo é a mais grave.`,
+            `From top to bottom, ${pitchNames(initial).reverse().join(', ')}. String 1 is the highest-pitched string. The bottom line is the lowest.`,
+            `De cima para baixo, ${pitchNames(initial).reverse().join(', ')}. A corda 1 é a mais aguda. A linha inferior é a mais grave.`,
+            `De arriba hacia abajo, ${pitchNames(initial).reverse().join(', ')}. La cuerda 1 es la más aguda. La línea inferior es la más grave.`,
           ),
           tr(
-            'One fret raises the pitch a half step. The dots mark fret positions; the double dot marks an octave at fret 12.',
-            'Uma casa sobe um semitom. Os pontos marcam posições; o ponto duplo indica uma oitava na casa 12.',
+            'One fret raises the pitch a half step. Dots mark fret positions. The double dot marks an octave at fret 12.',
+            'Uma casa eleva a nota em um semitom. Os pontos marcam posições. O ponto duplo indica uma oitava na casa 12.',
+            'Cada traste eleva la nota un semitono. Los puntos indican posiciones. El punto doble marca la octava en el traste 12.',
           ),
         ],
       ],
       [
-        tr('Read the symbols', 'Leia os símbolos'),
+        tr('Read the symbols', 'Leia os símbolos', 'Lee los símbolos'),
         [
           tr(
-            'Each pitch keeps its color, even with another spelling. Pitches between the natural-note colors use white circles. The black ring marks the tonic or chord root.',
-            'Cada som mantém sua cor, mesmo com outra grafia. Os sons entre as notas naturais usam círculos brancos. O anel preto marca a tônica ou fundamental do acorde.',
+            'Each pitch keeps its color with either name. Accidentals use white circles. The black ring marks the scale tonic or chord root.',
+            'Cada altura mantém sua cor com qualquer grafia. As notas alteradas usam círculos brancos. O anel preto marca a tônica da escala ou a fundamental do acorde.',
+            'Cada altura conserva su color, incluso con otro nombre. Las notas alteradas usan círculos blancos. El anillo negro marca la tónica de la escala o la fundamental del acorde.',
           ),
           tr(
-            'R marks a root on the small maps. Degrees such as 1, 2, and ♭3 are intervals from the root, not fingers. ♯ means sharp; ♭ means flat.',
-            'T marca a tônica nos mapas pequenos. Graus como 1, 2 e ♭3 são intervalos a partir da tônica, não dedos. ♯ indica sustenido; ♭ indica bemol.',
+            'R marks the scale tonic or chord root on small maps. Degrees express intervals from that note. The signs ♯ and ♭ mean sharp and flat.',
+            'Nos mapas pequenos, T indica tônica e F indica fundamental. Os graus expressam intervalos a partir dessa nota. Os sinais ♯ e ♭ indicam sustenido e bemol.',
+            'En los mapas pequeños, T indica tónica y F indica fundamental. Los grados expresan intervalos desde esa nota. Los signos ♯ y ♭ indican sostenido y bemol.',
           ),
           tr(
-            'Both shows sharp and flat names together: C♯/D♭ is one pitch, not two notes. The note strip pairs pitch names with scale degrees.',
-            'Ambos mostra sustenidos e bemóis juntos: C♯/D♭ é um som, não duas notas. A = Lá, B = Si, C = Dó, D = Ré, E = Mi, F = Fá, G = Sol.',
+            'Both shows enharmonic names, such as C♯/D♭. These labels use familiar pitch names. The formulas retain each interval’s meaning.',
+            'A opção Ambos mostra nomes enarmônicos, como C♯/D♭. A = lá, B = si, C = dó, D = ré, E = mi, F = fá, G = sol. As fórmulas mostram os intervalos.',
+            'La opción Ambas muestra nombres enarmónicos, como C♯/D♭. A = la, B = si, C = do, D = re, E = mi, F = fa, G = sol. Las fórmulas muestran los intervalos.',
           ),
         ],
       ],
       [
-        tr('Use the maps', 'Use os mapas'),
+        tr('Use the maps', 'Use os mapas', 'Usa los mapas'),
         [
           initial.instrument === 'bass'
             ? tr(
                 'The full map shows every scale or chord tone. Small maps give ascending octave routes from the two lowest strings. Follow the degrees, then reverse. If an octave is out of reach in your tuning, a nearby note map takes its place.',
                 'O mapa completo mostra todas as notas da escala ou acorde. As rotas pequenas sobem uma oitava a partir das duas cordas graves. Siga os graus e volte. Se a afinação não permitir uma oitava, aparece um mapa de notas próximas.',
+                'El mapa completo muestra las notas de la escala o del acorde. Los pequeños trazan recorridos de una octava desde las dos cuerdas más graves. Sigue los grados y regresa. Si la afinación impide completar la octava, aparece un mapa de notas cercanas.',
               )
             : tr(
-                'The full map shows every scale or chord tone. The five smaller maps show all available notes in each fret range. They are position references, not prescribed fingerings or universal chord shapes.',
-                'O mapa completo mostra todas as notas da escala ou acorde. Os cinco mapas pequenos mostram as notas em cada região. São referências de posição, não digitações obrigatórias nem formas universais de acordes.',
+                'The full map shows every scale or chord tone. The five smaller maps show the available notes in each fret range as position references. Choose your own fingering.',
+                'O mapa completo mostra as notas da escala ou acorde. Os cinco mapas pequenos mostram as notas de cada região como referências de posição. Você pode escolher sua digitação.',
+                'El mapa completo muestra las notas de la escala o del acorde. Los cinco mapas pequeños muestran las notas de cada región. Sirven de referencia para explorar posiciones. Puedes elegir tu propia digitación.',
               ),
           tr(
-            'TAB still reads left to right in time. Changing the tuning changes the shapes; the notes here are calculated for your selected tuning.',
-            'A TAB continua sendo lida da esquerda para a direita no tempo. Mudar a afinação muda os desenhos; aqui, as notas são calculadas para a afinação escolhida.',
+            'TAB reads left to right in time. Changing the tuning changes the shapes. These notes are calculated for your selected tuning.',
+            'A tablatura é lida da esquerda para a direita no tempo. Mudar a afinação muda os desenhos. Estas notas são calculadas para a afinação escolhida.',
+            'Las tablaturas se leen de izquierda a derecha en el tiempo. Cambiar la afinación cambia los patrones. Aquí las notas se calculan para la afinación elegida.',
           ),
           tr(
             'Start with three notes. Repeat a rhythm, leave a rest, and vary the ending. Listen before adding more notes.',
             'Comece com três notas. Repita um ritmo, deixe uma pausa e varie o final. Ouça antes de acrescentar mais notas.',
+            'Comienza con tres notas. Repite un ritmo, deja un silencio y varía el final. Escucha antes de agregar más notas.',
           ),
         ],
       ],
@@ -873,7 +962,11 @@ export async function createAtlas(
       page,
       M,
       430,
-      tr('THE SAME NOTE COLORS THROUGHOUT THE GUIDE', 'AS MESMAS CORES EM TODO O GUIA'),
+      tr(
+        'THE SAME NOTE COLORS THROUGHOUT THE GUIDE',
+        'AS MESMAS CORES EM TODO O GUIA',
+        'LOS MISMOS COLORES EN TODA LA GUÍA',
+      ),
       7.4,
       bold,
       muted,
@@ -886,7 +979,11 @@ export async function createAtlas(
       page,
       423,
       449,
-      tr('Sounding open-string pitches', 'Som real das cordas soltas'),
+      tr(
+        'Sounding open-string pitches',
+        'Som real das cordas soltas',
+        'Alturas reales de las cuerdas al aire',
+      ),
       7.6,
       bold,
       muted,
@@ -897,16 +994,25 @@ export async function createAtlas(
       M,
       495,
       R - M,
-      tr('BEFORE PLAYING OVER A BACKING TRACK', 'ANTES DE TOCAR COM UMA BACKING TRACK'),
       tr(
-        'Confirm the key and chord symbols. A scale is a note pool; listen and target the current chord’s tones.',
-        'Confira o tom e as cifras. A escala reúne notas possíveis; ouça e mire nas notas do acorde atual.',
+        'BEFORE PLAYING OVER A BACKING TRACK',
+        'ANTES DE TOCAR COM UMA BACKING TRACK',
+        'ANTES DE TOCAR CON UNA PISTA DE ACOMPAÑAMIENTO',
+      ),
+      tr(
+        'Confirm the key and chord symbols. A scale offers a collection of notes. Listen and target the current chord’s tones.',
+        'Confira a tonalidade e as cifras. A escala oferece um conjunto de notas. Ouça e busque as notas do acorde atual.',
+        'Confirma la tonalidad y el cifrado de los acordes. La escala ofrece un conjunto de notas. Escucha y busca las notas del acorde que está sonando.',
       ),
     );
     footer(
       page,
       plan.readingPage,
-      tr('Sounding pitches; middle C = C4.', 'Som real; dó central = C4.'),
+      tr(
+        'Sounding pitches. Middle C = C4.',
+        'Alturas reais. Dó central = C4.',
+        'Alturas reales. Do central = C4.',
+      ),
     );
   }
   function scaleLegend(page, s) {
@@ -916,8 +1022,16 @@ export async function createAtlas(
       M,
       520,
       s.scaleData.family === 'arpeggio'
-        ? tr('CHORD NOTES + DEGREES', 'NOTAS DO ACORDE + GRAUS')
-        : tr('SCALE NOTES + DEGREES', 'NOTAS DA ESCALA + GRAUS'),
+        ? tr(
+            'CHORD NOTES + DEGREES',
+            'NOTAS DO ACORDE + GRAUS',
+            'NOTAS DEL ACORDE + GRADOS',
+          )
+        : tr(
+            'SCALE NOTES + DEGREES',
+            'NOTAS DA ESCALA + GRAUS',
+            'NOTAS DE LA ESCALA + GRADOS',
+          ),
       6.7,
       bold,
       muted,
@@ -941,13 +1055,17 @@ export async function createAtlas(
       );
     });
     circle(page, 382, 537, 9.6, rgb(1, 1, 1), ink, 1.7);
-    text(page, 382, 540.5, t.rootMarker, 9.5, bold, ink, undefined, 'center');
-    text(page, 401, 532, tr('Root / tonic', 'Tônica / fundamental'), 8.5, bold);
+    text(page, 382, 540.5, rootMarker(s), 9.5, bold, ink, undefined, 'center');
+    text(page, 401, 532, rootTerm(s), 8.5, bold);
     text(
       page,
       401,
       547,
-      tr('Black ring; R on small maps.', 'Anel preto; T nos mapas pequenos.'),
+      tr(
+        'Black ring. R on small maps.',
+        'Anel preto. T ou F nos mapas pequenos.',
+        'Anillo negro. T o F en mapas pequeños.',
+      ),
       6.8,
       body,
       muted,
@@ -959,8 +1077,8 @@ export async function createAtlas(
       606,
       531,
       s.hand === 'left'
-        ? tr('NUT ON THE RIGHT', 'PESTANA À DIREITA')
-        : tr('NUT ON THE LEFT', 'PESTANA À ESQUERDA'),
+        ? tr('NUT ON THE RIGHT', 'PESTANA À DIREITA', 'CEJUELA A LA DERECHA')
+        : tr('NUT ON THE LEFT', 'PESTANA À ESQUERDA', 'CEJUELA A LA IZQUIERDA'),
       6.8,
       bold,
       muted,
@@ -971,12 +1089,14 @@ export async function createAtlas(
       545,
       s.hand === 'left'
         ? tr(
-            'Higher frets to the left; degrees are not fingers.',
-            'Casas maiores à esquerda; graus, não dedos.',
+            'Higher frets to the left.',
+            'Numeração das casas aumenta à esquerda.',
+            'Trastes más altos hacia la izquierda.',
           )
         : tr(
-            'Higher frets to the right; degrees are not fingers.',
-            'Casas maiores à direita; graus, não dedos.',
+            'Higher frets to the right.',
+            'Numeração das casas aumenta à direita.',
+            'Trastes más altos hacia la derecha.',
           ),
       6.6,
       body,
@@ -992,7 +1112,7 @@ export async function createAtlas(
       page,
       s,
       entry.title,
-      `${family} · ${s.scaleData.intervals.length} ${tr('notes', 'notas')}`,
+      `${family} · ${s.scaleData.intervals.length} ${tr('notes', 'notas', 'notas')}`,
     );
     text(
       page,
@@ -1015,6 +1135,7 @@ export async function createAtlas(
         tr(
           'POSITION MAPS / NEARBY FRET RANGES IN THIS TUNING',
           'MAPAS DE POSIÇÃO / REGIÕES PRÓXIMAS NESTA AFINAÇÃO',
+          'MAPAS DE POSICIÓN / REGIONES CERCANAS EN ESTA AFINACIÓN',
         ),
         7.1,
         bold,
@@ -1037,8 +1158,9 @@ export async function createAtlas(
           x,
           347 + lower,
           tr(
-            `Root on string ${row + 1} · ${name}`,
-            `Tônica na corda ${row + 1} · ${name}`,
+            `${rootTerm(s)} on string ${row + 1} · ${name}`,
+            `${rootTerm(s)} na corda ${row + 1} · ${name}`,
+            `${rootTerm(s)} en la cuerda ${row + 1} · ${name}`,
           ),
           10.3,
           bold,
@@ -1057,12 +1179,14 @@ export async function createAtlas(
           367 + lower,
           route
             ? tr(
-                `Start: fret ${route.startFret} (${rootName(s)})`,
-                `Início: casa ${route.startFret} (${rootName(s)})`,
+                `Start at fret ${route.startFret} (${rootName(s)})`,
+                `Início na casa ${route.startFret} (${rootName(s)})`,
+                `Inicio en el traste ${route.startFret} (${rootName(s)})`,
               )
             : tr(
                 `Nearby notes · frets ${range.lo}-${range.hi}`,
                 `Notas próximas · casas ${range.lo}-${range.hi}`,
+                `Notas cercanas · trastes ${range.lo}-${range.hi}`,
               ),
           8.2,
           body,
@@ -1085,7 +1209,7 @@ export async function createAtlas(
         page,
         x,
         347 + lower,
-        tr('Make a short phrase', 'Crie uma frase curta'),
+        tr('Make a short phrase', 'Crie uma frase curta', 'Crea una frase corta'),
         10.3,
         bold,
         ink,
@@ -1099,10 +1223,12 @@ export async function createAtlas(
           ? tr(
               'Play the octave in degree order, then descend. Shift your hand when needed.',
               'Toque a oitava na ordem dos graus e depois volte. Mude a posição da mão quando precisar.',
+              'Toca la octava en orden de grados y luego desciende. Cambia la posición de la mano cuando lo necesites.',
             )
           : tr(
-              'Choose three nearby notes. Begin and end on the root. Shift your hand when needed.',
-              'Escolha três notas próximas. Comece e termine na tônica. Mude a posição da mão quando precisar.',
+              'Choose three nearby notes. Begin and end on a black-ringed note. Shift your hand when needed.',
+              'Escolha três notas próximas. Comece e termine na nota com anel preto. Mude a posição da mão quando precisar.',
+              'Elige tres notas cercanas. Empieza y termina en la nota del anillo negro. Cambia la posición de la mano cuando lo necesites.',
             ),
         R - x,
         8.8,
@@ -1115,6 +1241,7 @@ export async function createAtlas(
         tr(
           'Repeat a rhythm, leave space, and resolve to a tone of the current chord.',
           'Repita um ritmo, deixe espaço e resolva em uma nota do acorde atual.',
+          'Repite un ritmo, deja espacio y resuelve en una nota del acorde que está sonando.',
         ),
         R - x,
         8.8,
@@ -1126,12 +1253,14 @@ export async function createAtlas(
         489,
         complete
           ? tr(
-              'Small maps: one octave, from R to R.',
-              'Mapas pequenos: uma oitava, de T a T.',
+              `Small maps span an octave, from ${rootMarker(s)} to ${rootMarker(s)}.`,
+              `Mapas pequenos de ${rootMarker(s)} a ${rootMarker(s)}, uma oitava.`,
+              `Mapas pequeños de ${rootMarker(s)} a ${rootMarker(s)}, una octava.`,
             )
           : tr(
-              'Small maps: routes or nearby fret ranges.',
-              'Mapas pequenos: rotas ou regiões próximas.',
+              'Small maps show routes or nearby fret ranges.',
+              'Mapas pequenos mostram rotas ou regiões próximas.',
+              'Mapas pequeños con recorridos o regiones cercanas.',
             ),
         6.9,
         body,
@@ -1148,10 +1277,11 @@ export async function createAtlas(
     head(
       page,
       initial,
-      tr('Contents, continued', 'Continuação do sumário'),
+      tr('Contents, continued', 'Continuação do sumário', 'Continuación del índice'),
       tr(
         'Click a title to go directly to its scale map.',
         'Clique em um título para abrir o mapa da escala.',
+        'Haz clic en un título para ir al mapa de la escala.',
       ),
     );
     contents(page, plan.entries.slice(32 + i * 48, 32 + (i + 1) * 48), {
@@ -1164,6 +1294,7 @@ export async function createAtlas(
       tr(
         'Clickable contents / one scale per reference page.',
         'Sumário clicável / uma escala por página de referência.',
+        'Índice con enlaces / una escala por página de referencia.',
       ),
     );
   }
@@ -1191,13 +1322,25 @@ export async function createAtlas(
   outline.set(PDFName.of('First'), refs[0]);
   outline.set(PDFName.of('Last'), refs.at(-1));
   doc.catalog.set(PDFName.of('Outlines'), outlineRef);
-  doc.catalog.set(PDFName.of('Lang'), PDFString.of(pt ? 'pt-BR' : 'en-US'));
+  doc.catalog.set(PDFName.of('Lang'), PDFString.of(LANGUAGES[initial.lang].tag));
   doc.setTitle(
-    `Scales · ${instrument(initial)} · ${variants.length === 1 ? variants[0].title : tr('Scale atlas', 'Atlas de escalas')} · ${tuningName(initial)}`,
+    `Scales · ${instrument(initial)} · ${variants.length === 1 ? variants[0].title : tr('Scale atlas', 'Atlas de escalas', 'Atlas de escalas')} · ${tuningName(initial)}`,
   );
   doc.setAuthor('Lucas Marques');
-  doc.setSubject('Guided-book scale maps · Marques & Co.');
-  doc.setKeywords(['Scales', initial.instrument, initial.hand, 'CC BY 4.0']);
+  doc.setSubject(
+    tr(
+      'Guided practice scale maps',
+      'Mapas de escalas para prática guiada',
+      'Mapas de escalas para práctica guiada',
+    ) + ' · Marques & Co.',
+  );
+  doc.setKeywords([
+    'Scales',
+    instrument(initial),
+    hand(initial),
+    LANGUAGES[initial.lang].tag,
+    'CC BY 4.0',
+  ]);
   checkAbort();
   return doc.save();
 }

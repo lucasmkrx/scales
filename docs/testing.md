@@ -31,10 +31,12 @@ are not automated by that workflow.
 | Handedness                    | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                     | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
 | Custom input and URLs         | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                       | [music.test.mjs](../tests/music.test.mjs)                                                          |
 | Enharmonic labels             | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                            | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
-| Search                        | Common choices are curated; every catalog entry remains reachable; bilingual and accent-insensitive search works            | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
+| Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works         | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
+| Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                       | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
 | Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
+| Practice positions            | Playback and short exercises stay inside the displayed range, including partial octaves and custom tunings                  | [practice.test.mjs](../tests/practice.test.mjs)                                                    |
 | Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                          | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
-| Guided books                  | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents        | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
+| Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents        | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
 | PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                    | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
 | Audio                         | Test seven pitches at 44.1 and 48 kHz with a 3-cent tolerance, decay, repeatability, caching, and stopping scheduled voices | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
 | Published assets              | Check that entry point, stylesheet, and module imports use one revision                                                     | [build.test.mjs](../tests/build.test.mjs)                                                          |
@@ -47,34 +49,54 @@ perceptual realism of synthesized audio, or every possible custom tuning.
 
 Serve a fresh build with `node scripts/serve.mjs` and check the following:
 
+- Confirm instrument setup, scale browsing, playback, display, and PDF settings
+  are available on the homepage without application dialogs or popovers.
 - Switch guitar/bass and every supported string count; confirm available tunings
   and fret defaults, then confirm a previous setup can be recalled.
-- Change handedness and tuning, including a custom tuning with octave numbers.
-  Invalid custom input must remain uncommitted with an inline explanation.
-- Search both languages, browse all scales and arpeggios, and navigate results
-  with the keyboard. Browsing must not select a scale automatically.
-- Open and close dialogs, including Escape and focus return. Check notes/degrees,
-  spelling, outside notes, and horizontal scroll retention.
-- Start and stop scale playback, activate a single note, and change configuration
-  during playback. No old scheduled sequence should continue.
-- Download a selected scale, preview larger scopes, and cancel an export.
-  Compare the page estimate with the output and inspect representative pages.
-- Open a practice position, navigate the board with arrow keys, and reopen a copied link to confirm the range.
-- Confirm the matched edition or empty state, then browse the other guided books.
+- Change handedness and tuning directly in the instrument card, including a custom
+  tuning with octave numbers. Invalid input must remain uncommitted with an inline
+  explanation. Apply and cancel custom pitch edits and change instrument/string
+  count while editing to check that the draft state resets cleanly.
+- Search all three languages in the inline catalog, browse scales and arpeggios,
+  and choose results with the pointer or keyboard. Browsing retains the selection.
+  After selection, check that keyboard focus stays on the chosen result.
+- Edit a custom formula, then change root, spelling, or instrument to check that the
+  draft survives. Choose a named scale to reset it, and test invalid custom input.
+  Switch language during a draft and confirm pitch values survive while string
+  labels and active validation messages translate.
+- Use the inline notes/degrees, spelling, and outside-note controls. Confirm that
+  settings remain available and horizontal fretboard scroll is retained.
+- Play a low and high position and confirm the sounding MIDI notes are visible.
+  Change tempo, repeat a position, and stop or change configuration during a pass.
+  No old scheduled sequence should continue.
+- Tap notes and degrees in the table, then board notes with the pointer or keyboard.
+  Check pitch-class highlights and the exact string/fret detail.
+- Reopen the bare URL to resume the last scale, root, and range. Open an explicit
+  musical shared link to check that it takes priority over saved practice.
+- Customize PDF contents and reference notes in the section below the fretboard.
+  Preview larger scopes and cancel an export. Change the musical setup during an
+  export and confirm its displayed configuration stays with the captured snapshot
+  until completion, then refreshes. Compare the page estimate with the output and
+  inspect representative pages.
+- Select each position button, frets 0–12, and the full neck. Confirm one selected
+  button, keyboard access, correct diagram bounds, and copied-link restoration.
+  Navigate notes with the arrow keys after changing a position.
 - Check 320, 390, 720, 860, and 1280 CSS-pixel layouts. Only the fretboard should
-  scroll horizontally; controls and dialogs must stay within the page width.
+  scroll horizontally; inline control groups and the scale results must stay within
+  the page width.
 
-The documentation refresh compared computed styles for 324 HTML elements before
-and after CSS consolidation at those five widths, with no differences after the
-cleanup. This is a targeted regression check, not a permanent browser test suite.
+The inline homepage was checked in Chromium at 320, 390, 720, and 1280 CSS pixels
+in all three languages. The checks covered page-width containment, keyboard
+selection, draft validation, saved and shared state, playback, PDF downloads,
+cancellation, and changing settings during an export. These are targeted manual
+checks, not a permanent browser test suite.
 
 ## Known limits
 
-- **Browser coverage:** recent manual checks use the Codex in-app browser.
+- **Browser coverage:** recent manual checks use Chromium.
   Safari, Firefox, Android, iOS keyboards, and screen-reader combinations need
-  broader verification. Native modules, SVG, `dialog`, Web Audio, and modern CSS
-  are required.
-- **Accessibility:** keyboard controls, labels, focus return, and reduced-motion
+  broader verification. Native modules, SVG, Web Audio, and modern CSS are required.
+- **Accessibility:** keyboard controls, labels, selection focus, and reduced-motion
   styling are implemented. A formal accessibility audit has not been completed;
   there is no WCAG conformance claim.
 - **Music scope:** the catalog contains 67 named 12-tone collections, not every
@@ -92,7 +114,7 @@ cleanup. This is a targeted regression check, not a permanent browser test suite
   Audio needs a user gesture and may be unavailable under browser/device restrictions.
 - **PDFs:** large catalogs use more time and memory; cancellation is available.
   Automated checks cover selected structures and examples, not all combinations
-  of export settings. Four fixed guided books are currently included.
+  of export settings. Four original lesson PDFs are included as repository assets.
 - **State and privacy:** preferences are stored on the device when storage is
   available. URLs intentionally expose the musical configuration for sharing;
   the app has no application backend or analytics. Hosting and repository services
