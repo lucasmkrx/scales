@@ -87,11 +87,13 @@ to highest. This distinguishes extended strings and octave-shifted custom tuning
 that share the same note letters. The app supports 6- and 7-string guitar and
 4-, 5-, and 6-string bass.
 
-Notes can display both enharmonic names or only sharps/flats. These are display
-choices: degree formulas, marker colors, geometry, and audio continue to describe
-the same pitches. The app favors familiar note names over enforcing formal
-letter-by-letter scale spelling in every key. For example, a ♭3 degree can appear
-beside D♯/E♭; the shared marker still represents one pitch.
+Notes can display both enharmonic names, only sharps/flats, or key-aware spelling.
+Key spelling derives each letter from the written degree formula, including E♯,
+C♭, and double accidentals. The root selector separates common enharmonic tonics;
+an optional validated `tonic` value preserves that choice in URLs and saved practice.
+Without an explicit tonic, the model chooses the simpler spelling, favoring sharps
+on a tie. Contextual MIDI labels retain written octaves, such as B♯3 for sounding C4.
+These display choices preserve pitches, colors, geometry, and playback.
 
 ### Shareable state and device preferences
 
@@ -119,17 +121,19 @@ selection first. The browser keeps root, search, collections, results, and the
 custom formula editor together. Search and
 collection browsing retain the current musical selection until a result is chosen.
 The selected scale and Play action lead into the diagram, keeping the musical
-result close to its controls. A compact introduction replaces the decorative hero.
+result close to its controls. The page begins directly with settings; its main heading remains available to screen readers.
 
 The instrument section includes string count, handedness, fret count, and tuning;
 choosing a custom tuning reveals its pitch fields in place. PDF customization
 remains in its own full-width section below the playing surface.
-An instrument anchor near the title provides a direct route to those settings.
 All settings remain on the homepage without application popup menus.
+On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses
+its heading. The mobile settings use tighter spacing without hiding controls.
 
 Custom formula drafts survive unrelated setting changes. Selecting a named scale
-resets the formula editor to that scale's degrees. Custom tuning and formula
-validation appear beside their inputs. Keyboard selection returns focus to the
+resets the formula editor to that scale's degrees. The apply action appears only
+after an edit; routine formula help stays available to screen readers. Custom
+tuning and formula validation appear beside their inputs. Keyboard selection returns focus to the
 chosen result after its active state updates.
 
 Clickable pattern ranges above the neck select exact string/fret point sets.
@@ -140,6 +144,10 @@ share the neck's SVG geometry and horizontal scrolling. Both ends have vertical 
 through the neck behind the notes; selection strengthens those guides. A marker
 toggles on with a click, Enter, or Space, and toggles off when activated again. Pressed
 state and keyboard focus survive the SVG update.
+A restrained inline caption names the selected pattern and its lowest note and
+degree. It does not repeat the fret span already drawn on the bracket or add a
+note-count card. The lowest note is distinct from the tonic where playback begins.
+The full toggle instructions remain accessible to screen readers.
 Six-string guitars with standard tuning intervals (including uniform
 transpositions) use verified five-position CAGED templates for major and natural
 minor scales. Major position numbers follow E, D, C, A, G shape order; minor
@@ -198,9 +206,11 @@ that system; it is never reinterpreted as a CAGED position. New pattern links re
 valid selected marker in
 the chosen neck view.
 
-Display controls, tempo, repeat, and the interactive note/degree table sit below
-the diagram, where they remain available without preceding the visual result.
-Note feedback and the share action sit directly beneath the diagram. The main
+Display controls, tempo, repeat, and a single interactive reference row sit below
+the diagram. That row follows the chosen note or degree labels. The root legend
+and share action share one footer beneath the neck; note feedback appears there
+only after inspection. Repeated playback hints, suggested exercises, the lesson
+section, and a visible orientation sentence are omitted. The main
 board has one tab stop, with arrow keys moving along strings and frets in the displayed orientation.
 The page groups these controls by their musical task and stacks the groups on
 phones. The rationale and research sources are recorded in [design.md](design.md).
@@ -209,9 +219,10 @@ Assistive-technology compatibility still needs broader validation.
 ### Procedural instrument audio
 
 The string model uses Karplus–Strong synthesis, an averaging loop, a fractional
-delay correction, damping, and body coloration. The fractional correction avoids
-rounding every note's delay to an integer number of samples. Guitar and bass have
-different excitation and decay settings.
+delay correction, damping, and body coloration. A shaped harmonic pluck supplies
+a stable fundamental, with filtered pick noise for attack texture and separate
+guitar/bass harmonic balance and decay settings. The fractional correction avoids
+rounding every note's delay to an integer number of samples.
 
 An LRU cache holds up to 48 generated mono buffers. Sources play through a gain
 stage and compressor. Stop fades active voices and cancels scheduled ones; a
@@ -223,6 +234,11 @@ uses a complete available octave when possible, with partial-route handling
 for sparse custom scales. Tempo controls the interval between note
 onsets. Repeat schedules one pass at a time with a one-beat rest after each pass.
 Changing the setup or pattern cancels the current pass.
+
+Hear tonic uses quiet sine oscillators at the root and octave with short gain
+fades. It has independent lifecycle state, so stopping a scale leaves the tonic
+reference playing. Root, instrument, string-count, or tuning changes stop it,
+as do page hiding and navigation. It never starts from saved preferences or URLs.
 
 The note and degree table doubles as a set of pitch controls. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and
@@ -241,12 +257,11 @@ rendering. Export estimates reuse that planner, including additional contents
 pages for a large catalog.
 
 The PDF section beneath the fretboard keeps contents, reference-note choices,
-the current configuration, and a page estimate visible beside the download action.
+and a page estimate beside the download action. It omits the repeated configuration
+card and format description.
 The browser captures the selected configuration and export scope before awaiting
 libraries or rendering. Progress and cancellation operate on that export, so a
 later state change cannot silently rename a PDF generated from an earlier state.
-The displayed export configuration stays with that snapshot while it is building,
-then refreshes to the current setup when the operation finishes.
 Larger atlases still require more browser memory and time.
 
 ### Cache-consistent releases
@@ -268,7 +283,7 @@ open-string pitches. Equivalent enharmonic custom tunings can match, while octav
 and string-count differences are significant.
 
 The browser provides configurable scale-reference exports in the PDF section
-beneath the fretboard. It previews the current setup and allows a selected scale,
+beneath the fretboard. It allows a selected scale,
 family, or full catalog, with all 12 reference notes available for selected-scale
 exports.
 

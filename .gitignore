@@ -8,3 +8,5 @@ __pycache__/
 !.env.example
 
 output/pdf/
+playwright-report/
+test-results/

@@ -3,7 +3,7 @@ import { guidePlan } from './guide-layout.mjs';
 
 const setupKeys = ['instrument', 'strings', 'tuning', 'customTuning', 'hand', 'frets'];
 const preferenceKeys = ['lang', 'spelling', 'labels', 'allNotes'];
-const musicKeys = ['root', 'scale', 'formula'];
+const musicKeys = ['root', 'tonic', 'scale', 'formula'];
 const ranges = ['full', 'lower', 'upper'];
 const validRange = (id) =>
   ranges.includes(id) ||
@@ -61,7 +61,7 @@ export function rememberWorkspace(saved, state) {
       neckView: state.neckView === 'full' ? 'full' : 'octave',
     },
     practice: {
-      ...pick(s, ['root', 'scale']),
+      ...pick(s, ['root', 'tonic', 'scale']),
       ...(s.scale === 'custom' ? { formula: s.formula } : {}),
       ...(validRange(state.range) ? { range: state.range } : {}),
     },

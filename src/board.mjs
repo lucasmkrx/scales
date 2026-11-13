@@ -167,6 +167,6 @@ export function boardSvg(state, options = {}) {
     .join('');
   const accessibility = small
     ? 'aria-hidden="true" focusable="false"'
-    : `role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="play-hint" data-hand="${model.state.hand}"`;
+    : `role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="keyboard-notes orientation" data-hand="${model.state.hand}"`;
   return `<svg viewBox="0 0 ${l.width} ${height + ranges.height}" xmlns="http://www.w3.org/2000/svg" ${accessibility}><g transform="translate(0 ${ranges.height})">${el.slice(0, noteLayerStart).join('')}</g>${guides}${markers ? `<g role="group" aria-label="${escape(t.patterns)}">${markers}</g>` : ''}<g transform="translate(0 ${ranges.height})">${el.slice(noteLayerStart).join('')}</g></svg>`;
 }

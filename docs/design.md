@@ -40,13 +40,29 @@ Our inference is that the current problem is competing visual priorities and a
 long path to the diagram. A quieter hierarchy can retain functionality while
 making the main task easier to identify.
 
-Use a compact introduction, a concise scale browser beside instrument setup
-above the board, and one prominent exploration surface. The two setup groups
+Begin directly with a concise scale browser beside instrument setup above the
+board and one prominent exploration surface. The two setup groups
 stack on phones, with scale selection first. Keep the selected scale, Play action,
 pattern ranges, and fretboard closely related. Reduce repeated selected-scale summaries,
 tuning pitches, and formulas. Keep instrument controls grouped next to music
 selection, and give export work a quieter inline section below the board. Use alignment, spacing,
 and consistent type sizes before adding more cards or decorative elements.
+
+On phones, a sticky current-scale shortcut gives a direct route to the fretboard
+while leaving the settings visible in normal page order. Activating it focuses
+the scale heading below the shortcut. A single inline caption explains the selected
+pattern and its lowest note and degree. The bracket already supplies its fret span.
+The caption does not call the lowest note the playback start, since playback
+begins on the tonic.
+
+The optional tonic reference shares the playback area with tempo and repeat but
+has an independent stop control. Key spelling adds one display choice and
+enharmonic entries to the existing root selector, keeping the control surface
+small while making written scale degrees available. Routine help is kept in
+accessible descriptions; validation and meaningful status remain visible. The
+custom formula stays inline, with its apply action appearing after an edit. A
+single reference row follows the current note/degree mode. Repeated setup cards,
+practice prose, and the PDF configuration summary are removed.
 
 ## Constraints
 
@@ -168,8 +184,8 @@ playing, compact Position 1, and frets 0–12. After local fonts loaded:
 
 | Viewport width | Scale panel top | Pattern-and-neck surface top | Settings layout               |
 | -------------- | --------------- | ---------------------------- | ----------------------------- |
-| 1360px         | 554px           | 686px                        | Side by side, each 415px high |
-| 390px          | 1008px          | 1236px                       | Stacked                       |
+| 1360px         | 495px           | 608px                        | Side by side, each 394px high |
+| 390px          | 835px           | 1017px                       | Stacked                       |
 
 Both captures contain the page width without horizontal page overflow. The phone
 scrolls the fixed-size diagram inside its own surface.

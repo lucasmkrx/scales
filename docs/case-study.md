@@ -33,9 +33,11 @@ changes the actual notes and patterns rather than relabeling a standard diagram.
 The initial interface collected setup, scale browsing, display settings, and PDF
 export in one sidebar. The current workspace keeps instrument setup and a
 searchable scale catalog above the fretboard, with the custom formula editor
-visible in the scale card. Tempo, repeat, and display controls sit beside the
-playing surface. Compact position buttons select nearby ranges, frets 0–12, or
-the full neck and follow the selected handedness. These groups stack on phones.
+visible in the scale card, with its apply action shown only after editing. Tempo,
+repeat, and display controls sit beside the playing surface. Thin pattern brackets
+select exact fingerings; a separate switch chooses frets 0–12 or the full neck.
+These groups stack on phones. Repeated instructions, setup cards, and practice
+prose are removed from the main flow.
 Browsing retains the current musical selection until the player chooses a result.
 
 PDF exports evolved into a complete reference layout: cover, clickable contents,
@@ -54,7 +56,7 @@ sample catalog or an external audio service.
 | ---------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Altered and extended-range tunings       | Store sounding pitches including octaves, then derive each fret           | Custom input must include octave numbers and ascending pitches   |
 | Left-handed diagrams                     | Mirror horizontal geometry while retaining text and string order          | Requires geometry checks beyond checking note names              |
-| Pitch names versus scale degrees         | Offer both enharmonic names while preserving degree formulas              | Common pitch names can differ from formal diatonic spelling      |
+| Pitch names versus scale degrees         | Offer familiar enharmonic labels and degree-aware Key spelling            | Explicit enharmonic tonic choices add state-validation cases     |
 | Web and print consistency                | Share the music model and keep separate rendering geometry                | The two drawing systems still need their own layout checks       |
 | Reproducible links and remembered setups | Validate URL state and let explicit fields override local preferences     | Persistent state has more edge cases than a fresh-page-only tool |
 | Accurate synthesized pitch               | Use fractional delay instead of rounding the string loop to whole samples | More DSP complexity than a basic oscillator                      |
@@ -67,12 +69,13 @@ The [architecture document](architecture.md) explains these choices in more deta
 The automated pitch-model loop checks
 35,376 tuning/scale/root combinations, while targeted tests cover geometry,
 state restoration, actual bass octaves, PDF links, and generated audio pitch.
-Manual browser checks cover setup changes, scale search, keyboard navigation,
-playback controls, downloads, cancellation, and responsive layouts.
+The permanent Playwright suite covers patterns, keyboard navigation, mobile
+layouts, saved settings, key spelling, audio controls, and PDF cancellation/download
+across Chromium, Firefox, and WebKit. Visual reviews inspect full pages and PDFs.
 
 Validation to date focuses on musical correctness, implemented behavior, and
 browser flows. Structured usability sessions with the intended players,
-automated browser-flow tests, broader device testing, and reproducible performance
+broader physical-device testing, and reproducible performance
 measurements remain on the [roadmap](roadmap.md).
 
 ## Development process

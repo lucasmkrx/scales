@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
     "build": "node scripts/build.mjs",
     "dev": "node scripts/serve.mjs",
     "generate": "node scripts/generate.mjs",
@@ -17,6 +18,7 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "prettier": "3.9.10"
   }
 }

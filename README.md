@@ -23,12 +23,15 @@ Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrumen
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
-PDF customization stays inline below the playing surface.
+PDF customization stays inline below the playing surface, with contents, reference-note options, a page estimate, and Download PDF. Repeated setup summaries and instructional sections are omitted.
+On phones, a sticky current-scale shortcut jumps directly to the fretboard while
+keeping every setting on the homepage.
 The fretboard starts at frets 0–12. A sliding switch beside playback in the
 fretboard header reveals the full neck. Thin pattern brackets sit above the
 frets they cover, labeled with the pattern number, shape, and fret range.
 Vertical boundary guides connect each bracket to the neck. Click one to highlight its exact string-and-fret shape;
 click it again to return the visible scale notes to color.
+A compact caption names the selected pattern and its lowest note; fret ranges stay on the brackets.
 Six-string guitar offers five compact CAGED positions for major and natural
 minor, five two-notes-per-string shapes for major/minor pentatonic, and five
 blues patterns with the extra blue notes. The other major-scale modes, harmonic
@@ -37,7 +40,9 @@ string. Diminished scales use four notes per string. Seven-string guitar uses
 three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
-Playback tempo, repeat, note labels, and spelling sit below the diagram. Tap a note or degree to inspect its locations, or try the short exercise.
+Playback tempo, repeat, note labels, and spelling sit below the diagram. A single interactive reference row follows the chosen note or degree labels; tapping one highlights its locations.
+Hear tonic adds a quiet sustained root independently of scale playback. Key spelling
+follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
 Only complete patterns that fit the selected view are offered. A whole pattern
 can move by an octave to fit; its notes are never clipped individually. Full neck
 reveals patterns that do not fit frets 0–12. The app remembers your view and
@@ -92,8 +97,8 @@ The [design notes](docs/design.md) explain the research and layout decisions.
 
 The app uses native browser modules, SVG, Web Audio, and local font assets.
 Node.js provides the test runner, static build, preview server, and PDF CLI.
-pdf-lib and fontkit are vendored with their license notices; Prettier is the only
-npm development dependency. See the [design tradeoffs](docs/architecture.md#decisions-and-tradeoffs)
+pdf-lib and fontkit are vendored with their license notices. Prettier and Playwright
+are development dependencies. See the [design tradeoffs](docs/architecture.md#decisions-and-tradeoffs)
 and [project case study](docs/case-study.md) for the reasoning behind this approach.
 
 ## Run locally
@@ -125,7 +130,18 @@ The automated pitch-model tests enumerate
 **35,376 tuning/scale/root combinations**; other checks cover mirrored geometry,
 custom input rejection, shared state, PDF navigation and font embedding, and
 synthesized pitch at two sample rates. GitHub Actions runs formatting checks,
-tests, and the build before publishing pushes to `main`.
+tests, the build, and Playwright browser checks before publishing pushes to `main`.
+
+Run the browser suite locally after installing its engines:
+
+```sh
+npm ci
+npx playwright install chromium firefox webkit
+npm run test:browser
+```
+
+The suite covers Chromium, Firefox, and WebKit, including mobile layouts,
+pattern selection, key spelling, saved settings, audio controls, and PDF downloads.
 
 Browser flows and visual output receive separate manual checks. See
 [testing and known limits](docs/testing.md) for the evidence, reproduction
