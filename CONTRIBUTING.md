@@ -27,8 +27,8 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
   formulas for scales, plus a reliable musical reference.
 - Keep existing IDs stable so shared links keep working. Document aliases rather
   than duplicating the same scale under different names.
-- Include English and Brazilian Portuguese names or explain which translation
-  needs review. Keep musical facts separate from generated drawing coordinates.
+- Include American English, Brazilian Portuguese, and Latin American Spanish names
+  or explain which translation needs review. Keep musical facts separate from generated drawing coordinates.
 - Check altered tunings, extended string counts, both orientations, and labels.
   Changes to the music model must also be checked in an exported PDF.
 

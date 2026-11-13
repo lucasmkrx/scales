@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInThisContext } from 'node:vm';
 import { createAtlas } from '../src/pdf.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
+import { SCALES } from '../src/catalog.mjs';
 for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
   runInThisContext(
     await readFile(new URL(`../public/vendor/${name}`, import.meta.url), 'utf8'),
@@ -31,6 +33,22 @@ test('downloaded guides embed the book fonts and link the contents to real pages
       spelling: 'both',
     },
     {
+      instrument: 'guitar',
+      strings: 7,
+      tuning: 'guitar-7-drop-a',
+      hand: 'left',
+      root: 1,
+      lang: 'es',
+      scale: 'harmonic-minor',
+      spelling: 'both',
+    },
+    {
+      instrument: 'bass',
+      strings: 6,
+      lang: 'es',
+      scale: 'diminished-7',
+    },
+    {
       instrument: 'bass',
       strings: 4,
       tuning: 'custom',
@@ -47,8 +65,22 @@ test('downloaded guides embed the book fonts and link the contents to real pages
     assert.deepEqual(doc.getPage(2).getSize(), { width: 841.89, height: 595.28 });
     assert.equal(
       doc.catalog.get(PDFLib.PDFName.of('Lang')).decodeText(),
-      state.lang === 'pt' ? 'pt-BR' : 'en-US',
+      LANGUAGES[state.lang].tag,
     );
+    if (state.lang === 'es') {
+      assert.match(doc.getTitle(), /Guitarra|Bajo/);
+      assert.ok(
+        doc.getTitle().includes(SCALES.find((scale) => scale.id === state.scale).name.es),
+      );
+      assert.match(doc.getSubject(), /práctica guiada/);
+      assert.match(doc.getKeywords(), /es-419/);
+      const outlines = doc.context.lookup(doc.catalog.get(PDFLib.PDFName.of('Outlines')));
+      const first = doc.context.lookup(outlines.get(PDFLib.PDFName.of('First')));
+      assert.equal(
+        first.get(PDFLib.PDFName.of('Title')).decodeText(),
+        'Portada e índice',
+      );
+    }
     const annots = doc.getPage(0).node.Annots();
     assert.equal(annots.size(), 4);
     for (let i = 0; i < annots.size(); i++) {

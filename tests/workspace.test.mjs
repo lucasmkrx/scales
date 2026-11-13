@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { selection, SCALES } from '../src/music.mjs';
 import {
   restoreWorkspace,
+  restoreRange,
   rememberWorkspace,
   readPreferences,
   changeSetup,
@@ -89,6 +90,71 @@ test('custom tuning pitches are remembered for their own instrument and string c
   assert.notEqual(other.tuning, 'custom');
   const recalled = changeSetup(other, { strings: 4 }, saved);
   assert.deepEqual(selection(recalled).tuningData.notes, [24, 31, 36, 41]);
+});
+test('the last root, custom scale, and position resume without overriding shared music', () => {
+  const original = restoreWorkspace({
+    root: 9,
+    scale: 'custom',
+    formula: '1 b3 5 b7',
+    lang: 'es',
+  });
+  const saved = readPreferences(
+    JSON.stringify(rememberWorkspace({}, { ...original, range: '5-9' })),
+  );
+  for (const query of [{}, { lang: 'pt-BR' }, { labels: 'degrees' }]) {
+    const restored = restoreWorkspace(query, saved);
+    assert.equal(restored.root, 9);
+    assert.equal(restored.scale, 'custom');
+    assert.equal(restored.formula, original.formula);
+    assert.equal(restoreRange(query, saved), '5-9');
+  }
+  assert.equal(restoreWorkspace({ lang: 'pt-BR' }, saved).lang, 'pt');
+
+  const named = restoreWorkspace({ scale: 'natural-minor', root: 2 }, saved);
+  assert.equal(named.root, 2);
+  assert.equal(named.scale, 'natural-minor');
+  assert.equal(named.formula, undefined);
+  const linkedCustom = restoreWorkspace(
+    { scale: 'custom', root: 5, formula: '1 2 4 5' },
+    saved,
+  );
+  assert.equal(linkedCustom.formula, '1 2 4 5');
+  assert.equal(linkedCustom.root, 5);
+  assert.equal(restoreWorkspace({ root: 7 }, saved).scale, 'major');
+  assert.equal(restoreWorkspace({ scale: 'custom' }, saved).scale, 'major');
+
+  const nextSaved = rememberWorkspace(saved, { ...named, range: 'upper' });
+  assert.equal(nextSaved.practice.formula, undefined);
+  assert.equal(restoreWorkspace({}, nextSaved).root, 2);
+  assert.equal(restoreRange({}, nextSaved), 'upper');
+});
+test('shared ranges, older links, and malformed saved practice have predictable fallbacks', () => {
+  const original = restoreWorkspace({ root: 7, scale: 'minor-pentatonic' });
+  const saved = rememberWorkspace({}, { ...original, range: '8-12' });
+  assert.equal(restoreRange({ range: '3-7' }, saved), '3-7');
+  assert.equal(restoreRange({ frets: '24' }, saved), 'full');
+  assert.equal(restoreRange({ frets: '24', range: '0-4' }, saved), '0-4');
+  assert.equal(restoreRange({ root: '2' }, saved), 'lower');
+  assert.equal(restoreRange({ scale: 'major' }, saved, { mobile: true }), '0-4');
+  assert.equal(restoreRange({ range: 'invalid' }, saved), 'lower');
+  assert.equal(restoreRange({ range: 'invalid' }, saved, { mobile: true }), '0-4');
+
+  const legacy = { ...saved };
+  delete legacy.practice;
+  assert.equal(restoreWorkspace({}, legacy).root, 0);
+  assert.equal(restoreWorkspace({}, legacy).scale, 'major');
+  assert.equal(restoreRange({}, legacy), 'lower');
+  assert.equal(restoreRange({}, legacy, { mobile: true }), '0-4');
+
+  const malformed = {
+    ...saved,
+    practice: { root: 'NaN', scale: 'custom', formula: '1 5 3', range: '99-100' },
+  };
+  const restored = restoreWorkspace({}, malformed);
+  assert.equal(restored.root, 0);
+  assert.equal(restored.scale, 'major');
+  assert.equal(restoreRange({}, malformed), 'lower');
+  assert.equal(rememberWorkspace(saved, restored).practice.formula, undefined);
 });
 test('export estimates include covers, reading pages, and additional contents pages', () => {
   assert.deepEqual(exportPreview({ scale: 'major' }), { count: 1, pages: 3 });

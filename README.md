@@ -5,7 +5,7 @@
 [![Tests, formatting, and deployment](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml)
 [![Code license: MIT](https://img.shields.io/badge/code-MIT-20343f)](LICENSE)
 
-[**Try the live app**](https://lucasmkrx.github.io/scales/) · [Português](https://lucasmkrx.github.io/scales/?lang=pt) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
+[**Try the live app**](https://lucasmkrx.github.io/scales/) · [Português](https://lucasmkrx.github.io/scales/?lang=pt) · [Español](https://lucasmkrx.github.io/scales/?lang=es) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
 
 ![Scales showing a left-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
 
@@ -17,11 +17,17 @@ backend, analytics, or external API.
 
 ## See it work
 
-![A short walkthrough of choosing a scale, exploring the fretboard, and opening PDF export](docs/assets/walkthrough.gif)
+![A short walkthrough of choosing a scale, exploring the fretboard, and customizing a PDF](docs/assets/walkthrough.gif)
 
 Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
-Choose a practice position to zoom the map. Play the scale, switch between notes and degrees, or copy a link to the current range.
+Instrument setup and the searchable scale catalog sit directly above the fretboard.
+Choose a nearby range, frets 0–12, or the full neck with the colored position buttons.
+Playback tempo, repeat, note labels, and spelling are available beside the playing
+surface. Tap a note or degree to inspect its locations, or try the short exercise.
+The app remembers your last selection, and copied links open the same range.
+PDF settings below the fretboard show the contents, reference-note options, and
+page estimate before you download.
 These examples demonstrate the controls; choosing a scale for a backing track
 also depends on its chords.
 
@@ -29,8 +35,8 @@ also depends on its chords.
 <summary>Mobile workspace and printable output</summary>
 
 <p>
-<img src="docs/assets/mobile.png" alt="Scales on a phone, with root and scale controls above the fretboard" width="320">
-<img src="docs/assets/mobile-picker.png" alt="The searchable scale picker presented as a mobile sheet" width="320">
+<img src="docs/assets/mobile.png" alt="Scales on a phone, with playback, display controls, and the fretboard" width="320">
+<img src="docs/assets/mobile-picker.png" alt="The inline scale catalog searching for pentatonic scales on a phone" width="320">
 </p>
 
 ![A generated A4 landscape reference page with a full neck, nearby positions, notes, and degrees](docs/assets/pdf-reference.png)
@@ -44,12 +50,13 @@ also depends on its chords.
   plus custom tuning pitches and scale formulas.
 - Left- and right-handed fretboards, 20–24 fret options, note or degree labels,
   and shared sharp/flat names on a single pitch marker.
-- American English and Brazilian Portuguese, remembered instrument setups,
+- American English (`en-US`), Brazilian Portuguese (`pt-BR`), and Latin American Spanish (`es-419`), remembered instrument setups,
   keyboard controls, and shareable URLs.
 - Locally synthesized guitar and bass playback, plus vector PDF atlases for a
   scale, a family, or the named catalog.
-- Four [guided books](public/guides/), matched to language, instrument, string
-  count, handedness, and tuning. Browse all editions or generate a scale atlas for your setup.
+- Inline PDF customization with a Download PDF action beneath the fretboard.
+  Choose the current scale, its family, or the full catalog, with all 12 reference
+  notes available for a selected scale.
 
 ## Engineering highlights
 
@@ -122,6 +129,7 @@ to one selected scale. The CLI shares the browser's PDF generator.
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 - [Musical and implementation references](docs/references.md)
+- [Original English and Portuguese lesson PDFs](public/guides/)
 
 Maintained by [Lucas Marques](https://github.com/lucasmkrx). The
 [case study](docs/case-study.md#development-process) describes the project's

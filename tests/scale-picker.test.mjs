@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scaleGroups, COMMON_SCALES, initialScaleView } from '../src/scale-picker.mjs';
-import { SCALES } from '../src/catalog.mjs';
+import { SCALES, FAMILIES } from '../src/catalog.mjs';
 import { boardSvg } from '../src/board.mjs';
 const ids = (options) => scaleGroups(options).flatMap((g) => g.scales.map((s) => s.id));
 test('common scales are a focused starting set, and the full catalog has no duplicates or omissions', () => {
@@ -20,10 +20,13 @@ test('common scales are a focused starting set, and the full catalog has no dupl
   assert.equal(initialScaleView('minor-triad'), 'arpeggios');
   assert.equal(initialScaleView('custom'), 'all');
 });
-test('search spans all collections, matches both languages and aliases, and ignores accents and word order', () => {
+test('search spans all collections, matches all three languages and aliases, and ignores accents and word order', () => {
   assert.ok(ids({ search: 'dórico', view: 'common' }).includes('dorian'));
   assert.ok(ids({ search: 'pentatonica menor' }).includes('minor-pentatonic'));
   assert.deepEqual(ids({ search: 'aeolian' }), ['natural-minor']);
+  assert.deepEqual(ids({ search: 'semidisminuido', lang: 'en' }), ['half-diminished']);
+  assert.deepEqual(ids({ search: 'aumentada triada', lang: 'pt' }), ['augmented-triad']);
+  assert.deepEqual(ids({ search: 'jonico', lang: 'es' }), ['major', 'ionian-augmented']);
   assert.deepEqual(ids({ search: 'something missing' }), []);
   assert.deepEqual(ids({ view: 'common', search: '  ' }), COMMON_SCALES);
   const settings = Object.freeze({
@@ -89,4 +92,27 @@ test('SVG open-string labels show both names on one marker in either orientation
         [...sharp.matchAll(/<g class="(?:note|preview-note) /g)].length,
       );
     }
+});
+
+test('every scale and collection is named in each supported language', () => {
+  for (const lang of ['en', 'pt', 'es']) {
+    for (const scale of SCALES) {
+      assert.equal(typeof scale.name[lang], 'string', scale.id);
+      assert.ok(scale.name[lang].trim(), scale.id);
+    }
+    for (const [id, names] of Object.entries(FAMILIES)) {
+      assert.ok(names[lang]?.trim(), id);
+    }
+    for (const group of scaleGroups({ view: 'all', lang })) {
+      if (group.id !== 'common') assert.ok(group.label);
+    }
+  }
+});
+
+test('seventh-chord labels distinguish chord quality and preserve diminished seventh spelling', () => {
+  const scale = (id) => SCALES.find((entry) => entry.id === id);
+  assert.equal(scale('major-7').name.pt, 'Maior com sétima maior');
+  assert.equal(scale('minor-7').name.es, 'Menor con séptima menor');
+  assert.deepEqual(scale('half-diminished').formula, ['1', 'b3', 'b5', 'b7']);
+  assert.deepEqual(scale('diminished-7').formula, ['1', 'b3', 'b5', 'bb7']);
 });

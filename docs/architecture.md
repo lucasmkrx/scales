@@ -13,7 +13,7 @@ flowchart TD
     UI[User controls] --> State
     Catalog[Scale intervals and tuning pitches] --> Music[Selected music and pitch model]
     State --> Music
-    Music --> SVG[SVG fretboard and positions]
+    Music --> SVG[Interactive SVG fretboard]
     Music --> Layout[PDF geometry and contents plan]
     Layout --> PDF[Vector PDF atlas]
     Music --> Sequence[Ascending and descending MIDI sequence]
@@ -28,19 +28,21 @@ the selected root; the displayed label is separate from the sounding pitch.
 
 ## Module boundaries
 
-| Module                                      | Responsibility                                                                                      |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [catalog.mjs](../src/catalog.mjs)           | Scale intervals, formulas, bilingual names, aliases, tuning pitches, and mode rotation              |
-| [music.mjs](../src/music.mjs)               | Validate selections; calculate notes, degrees, SVG coordinates, shared URLs, and playback sequences |
-| [workspace.mjs](../src/workspace.mjs)       | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages       |
-| [scale-picker.mjs](../src/scale-picker.mjs) | Curate common choices and search the bilingual catalog without changing the active scale            |
-| [board.mjs](../src/board.mjs)               | Render the shared model into keyboard-accessible SVG markup                                         |
-| [guide-layout.mjs](../src/guide-layout.mjs) | Compute tapered PDF geometry, bass octave routes, and paginated contents                            |
-| [pdf.mjs](../src/pdf.mjs)                   | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                 |
-| [string-audio.mjs](../src/string-audio.mjs) | Synthesize strings and manage cached buffers, gain, scheduling, and cancellation                    |
-| [guides.mjs](../src/guides.mjs)             | Match the four existing guided books against the actual configuration                               |
-| [i18n.mjs](../src/i18n.mjs)                 | Interface copy and concise educational descriptions in English and Brazilian Portuguese             |
-| [app.mjs](../src/app.mjs)                   | Coordinate DOM controls, dialogs, rendering, playback, and downloads                                |
+| Module                                      | Responsibility                                                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [catalog.mjs](../src/catalog.mjs)           | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
+| [music.mjs](../src/music.mjs)               | Validate selections; calculate notes, degrees, SVG coordinates, shared URLs, and playback sequences               |
+| [practice.mjs](../src/practice.mjs)         | Visible-position playback sequences, short exercises, and localized interval names                                |
+| [workspace.mjs](../src/workspace.mjs)       | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
+| [scale-picker.mjs](../src/scale-picker.mjs) | Curate common choices and search the multilingual catalog without changing the active scale                       |
+| [board.mjs](../src/board.mjs)               | Render the shared model into keyboard-accessible SVG markup                                                       |
+| [guide-layout.mjs](../src/guide-layout.mjs) | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
+| [pdf.mjs](../src/pdf.mjs)                   | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
+| [string-audio.mjs](../src/string-audio.mjs) | Synthesize strings and manage cached buffers, gain, scheduling, and cancellation                                  |
+| [guides.mjs](../src/guides.mjs)             | Match the four archived lesson PDFs against a configuration                                                       |
+| [locales.mjs](../src/locales.mjs)           | Regional language tags, locale normalization, and tuning names                                                    |
+| [i18n.mjs](../src/i18n.mjs)                 | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
+| [app.mjs](../src/app.mjs)                   | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
 
 The pure model and layout functions can be tested without a browser. The DOM and
 Web Audio integration remain in their respective controllers. See
@@ -90,7 +92,8 @@ beside D♯/E♭; the shared marker still represents one pitch.
 
 The URL contains a reproducible musical configuration. On startup, stored
 preferences are read defensively, explicit URL fields are applied, and the result
-is normalized. Preferences are versioned and optional: unavailable storage does
+is normalized. Bare URLs resume the last root, scale, custom formula, and fret range.
+Explicit musical links take priority over that saved practice selection. Preferences are versioned and optional: unavailable storage does
 not prevent use of the app.
 
 Instrument and string-count setups are recalled separately. Changing instrument
@@ -99,16 +102,30 @@ counts of 21 for guitar and 20 for bass when no explicit choice exists. Custom
 tuning and formula edits commit only after validation. Display changes retain
 horizontal fretboard position; a new setup starts at its open-string end.
 
-### Focused controls and progressive disclosure
+### Inline settings and focused interaction
 
-Root and scale sit beside the board on desktop and above it on phones. The fret-range selector and position cards focus the same interactive diagram. Shared links include the range. The main board has one tab stop, with arrow keys moving along strings and frets in the displayed orientation. Instrument setup, scale browsing,
-display, and export use native modal dialogs, presented as sheets at phone widths.
-Dialogs return focus to their triggers. Scale results support arrow-key browsing
-and explicit selection; search alone never changes the active scale.
+Instrument setup and a searchable scale catalog sit above the fretboard. The
+instrument card includes string count, handedness, fret count, and tuning. Choosing
+a custom tuning reveals its pitch fields in that card. The scale card keeps root,
+search, collections, results, and the custom formula editor together. Search and
+collection browsing retain the current musical selection until a result is chosen.
 
-This reduces the amount of configuration visible during practice, at the cost of
-an extra opening action for secondary settings. Keyboard behavior and actual
-assistive-technology compatibility still need broader validation.
+Custom formula drafts survive unrelated setting changes. Selecting a named scale
+resets the formula editor to that scale's degrees. Custom tuning and formula
+validation appear beside their inputs. Keyboard selection returns focus to the
+chosen result after its active state updates.
+
+Compact colored position buttons choose nearby ranges, frets 0–12, or the full
+neck. Their order and numeric range labels follow handedness, and Full neck stays
+beside the first-position button. The diagram's dimensions depend on the selected
+fret range and string count and stay fixed across viewport sizes. Narrow screens
+scroll the diagram horizontally. Shared links include the selected range.
+
+Tempo and repeat are inline beside Play. Note/degree labels, note spelling, and
+outside-note visibility sit near the diagram. The main board has one tab stop,
+with arrow keys moving along strings and frets in the displayed orientation.
+The page groups these controls by their musical task and stacks the groups on
+phones. Assistive-technology compatibility still needs broader validation.
 
 ### Procedural instrument audio
 
@@ -120,7 +137,15 @@ different excitation and decay settings.
 An LRU cache holds up to 48 generated mono buffers. Sources play through a gain
 stage and compressor. Stop fades active voices and cancels scheduled ones; a
 version token invalidates audio starts waiting for a resumed AudioContext.
-The app prewarms a scale's unique notes before choosing its schedule start time.
+The app prewarms a position's unique notes before choosing its schedule start time.
+Playback uses a complete visible octave when available and otherwise follows the
+notes present in the selected range. Tempo controls the interval between note
+onsets. Repeat schedules one pass at a time with a one-beat rest after each pass.
+Changing the setup or range cancels the current pass.
+
+The note and degree table doubles as a set of pitch controls. Activating a tone
+highlights its pitch class across the visible neck and shows its interval and
+location. Board notes retain their actual string and fret in the detail readout.
 
 This avoids recorded sample downloads and sample-library licensing. It introduces
 DSP complexity and produces a synthesized timbre rather than the range of a
@@ -134,9 +159,13 @@ The generator plans the cover, contents, reading page, and scale pages before
 rendering. Export estimates reuse that planner, including additional contents
 pages for a large catalog.
 
+The PDF section beneath the fretboard keeps contents, reference-note choices,
+the current configuration, and a page estimate visible beside the download action.
 The browser captures the selected configuration and export scope before awaiting
 libraries or rendering. Progress and cancellation operate on that export, so a
 later state change cannot silently rename a PDF generated from an earlier state.
+The displayed export configuration stays with that snapshot while it is building,
+then refreshes to the current setup when the operation finishes.
 Larger atlases still require more browser memory and time.
 
 ### Cache-consistent releases
@@ -151,13 +180,16 @@ revision. CI verifies the published references and tests/builds before deploymen
 
 ## Guided books and licensing boundaries
 
-Book matching checks language, instrument, string count, handedness, and sounding
-open-string pitches. Equivalent enharmonic custom tunings can match; octave or
-string-count differences cannot. The empty state offers a generated scale atlas.
+The four [original lesson PDFs](../public/guides/) are repository source assets
+with their original language, orientation, and tuning. The archived matching
+helper checks language, instrument, string count, handedness, and sounding
+open-string pitches. Equivalent enharmonic custom tunings can match, while octave
+and string-count differences are significant.
 
-The four [guided books](../public/guides/) retain their original full-course
-language, orientation, and tuning. An exported atlas does not become a rewritten
-course simply because its instrument configuration is supported.
+The browser provides configurable scale-reference exports in the PDF section
+beneath the fretboard. It previews the current setup and allows a selected scale,
+family, or full catalog, with all 12 reference notes available for selected-scale
+exports.
 
 Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples
@@ -167,7 +199,7 @@ and any external links retain their own policies.
 ## Extending the system
 
 For a new tuning, provide exact sounding pitches including octaves. For a scale,
-provide intervals, degrees, bilingual names, and aliases. Add entries to
+provide intervals, degrees, names in all three languages, and aliases. Add entries to
 `catalog.mjs`, run the tests, and check the web and PDF layouts. Existing shared
 links depend on stable IDs, so prefer adding aliases over renaming identifiers.
 

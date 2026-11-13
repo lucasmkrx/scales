@@ -28,7 +28,7 @@ export function scaleGroups({ view = 'common', search = '', lang = 'en' } = {}) 
   const words = fold(search).split(/\s+/).filter(Boolean);
   const list = SCALES.filter((s) => {
     if (words.length) {
-      const haystack = fold(`${s.name.en} ${s.name.pt} ${s.aliases.join(' ')}`);
+      const haystack = fold(`${Object.values(s.name).join(' ')} ${s.aliases.join(' ')}`);
       return words.every((w) => haystack.includes(w));
     }
     return view === 'common'
