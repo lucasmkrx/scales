@@ -5,6 +5,7 @@ import { runInThisContext } from 'node:vm';
 import { createAtlas } from '../src/pdf.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 import { SCALES } from '../src/catalog.mjs';
+import { copy } from '../src/i18n.mjs';
 for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
   runInThisContext(
     await readFile(new URL(`../public/vendor/${name}`, import.meta.url), 'utf8'),
@@ -14,6 +15,23 @@ const asset = async (path) =>
   new Uint8Array(await readFile(new URL(`../public/${path}`, import.meta.url)));
 test('downloaded guides embed the book fonts and link the contents to real pages', async () => {
   for (const state of [
+    { instrument: 'guitar', strings: 6, root: 7, scale: 'major', lang: 'en' },
+    {
+      instrument: 'guitar',
+      strings: 6,
+      root: 9,
+      scale: 'minor-pentatonic',
+      hand: 'left',
+      lang: 'pt',
+    },
+    {
+      instrument: 'guitar',
+      strings: 7,
+      tuning: 'guitar-7-standard',
+      root: 0,
+      scale: 'harmonic-minor',
+      lang: 'es',
+    },
     {
       instrument: 'bass',
       strings: 4,
@@ -109,4 +127,48 @@ test('all-key exports keep one scale per map page and support cancellation', asy
   await assert.rejects(() => createAtlas({}, { asset, signal: controller.signal }), {
     name: 'AbortError',
   });
+});
+
+test('main-scale exports name the actual fingering system and include every pattern', async () => {
+  const drawText = PDFLib.PDFPage.prototype.drawText;
+  const rendered = [];
+  PDFLib.PDFPage.prototype.drawText = function (value, options) {
+    rendered.push({ page: this.ref.toString(), value, ...options });
+    return drawText.call(this, value, options);
+  };
+  try {
+    for (const lang of ['en', 'pt', 'es']) {
+      for (const [scale, system, count] of [
+        ['harmonic-minor', 'three-per-string', 7],
+        ['minor-blues', 'blues', 5],
+        ['whole-tone', 'three-per-string', 6],
+        ['diminished-hw', 'four-per-string', 8],
+      ]) {
+        rendered.length = 0;
+        const bytes = await createAtlas({ scale, root: 9, frets: 24, lang }, { asset });
+        const doc = await PDFLib.PDFDocument.load(bytes);
+        assert.equal(doc.getPageCount(), 3);
+        const map = rendered.filter(
+          (item) => item.page === doc.getPage(2).ref.toString(),
+        );
+        const heading =
+          `${copy[lang].patterns} · ${copy[lang].patternSystems[system]}`.toLocaleUpperCase(
+            LANGUAGES[lang].tag,
+          );
+        assert.ok(
+          map.some((item) => item.value === heading),
+          `${lang}: ${scale}`,
+        );
+        const captions = map.filter((item) =>
+          /^(Pattern|Padrão|Patrón) \d+ ·/.test(item.value),
+        );
+        assert.equal(captions.length, count, `${lang}: ${scale}`);
+        assert.ok(captions.every((item) => item.size >= 7));
+        // Captions leave room for a full diagram and fret labels above the legend.
+        assert.ok(captions.every((item) => 595.28 - item.y + 11 + 64 + 12 < 506));
+      }
+    }
+  } finally {
+    PDFLib.PDFPage.prototype.drawText = drawText;
+  }
 });

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { adjacentNote } from '../src/board-navigation.mjs';
 import { boardSvg } from '../src/board.mjs';
+import { scalePatterns } from '../src/patterns.mjs';
 import { copy } from '../src/i18n.mjs';
 
 test('the playable board has one tab stop and position previews contain no controls', () => {
@@ -74,5 +75,66 @@ test('pattern emphasis preserves the complete neck and dims only frets outside i
         /class="[^"]*muted/,
       );
     }
+  }
+});
+
+test('real patterns highlight exact string/fret locations and leave other notes inside their bounds gray', () => {
+  for (const hand of ['left', 'right']) {
+    const state = { root: 7, scale: 'major', hand };
+    const pattern = scalePatterns(state).patterns[3];
+    const points = new Set(pattern.points.map((point) => `${point.row}:${point.fret}`));
+    const svg = boardSvg(state, { focusPoints: pattern.points });
+    const markers = [
+      ...svg.matchAll(/<g class="([^"]*)"[^>]*data-row="(\d+)" data-fret="(\d+)"[^>]*>/g),
+    ];
+    assert.equal(markers.filter(([_, classes]) => !classes.includes('muted')).length, 17);
+    assert.ok(
+      markers.some(
+        ([_, classes, row, fret]) =>
+          classes.includes('muted') &&
+          Number(fret) >= pattern.lo &&
+          Number(fret) <= pattern.hi,
+      ),
+    );
+    for (const [, classes, row, fret] of markers)
+      assert.equal(!classes.includes('muted'), points.has(`${row}:${fret}`));
+  }
+});
+
+test('pattern boundary guides extend from each range bar through the neck behind playable notes', () => {
+  for (const hand of ['left', 'right']) {
+    const state = { root: 0, scale: 'major', hand };
+    const patterns = scalePatterns(state, { hi: 12 }).patterns;
+    const svg = boardSvg(state, {
+      lo: 0,
+      hi: 12,
+      width: 657,
+      height: 229,
+      patterns,
+      selectedPattern: 'caged-major-1',
+    });
+    const guides = [
+      ...svg.matchAll(
+        /<g class="pattern-guides([^"]*)" data-guide="([^"]*)"[^>]*>(.*?)<\/g>/g,
+      ),
+    ];
+    assert.equal(guides.length, patterns.length);
+    assert.equal(guides.filter(([, classes]) => classes.includes('selected')).length, 1);
+    for (const [, , id, content] of guides) {
+      const edges = [
+        ...content.matchAll(
+          /<line[^>]*x1="([^"]+)" x2="([^"]+)" y1="([^"]+)" y2="([^"]+)"/g,
+        ),
+      ];
+      assert.equal(edges.length, 2, id);
+      for (const [, x1, x2, y1, y2] of edges) {
+        assert.equal(x1, x2, 'guide is vertical');
+        assert.ok(Number(y2) > Number(y1) + 180, 'guide reaches the bottom of the neck');
+      }
+    }
+    assert.ok(
+      svg.indexOf('pattern-guides') < svg.indexOf('data-midi='),
+      'notes paint above guides',
+    );
   }
 });

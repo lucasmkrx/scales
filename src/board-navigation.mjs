@@ -21,7 +21,7 @@ export function enableBoardNavigation(board, playNote) {
   board.addEventListener('focusin', (event) => {
     const note = event.target.closest('[data-midi]');
     if (!note || note.tabIndex === 0) return;
-    board.querySelector('[tabindex="0"]')?.setAttribute('tabindex', '-1');
+    board.querySelector('[data-midi][tabindex="0"]')?.setAttribute('tabindex', '-1');
     note.setAttribute('tabindex', '0');
   });
   board.addEventListener('click', (event) => {

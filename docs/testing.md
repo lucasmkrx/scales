@@ -24,22 +24,24 @@ are not automated by that workflow.
 
 ## What the automated tests establish
 
-| Area                          | Evidence                                                                                                                    | Test source                                                                                        |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Catalog and formulas          | Unique, ascending pitch collections agree with their degree formulas; mode rotation is checked against expected intervals   | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Pitch calculation             | 44 tunings × 67 catalog entries × 12 roots = 35,376 configurations; each point agrees with string pitch plus fret           | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Handedness                    | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                     | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
-| Custom input and URLs         | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                       | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Enharmonic labels             | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                            | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
-| Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works         | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
-| Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                       | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
-| Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
-| Practice positions            | Playback and short exercises stay inside the highlighted range, including partial octaves and custom tunings                | [practice.test.mjs](../tests/practice.test.mjs)                                                    |
-| Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                          | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
-| Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents        | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
-| PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                    | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
-| Audio                         | Test seven pitches at 44.1 and 48 kHz with a 3-cent tolerance, decay, repeatability, caching, and stopping scheduled voices | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
-| Published assets              | Check that entry point, stylesheet, and module imports use one revision                                                     | [build.test.mjs](../tests/build.test.mjs)                                                          |
+| Area                          | Evidence                                                                                                                             | Test source                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Catalog and formulas          | Unique, ascending pitch collections agree with their degree formulas; mode rotation is checked against expected intervals            | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Pitch calculation             | 44 tunings × 67 catalog entries × 12 roots = 35,376 configurations; each point agrees with string pitch plus fret                    | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Handedness                    | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                              | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
+| Custom input and URLs         | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                                | [music.test.mjs](../tests/music.test.mjs)                                                          |
+| Enharmonic labels             | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                                     | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
+| Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works                  | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
+| Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                                | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
+| Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                         | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
+| Scale patterns                | Exact string/fret membership, reference fixtures, main-scale coverage, complete routes, tuning restrictions, and honest map fallback | [patterns.test.mjs](../tests/patterns.test.mjs)                                                    |
+| Pattern range markers         | Fret-aligned brackets, distinct pattern rows, mirrored geometry, localized labels, and bounded hit areas                             | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                        |
+| Practice positions            | Playback and exercises follow exact pattern points or the full map, including partial octaves                                        | [practice.test.mjs](../tests/practice.test.mjs)                                                    |
+| Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                                   | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
+| Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents                 | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
+| PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                             | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
+| Audio                         | Test seven pitches at 44.1 and 48 kHz with a 3-cent tolerance, decay, repeatability, caching, and stopping scheduled voices          | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
+| Published assets              | Check that entry point, stylesheet, and module imports use one revision                                                              | [build.test.mjs](../tests/build.test.mjs)                                                          |
 
 Some checks enumerate the full finite catalog; others use representative cases.
 The tests do not independently certify the cultural naming of every scale,
@@ -49,7 +51,7 @@ perceptual realism of synthesized audio, or every possible custom tuning.
 
 Serve a fresh build with `node scripts/serve.mjs` and check the following:
 
-- Confirm scale selection and range controls lead into the fretboard, with note
+- Confirm scale selection and clickable pattern ranges lead into the fretboard, with note
   details and playback/display options below it. Scale selection and instrument
   setup should be side by side on wider screens and stacked on phones, with scale
   selection first. The two panels should have equal height when side by side. PDF settings remain inline below the playing surface, without
@@ -70,23 +72,55 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   labels and active validation messages translate.
 - Use the inline notes/degrees, spelling, and outside-note controls. Confirm that
   settings remain available and horizontal fretboard scroll is retained.
-- Play a low and high position and confirm the sounding MIDI notes are visible.
+- Choose multiple numbered patterns and confirm the sounding string/fret points
+  match the highlights exactly, including when the same MIDI pitch exists elsewhere.
   Change tempo, repeat a position, and stop or change configuration during a pass.
   No old scheduled sequence should continue.
 - Tap notes and degrees in the table, then board notes with the pointer or keyboard.
   Check pitch-class highlights and the exact string/fret detail.
-- Reopen the bare URL to resume the last scale, root, and range. Open an explicit
-  musical shared link to check that it takes priority over saved practice.
+- Start without saved preferences and confirm frets 0–12 is selected. Use the
+  sliding switch to show the full neck, reload, and confirm the view is remembered.
+  Check that the limited-view label changes from 0–12 to 12–0 for left-handed playing.
+  Reopen the bare URL to resume the last scale, root, view, and pattern. Open an
+  explicit musical shared link to check that it takes priority over saved practice.
 - Customize PDF contents and reference notes in the section below the fretboard.
   Preview larger scopes and cancel an export. Change the musical setup during an
   export and confirm its displayed configuration stays with the captured snapshot
   until completion, then refreshes. Compare the page estimate with the output and
   inspect representative pages.
-- Select each position button, frets 0–12, and the full neck. Confirm one selected
-  button, keyboard access, and copied-link restoration. The full neck must keep
-  the same dimensions for every selection, with gray notes only outside the
-  highlighted frets. Full neck restores every scale note to color.
-  Navigate notes with the arrow keys after changing a position.
+- Compare all five major and natural-minor CAGED positions and the pentatonic
+  shapes with the original teaching diagrams. Confirm C major Position 1 contains
+  exactly 17 points at frets 7–10, including high-E fret 8 and no fret 12.
+  Choose every offered pattern;
+  notes at the same fret on different strings must be emphasized independently.
+  Change root and tuning and confirm the shape is recalculated or an explicit
+  unsupported-pattern explanation appears. Test six- and seven-string guitar,
+  uniform detuning, altered tuning intervals, uncommon scales, and generated bass
+  routes. Seven-string major/minor should use the labeled three-notes-per-string
+  system. Check all major-scale modes, harmonic and melodic minor with their
+  modes, both blues scales, whole tone, and both diminished scales. Three- and
+  four-note routes can shift along the neck; they should not be labeled CAGED.
+  Unsupported collections and altered tuning intervals should explain their
+  note-map fallback.
+- In frets 0–12, verify every offered pattern fits completely. Compare octave
+  placements with the full-neck view: a pattern may shift as a whole by 12 frets,
+  but individual notes must not be clipped or wrapped. Select a full-neck pattern
+  that cannot fit, switch to 0–12, and confirm the selection clears and playback
+  stops. The full-neck cue should explain missing pattern numbers.
+- Check old numeric-range links clear the pattern selection, and new pattern links
+  and saved preferences restore valid selections in the chosen neck view. Click a
+  selected pattern bracket again to clear it and restore visible scale notes to color
+  without resetting horizontal scroll. No separate pattern or half-neck buttons
+  should remain. Thin brackets must have readable pattern numbers, shapes, and fret ranges,
+  sit in distinct rows, align with the correct frets in either handedness, and
+  scroll with the diagram. Both ends must have vertical guides continuing through
+  the neck behind notes; the selected guides should be stronger. Test Enter and
+  Space and confirm focus stays on the
+  activated range after the SVG updates. Pattern selection must not resize the
+  neck; only changing the neck view or instrument changes its geometry. Navigate
+  muted and highlighted notes by keyboard and confirm pattern brackets retain access.
+  Check that the 0–12/full-neck switch sits with playback in the header, wraps
+  cleanly on phones, and remains keyboard-operable.
 - Check 320, 390, 720, 860, and 1280 CSS-pixel layouts. Only the fretboard should
   scroll horizontally; inline control groups and the scale results must stay within
   the page width.
@@ -114,9 +148,11 @@ is recorded in [design.md](design.md#layout-measurement).
   spellings such as E♯ and C♭ for every key.
 - **Practice guidance:** the app does not analyze a YouTube track, infer its
   chords, or guarantee that one scale fits an entire progression.
-- **Diagrams:** guitar windows are position references, not prescribed fingerings
-  or a universal CAGED system. Extreme custom tunings can require a position-map
-  fallback when a bass octave route cannot be reached.
+- **Patterns:** compact major/minor positions match the chosen CAGED reference;
+  numbering conventions can differ between teaching systems. These note sets do
+  not prescribe which finger every player must use. Unsupported scale/tuning
+  combinations and unreachable bass routes keep an explicit note-map fallback;
+  the catalog can display more scales than it can offer verified fingerings for.
 - **Audio:** plucked strings are synthesized, not recorded instrument samples.
   Audio needs a user gesture and may be unavailable under browser/device restrictions.
 - **PDFs:** large catalogs use more time and memory; cancellation is available.

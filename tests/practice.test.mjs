@@ -131,3 +131,16 @@ test('interval names preserve the written degree and support all three locales',
       for (const lang of ['en', 'pt', 'es'])
         assert.doesNotMatch(intervalName(degree, lang), /^(degree|grau|grado) /);
 });
+
+test('exercise and octave previews use exact coordinates when given a pattern point set', () => {
+  const state = { root: 0, scale: 'major' };
+  const points = boardModel(state).points;
+  const root = points.find((point) => point.midi === 48);
+  const fifth = points.find((point) => point.midi === 55);
+  const focus = { points: [root, fifth] };
+  assert.deepEqual(practiceExercise(state, focus), ['C', 'G', 'C']);
+  assert.deepEqual(positionSequence(state, focus), {
+    notes: [48, 55, 48],
+    complete: false,
+  });
+});

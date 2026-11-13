@@ -252,6 +252,21 @@
               </p>
             </div>
             <div class="playback-controls">
+              <fieldset class="neck-view-switch" id="neck-view">
+                <legend class="sr-only" data-i18n="neckView">Fretboard view</legend>
+                <label
+                  ><input type="radio" name="neck-view" value="octave" checked /><span
+                    id="neck-octave-label"
+                    >0–12</span
+                  ></label
+                >
+                <label
+                  ><input type="radio" name="neck-view" value="full" /><span
+                    data-i18n="fullNeck"
+                    >Full neck</span
+                  ></label
+                >
+              </fieldset>
               <button type="button" class="primary play-button" id="play">
                 <svg aria-hidden="true" class="icon play-icon">
                   <use href="./assets/controls.svg#play"></use></svg
@@ -263,15 +278,7 @@
           </header>
           <div class="diagram">
             <div class="board-toolbar">
-              <div class="range-controls">
-                <span id="range-label" data-i18n="fretRange">Fret range</span>
-                <div
-                  id="fret-ranges"
-                  class="range-buttons"
-                  role="group"
-                  aria-labelledby="range-label"
-                ></div>
-              </div>
+              <p id="pattern-info" class="hint"></p>
             </div>
             <div class="board-scroll" id="board" tabindex="-1"></div>
             <div class="board-foot">

@@ -33,6 +33,34 @@ ascending/jazz form in both directions; it does not imply classical descending
 natural minor. Modal and non-diatonic progressions can require choices beyond
 one key-scale label; the guides emphasize listening and chord tones.
 
+## Guitar fingering systems
+
+- Compact six-string CAGED positions:
+  [major](https://appliedguitartheory.com/lessons/major-scale/) and
+  [natural minor](https://appliedguitartheory.com/lessons/natural-minor-scale/).
+- Five pentatonic shapes with inserted blue notes:
+  Applied Guitar Theory's [minor blues](https://appliedguitartheory.com/lessons/blues-scale/)
+  and [major blues](https://appliedguitartheory.com/lessons/major-blues-scale/) lessons.
+- Three notes per string and the diatonic modes:
+  [Anyone Can Play Guitar](https://www.anyonecanplayguitar.co.uk/three-note-per-string-scales/).
+- Harmonic-minor three-notes-per-string routes:
+  [Jens Larsen](https://jenslarsen.nl/harmonic-minor-scale-3-notes-per-string/).
+- Melodic-minor three-notes-per-string routes:
+  [Jazz Guitar Licks](https://www.jazz-guitar-licks.com/pages/guitar-scales-modes/modes-of-the-melodic-minor-scale/melodic-minor-scale-guitar-positions.html).
+- Diagonal whole-tone three-notes-per-string routes:
+  [Ren's whole-tone lesson](https://www.renhimself.com/technique/the-whole-tone-scale/).
+- Four-notes-per-string diminished routes and repeated geometry:
+  [Rob Silver's diminished-scale lesson](https://www.rob-silver.com/2012/05/diminished-scale-wholehalf.html).
+- The three-fret diminished repetition:
+  [Ted Greene's diminished sounds](https://tedgreene.com/images/lessons/singlenote/Diminished7thSounds_1976-1977-1978_1.pdf).
+
+Pattern numbers depend on the selected system. CAGED numbers identify chord-form
+positions; generated three- and four-note routes identify their lowest scale
+degree. Symmetric scales repeat interval shapes in different places. Their
+numbered positions are not a claim of unique geometry or a single universal
+fingering convention. Only complete paths are offered, and unsupported setups
+retain their note maps.
+
 ## Audio synthesis
 
 - Jaffe and Smith, _Extensions of the Karplus–Strong Plucked-String Algorithm_:

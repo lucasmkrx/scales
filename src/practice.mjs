@@ -3,9 +3,12 @@ import { normalizeLanguage } from './locales.mjs';
 
 function positionNotes(input, bounds) {
   const model = boardModel({ ...input, allNotes: false }, bounds);
-  const notes = [...new Set(model.points.map((point) => point.midi))].sort(
-    (a, b) => a - b,
-  );
+  const focus =
+    bounds?.points && new Set(bounds.points.map((point) => `${point.row}:${point.fret}`));
+  const points = focus
+    ? model.points.filter((point) => focus.has(`${point.row}:${point.fret}`))
+    : model.points;
+  const notes = [...new Set(points.map((point) => point.midi))].sort((a, b) => a - b);
   return { state: model.state, notes };
 }
 
