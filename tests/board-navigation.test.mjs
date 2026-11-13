@@ -48,3 +48,31 @@ test('spoken note labels identify scale degrees, the root, and outside pitches i
     assert.doesNotMatch(board, /undefined/);
   }
 });
+
+test('pattern emphasis preserves the complete neck and dims only frets outside its bounds', () => {
+  for (const hand of ['left', 'right']) {
+    for (const [instrument, strings, frets] of [
+      ['guitar', 7, 24],
+      ['bass', 5, 20],
+    ]) {
+      const state = { instrument, strings, frets, hand, allNotes: true };
+      const full = boardSvg(state, { width: 1200 });
+      const focused = boardSvg(state, { width: 1200, focusRange: { lo: 5, hi: 9 } });
+      const markers = [
+        ...focused.matchAll(/<g class="([^"]*)"[^>]*data-fret="(\d+)"[^>]*>/g),
+      ];
+      assert.equal(markers.length, strings * (frets + 1));
+      assert.equal(markers.length, [...full.matchAll(/data-fret=/g)].length);
+      for (const [, classes, fret] of markers) {
+        assert.equal(classes.includes('muted'), Number(fret) < 5 || Number(fret) > 9);
+      }
+      assert.match(focused, /tabindex="0"[^>]*data-fret="5"/);
+      assert.match(focused, /fill="#d2d6d1"/);
+      assert.doesNotMatch(full, /class="[^"]*muted/);
+      assert.doesNotMatch(
+        boardSvg(state, { focusRange: { lo: 0, hi: frets } }),
+        /class="[^"]*muted/,
+      );
+    }
+  }
+});

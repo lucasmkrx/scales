@@ -21,10 +21,12 @@ backend, analytics, or external API.
 
 Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
-Instrument setup and the searchable scale catalog sit directly above the fretboard.
-Choose a nearby range, frets 0–12, or the full neck with the colored position buttons.
-Playback tempo, repeat, note labels, and spelling are available beside the playing
-surface. Tap a note or degree to inspect its locations, or try the short exercise.
+The compact scale browser and instrument settings sit side by side above the
+fretboard on wider screens. They stack on phones, with scale selection first.
+PDF customization stays inline below the playing surface.
+The full neck stays visible. Use the colored position buttons to highlight a
+pattern or half of the neck and gray out the remaining notes.
+Playback tempo, repeat, note labels, and spelling sit below the diagram. Tap a note or degree to inspect its locations, or try the short exercise.
 The app remembers your last selection, and copied links open the same range.
 PDF settings below the fretboard show the contents, reference-note options, and
 page estimate before you download.
@@ -35,7 +37,7 @@ also depends on its chords.
 <summary>Mobile workspace and printable output</summary>
 
 <p>
-<img src="docs/assets/mobile.png" alt="Scales on a phone, with playback, display controls, and the fretboard" width="320">
+<img src="docs/assets/mobile.png" alt="Scales on a phone, with the scale browser, fretboard, and playing controls" width="320">
 <img src="docs/assets/mobile-picker.png" alt="The inline scale catalog searching for pentatonic scales on a phone" width="320">
 </p>
 
@@ -57,6 +59,8 @@ also depends on its chords.
 - Inline PDF customization with a Download PDF action beneath the fretboard.
   Choose the current scale, its family, or the full catalog, with all 12 reference
   notes available for a selected scale.
+
+The [design notes](docs/design.md) explain the research and layout decisions.
 
 ## Engineering highlights
 
