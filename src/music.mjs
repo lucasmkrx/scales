@@ -12,6 +12,52 @@ export const PALETTE = {
 };
 export const SHARPS = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
 export const FLATS = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+const LETTERS = 'CDEFGAB';
+const NATURALS = [0, 2, 4, 5, 7, 9, 11];
+function spellingParts(value) {
+  const match = /^([A-G])((?:#{1,2}|b{1,2})?)$/.exec(
+    String(value).trim().replaceAll('♯', '#').replaceAll('♭', 'b'),
+  );
+  if (!match) return null;
+  return {
+    letter: LETTERS.indexOf(match[1]),
+    accidental: match[2].length * (match[2].startsWith('b') ? -1 : 1),
+    tonic: match[1] + match[2],
+  };
+}
+// A degree fixes its letter as well as its pitch. For example, the seventh of
+// F# is E#, and the diminished seventh of C is Bbb rather than A.
+export function spellDegree(tonic, degree) {
+  const root = spellingParts(tonic);
+  const match = /^([b#]{0,2})([1-7])$/.exec(
+    String(degree).replaceAll('♯', '#').replaceAll('♭', 'b'),
+  );
+  if (!root || !match) throw new RangeError('Invalid tonic or scale degree');
+  const index = Number(match[2]) - 1;
+  const alteration = [...match[1]].reduce((n, sign) => n + (sign === '#' ? 1 : -1), 0);
+  const letter = (root.letter + index) % 7;
+  const natural = NATURALS[letter] + 12 * Math.floor((root.letter + index) / 7);
+  const pitch = NATURALS[root.letter] + root.accidental + NATURALS[index] + alteration;
+  const accidental = pitch - natural;
+  return `${LETTERS[letter]}${(accidental < 0 ? '♭' : '♯').repeat(Math.abs(accidental))}`;
+}
+function keySpellings(state) {
+  const explicit = spellingParts(state.tonic);
+  const candidates =
+    explicit && mod(NATURALS[explicit.letter] + explicit.accidental) === state.root
+      ? [explicit.tonic]
+      : [...new Set([SHARPS[state.root], FLATS[state.root]])];
+  // Prefer fewer and simpler accidentals when a shared numeric root does not
+  // specify an enharmonic tonic. A tie keeps the sharp spelling; an explicit
+  // tonic always wins. This is a display convention, not an inferred key signature.
+  return candidates
+    .map((tonic) => {
+      const names = state.scaleData.formula.map((degree) => spellDegree(tonic, degree));
+      const cost = names.reduce((sum, name) => sum + (name.length - 1) ** 2, 0);
+      return { tonic: prettyDegree(tonic), names, cost };
+    })
+    .reduce((best, candidate) => (candidate.cost < best.cost ? candidate : best));
+}
 export const DEFAULT_FRETS = { guitar: 21, bass: 20 };
 export const DEFAULTS = {
   instrument: 'guitar',
@@ -93,9 +139,15 @@ export function normalizeState(input = {}) {
   s.lang = normalizeLanguage(s.lang);
   s.hand = s.hand === 'left' ? 'left' : 'right';
   s.labels = s.labels === 'degrees' ? 'degrees' : 'notes';
-  s.spelling = ['both', 'sharp', 'flat'].includes(s.spelling) ? s.spelling : 'both';
+  s.spelling = ['both', 'sharp', 'flat', 'key'].includes(s.spelling)
+    ? s.spelling
+    : 'both';
   s.root = Number(s.root);
   if (!Number.isInteger(s.root) || s.root < 0 || s.root > 11) s.root = 0;
+  const tonic = spellingParts(s.tonic);
+  if (tonic && mod(NATURALS[tonic.letter] + tonic.accidental) === s.root)
+    s.tonic = tonic.tonic;
+  else delete s.tonic;
   s.frets = [20, 21, 22, 24].includes(Number(input.frets))
     ? Number(input.frets)
     : DEFAULT_FRETS[s.instrument];
@@ -146,16 +198,41 @@ export function selection(input) {
   return { ...s, tuningData: tuning, scaleData: scale };
 }
 export function rootName(state) {
+  if (state.spelling === 'key')
+    return keySpellings(state.scaleData ? state : selection(state)).tonic;
   return noteName(state.root, pitchPreference(state));
 }
 export function pitchPreference(input) {
+  if (input.spelling === 'key') {
+    const { names } = keySpellings(input.scaleData ? input : selection(input));
+    const count = (sign) =>
+      names.reduce((sum, name) => sum + name.split(sign).length - 1, 0);
+    return count('♭') > count('♯') ? 'flat' : 'sharp';
+  }
   return ['sharp', 'flat'].includes(input.spelling) ? input.spelling : 'both';
 }
 export function spellScale(input) {
   const state = input.scaleData ? input : selection(input);
+  if (state.spelling === 'key') return keySpellings(state).names;
   return state.scaleData.intervals.map((interval) =>
     noteName(state.root + interval, pitchPreference(state)),
   );
+}
+export function spelledMidiName(midi, input) {
+  if (input.spelling !== 'key') return midiName(midi, pitchPreference(input));
+  const state = input.scaleData ? input : selection(input);
+  const index = state.scaleData.intervals.indexOf(mod(midi - state.root));
+  if (index < 0) return midiName(midi, pitchPreference(state));
+  const name = keySpellings(state).names[index];
+  const letter = LETTERS.indexOf(name[0]);
+  const accidental = [...name.slice(1)].reduce(
+    (n, sign) => n + (sign === '♭' ? -1 : 1),
+    0,
+  );
+  // Notated octaves follow the letter C boundary, not the enharmonic piano key:
+  // sounding C4 can be B#3, and sounding B3 can be Cb4.
+  const octave = (midi - NATURALS[letter] - accidental) / 12 - 1;
+  return `${name}${octave}`;
 }
 const printFretColors = {
   open: '#eff3f5',
@@ -256,6 +333,7 @@ export function sharedState(s) {
   const clean = normalizeState(s);
   const params = new URLSearchParams();
   for (const k of Object.keys(DEFAULTS)) params.set(k, String(clean[k]));
+  if (clean.tonic) params.set('tonic', clean.tonic);
   if (clean.tuning === 'custom') params.set('customTuning', clean.customTuning);
   if (clean.scale === 'custom') params.set('formula', clean.formula);
   return params.toString();

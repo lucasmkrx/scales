@@ -226,3 +226,15 @@ test('neck view defaults to 0–12, remembers an explicit choice, and respects s
   assert.equal(restoreNeckView({ neck: 'invalid' }, saved), 'octave');
   assert.equal(restoreNeckView({}, { preferences: { neckView: 'broken' } }), 'octave');
 });
+
+test('explicit enharmonic tonics survive saved practice and musical links', () => {
+  const state = { root: 6, tonic: 'Gb', scale: 'major', spelling: 'key' };
+  const saved = rememberWorkspace({}, state);
+  assert.equal(restoreWorkspace({}, saved).tonic, 'Gb');
+  assert.equal(
+    restoreWorkspace({ root: 6, tonic: 'F#', scale: 'major', spelling: 'key' }, saved)
+      .tonic,
+    'F#',
+  );
+  assert.equal(restoreWorkspace({ root: 9, scale: 'major' }, saved).tonic, undefined);
+});

@@ -12,6 +12,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,6 +23,20 @@ jobs:
       - run: npm run format:check
       - run: node --test tests/*.test.mjs
       - run: node scripts/build.mjs
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Check browser flows
+        run: npm run test:browser
+      - name: Upload browser failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
       - uses: actions/upload-pages-artifact@v4
         if: github.event_name != 'pull_request'
         with:

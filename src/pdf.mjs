@@ -917,9 +917,9 @@ export async function createAtlas(
             'En los mapas pequeños, T indica tónica y F indica fundamental. Los grados expresan intervalos desde esa nota. Los signos ♯ y ♭ indican sostenido y bemol.',
           ),
           tr(
-            'Both shows enharmonic names, such as C♯/D♭. These labels use familiar pitch names. The formulas retain each interval’s meaning.',
-            'A opção Ambos mostra nomes enarmônicos, como C♯/D♭. A = lá, B = si, C = dó, D = ré, E = mi, F = fá, G = sol. As fórmulas mostram os intervalos.',
-            'La opción Ambas muestra nombres enarmónicos, como C♯/D♭. A = la, B = si, C = do, D = re, E = mi, F = fa, G = sol. Las fórmulas muestran los intervalos.',
+            'Key follows written degrees, including E♯, C♭, and B♯. Both shows pairs such as C♯/D♭. Spelling changes names, not sounding pitches.',
+            'Da escala segue os graus (E♯, C♭, B♯); Ambos mostra C♯/D♭. A = lá, B = si, C = dó, D = ré, E = mi, F = fá, G = sol. A altura não muda.',
+            'De la escala sigue los grados (E♯, C♭, B♯); Ambas muestra C♯/D♭. A = la, B = si, C = do, D = re, E = mi, F = fa, G = sol. La altura no cambia.',
           ),
         ],
       ],

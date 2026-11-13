@@ -172,3 +172,40 @@ test('main-scale exports name the actual fingering system and include every patt
     PDFLib.PDFPage.prototype.drawText = drawText;
   }
 });
+
+test('key-spelled PDFs retain distinct enharmonic tonics and written scale notes', async () => {
+  const drawText = PDFLib.PDFPage.prototype.drawText;
+  const rendered = [];
+  PDFLib.PDFPage.prototype.drawText = function (value, options) {
+    rendered.push({ page: this.ref.toString(), value });
+    return drawText.call(this, value, options);
+  };
+  try {
+    for (const [root, tonic, lang, expected, unwanted] of [
+      [6, 'F#', 'en', 'E♯', 'C♭'],
+      [6, 'Gb', 'pt', 'C♭', 'E♯'],
+      [1, 'C#', 'es', 'B♯', 'C♭'],
+    ]) {
+      rendered.length = 0;
+      const bytes = await createAtlas(
+        { root, tonic, lang, scale: 'major', spelling: 'key' },
+        { asset },
+      );
+      const doc = await PDFLib.PDFDocument.load(bytes);
+      const map = rendered.filter((item) => item.page === doc.getPage(2).ref.toString());
+      assert.ok(
+        map.some((item) => item.value === expected),
+        `${tonic}: ${expected}`,
+      );
+      assert.ok(!map.some((item) => item.value === unwanted), `${tonic}: no ${unwanted}`);
+      assert.ok(doc.getTitle().includes(tonic.replace('#', '♯').replace('b', '♭')));
+      const reading = rendered.filter(
+        (item) => item.page === doc.getPage(1).ref.toString(),
+      );
+      assert.ok(reading.some((item) => item.value.includes('E♯')));
+      assert.ok(reading.some((item) => item.value === 'E2 - A2 - D3 - G3 - B3 - E4'));
+    }
+  } finally {
+    PDFLib.PDFPage.prototype.drawText = drawText;
+  }
+});

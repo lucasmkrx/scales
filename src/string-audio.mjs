@@ -1,20 +1,26 @@
-// Original Karplus–Strong string model. See docs/references.md for DSP background.
+// Original extended Karplus–Strong string model. A shaped pluck supplies stable
+// low harmonics, while a little filtered pick noise gives the attack texture.
+// Background: Julius O. Smith, Physical Audio Signal Processing, String Excitation.
 export const STRING_SOUNDS = Object.freeze({
   guitar: {
-    seconds: 2.2,
-    decay: 3.4,
-    pick: 0.19,
-    brightness: 0.74,
-    lowpass: 6200,
-    body: 180,
+    seconds: 3,
+    decay: 4,
+    pick: 0.21,
+    brightness: 0.62,
+    lowpass: 5800,
+    body: 165,
+    harmonicSlope: 1.2,
+    pickNoise: 0.2,
   },
   bass: {
-    seconds: 2.8,
-    decay: 4.6,
+    seconds: 3.6,
+    decay: 4.8,
     pick: 0.28,
-    brightness: 0.38,
-    lowpass: 3400,
+    brightness: 0.3,
+    lowpass: 2800,
     body: 95,
+    harmonicSlope: 1.6,
+    pickNoise: 0.12,
   },
 });
 
@@ -55,15 +61,28 @@ export function renderPluckedString(
   for (let i = 0; i < n; i++) noise[i] = random();
   let mean = 0,
     previous = 0;
+  // A pluck-position comb and harmonic rolloff model a displaced string rather
+  // than leaving the fundamental to chance in a white-noise delay line.
+  const harmonics = Math.min(24, Math.floor(n / 2));
+  const amplitudes = Array.from({ length: harmonics }, (_, index) => {
+    const harmonic = index + 1;
+    return Math.sin(Math.PI * harmonic * sound.pick) / harmonic ** sound.harmonicSlope;
+  });
+  const harmonicScale = amplitudes.reduce((sum, value) => sum + Math.abs(value), 0);
   for (let i = 0; i < n; i++) {
     const excitation = noise[i] - 0.6 * noise[(i + pick) % n];
     previous = sound.brightness * excitation + (1 - sound.brightness) * previous;
-    loop[i] = previous;
-    mean += previous / n;
+    const phase = (2 * Math.PI * i) / n;
+    let pluck = 0;
+    for (let harmonic = 1; harmonic <= harmonics; harmonic++)
+      pluck += amplitudes[harmonic - 1] * Math.cos(phase * harmonic);
+    loop[i] =
+      (1 - sound.pickNoise) * (pluck / (harmonicScale || 1)) + sound.pickNoise * previous;
+    mean += loop[i] / n;
   }
   for (let i = 0; i < n; i++) loop[i] -= mean;
   const loss = 10 ** (-3 / (frequency * sound.decay));
-  const hp = Math.exp((-2 * Math.PI * (instrument === 'bass' ? 12 : 28)) / sampleRate),
+  const hp = Math.exp((-2 * Math.PI * (instrument === 'bass' ? 8 : 24)) / sampleRate),
     lp = 1 - Math.exp((-2 * Math.PI * sound.lowpass) / sampleRate);
   // A broad body resonance adds warmth without changing the string's pitch.
   const pole = Math.exp((-Math.PI * 160) / sampleRate),
@@ -112,6 +131,7 @@ export class PluckedStringPlayer {
     this.context = context;
     this.cache = new Map();
     this.voices = new Set();
+    this.drone = null;
     this.output = context.createGain();
     this.output.gain.value = 0.65;
     this.compressor = context.createDynamicsCompressor();
@@ -163,6 +183,70 @@ export class PluckedStringPlayer {
     source.start(start);
     source.stop(end + 0.01);
     return end;
+  }
+  startDrone(midi, { instrument = 'guitar' } = {}) {
+    if (!Number.isFinite(midi) || midi < 0 || midi > 151)
+      throw new RangeError('Invalid MIDI pitch');
+    const frequency = 440 * 2 ** ((midi - 69) / 12);
+    if (frequency >= this.context.sampleRate * 0.45)
+      throw new RangeError('Drone pitch is above the audible range');
+    if (this.drone?.midi === midi && this.drone.instrument === instrument)
+      return this.drone;
+    this.stopDrone();
+    const now = this.context.currentTime;
+    const gain = this.context.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(instrument === 'bass' ? 0.15 : 0.12, now + 0.12);
+    gain.connect(this.output);
+    // The octave adds definition on small speakers without introducing another
+    // chord tone. Each oscillator has its own harmonic gain before the shared fade.
+    const oscillators = [1, 2]
+      .filter((harmonic) => frequency * harmonic < this.context.sampleRate * 0.45)
+      .map((harmonic) => {
+        const source = this.context.createOscillator();
+        const level = this.context.createGain();
+        source.type = 'sine';
+        source.frequency.setValueAtTime(frequency * harmonic, now);
+        level.gain.value = harmonic === 1 ? 1 : 0.16;
+        source.connect(level);
+        level.connect(gain);
+        source.onended = () => {
+          source.disconnect();
+          level.disconnect();
+        };
+        source.start(now);
+        return source;
+      });
+    this.drone = { midi, instrument, gain, oscillators, started: now };
+    return this.drone;
+  }
+  stopDrone() {
+    const drone = this.drone;
+    if (!drone) return;
+    this.drone = null;
+    const now = this.context.currentTime;
+    // cancelAndHold preserves an in-progress attack before the release. The
+    // fallback computes that linear attack for older Web Audio implementations.
+    if (typeof drone.gain.gain.cancelAndHoldAtTime === 'function')
+      drone.gain.gain.cancelAndHoldAtTime(now);
+    else {
+      const level = drone.instrument === 'bass' ? 0.15 : 0.12;
+      drone.gain.gain.cancelScheduledValues(now);
+      drone.gain.gain.setValueAtTime(
+        level * Math.min(1, Math.max(0, (now - drone.started) / 0.12)),
+        now,
+      );
+    }
+    drone.gain.gain.linearRampToValueAtTime(0, now + 0.12);
+    let remaining = drone.oscillators.length;
+    for (const source of drone.oscillators) {
+      const cleanup = source.onended;
+      source.onended = () => {
+        cleanup();
+        if (--remaining === 0) drone.gain.disconnect();
+      };
+      source.stop(now + 0.13);
+    }
   }
   stop() {
     const now = this.context.currentTime;

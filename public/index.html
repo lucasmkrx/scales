@@ -38,14 +38,15 @@
       </div>
     </header>
     <main>
-      <section class="intro" aria-labelledby="page-title">
-        <div class="intro-copy">
-          <h1 id="page-title" data-i18n="title">Fretboard explorer</h1>
-          <p data-i18n="subtitle">
-            Choose a scale, hear its notes, and find them on your fretboard.
-          </p>
-        </div>
-      </section>
+      <h1 class="sr-only" id="page-title" data-i18n="title">Fretboard explorer</h1>
+      <nav
+        class="mobile-shortcut"
+        data-i18n-aria="quickNavigation"
+        aria-label="Quick navigation"
+      >
+        <strong id="mobile-scale-title"></strong>
+        <a id="jump-to-board" href="#fretboard" data-i18n="goToBoard">Go to fretboard</a>
+      </nav>
       <div class="workspace" id="explorer" tabindex="-1">
         <div class="scale-selection-area">
           <section
@@ -136,10 +137,11 @@
                 class="secondary"
                 id="apply-scale"
                 data-i18n="applyScale"
+                hidden
               >
                 Use custom scale
               </button>
-              <p id="formula-hint" class="hint" data-i18n="formulaHint"></p>
+              <p id="formula-hint" class="sr-only" data-i18n="formulaHint"></p>
               <p id="formula-error" class="hint error" role="alert"></p>
             </div>
           </section>
@@ -234,17 +236,14 @@
                   </button>
                 </div>
               </div>
-              <p class="hint" data-i18n="setupHint">
-                Your setup is remembered on this device. Shared links take priority.
-              </p>
             </form>
           </section>
         </div>
-        <section class="scale-panel panel" aria-labelledby="scale-title">
+        <section class="scale-panel panel" id="fretboard" aria-labelledby="scale-title">
           <header class="scale-header">
             <div class="scale-heading">
-              <h2 id="scale-title"></h2>
-              <a id="setup-summary" class="setup-summary" href="#instrument-settings"></a>
+              <h2 id="scale-title" tabindex="-1"></h2>
+              <span id="setup-summary" class="sr-only"></span>
               <p id="scale-meta" class="sr-only">
                 <span id="family-label"></span
                 ><span class="meta-dot" aria-hidden="true">·</span
@@ -267,7 +266,12 @@
                   ></label
                 >
               </fieldset>
-              <button type="button" class="primary play-button" id="play">
+              <button
+                type="button"
+                class="primary play-button"
+                id="play"
+                aria-describedby="playback-hint"
+              >
                 <svg aria-hidden="true" class="icon play-icon">
                   <use href="./assets/controls.svg#play"></use></svg
                 ><svg aria-hidden="true" class="icon stop-icon">
@@ -278,33 +282,39 @@
           </header>
           <div class="diagram">
             <div class="board-toolbar">
-              <p id="pattern-info" class="hint"></p>
+              <p id="pattern-info" class="sr-only"></p>
+              <span id="pattern-system" class="pattern-system"></span>
+              <p
+                id="pattern-summary"
+                class="pattern-summary"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
+              <span id="pattern-more" class="pattern-more" hidden></span>
             </div>
             <div class="board-scroll" id="board" tabindex="-1"></div>
             <div class="board-foot">
               <span class="legend"
                 ><i aria-hidden="true"></i><span data-i18n="root">Root note</span></span
               >
-              <span id="orientation"></span>
+              <span id="orientation" class="sr-only"></span>
+              <p class="play-hint note-readout" id="play-hint" hidden>
+                <svg aria-hidden="true" class="icon">
+                  <use href="./assets/controls.svg#sound"></use></svg
+                ><span id="note-readout-text"></span>
+              </p>
+              <div class="toolbar">
+                <button type="button" class="text-button" id="share">
+                  <svg aria-hidden="true" class="icon">
+                    <use href="./assets/controls.svg#link"></use></svg
+                  ><span data-i18n="share">Copy link</span>
+                </button>
+              </div>
             </div>
             <p id="scroll-hint" class="scroll-hint" hidden data-i18n="scrollHint"></p>
           </div>
-          <footer class="map-actions">
-            <p class="play-hint note-readout" id="play-hint">
-              <svg aria-hidden="true" class="icon">
-                <use href="./assets/controls.svg#sound"></use></svg
-              ><span id="note-readout-text" data-i18n="tapNote"
-                >Select a note to hear it.</span
-              ><span class="sr-only" data-i18n="keyboardNotes"></span>
-            </p>
-            <div class="toolbar">
-              <button type="button" class="text-button" id="share">
-                <svg aria-hidden="true" class="icon">
-                  <use href="./assets/controls.svg#link"></use></svg
-                ><span data-i18n="share">Copy link</span>
-              </button>
-            </div>
-          </footer>
+          <span class="sr-only" id="keyboard-notes" data-i18n="keyboardNotes"></span>
           <p id="status" class="status" role="status" aria-live="polite"></p>
           <label id="share-fallback" hidden
             ><span data-i18n="manualCopy">Copy this link</span
@@ -312,7 +322,7 @@
           /></label>
           <div class="playing-options">
             <div class="display-controls">
-              <fieldset class="segmented" id="labels">
+              <fieldset class="segmented" id="labels" aria-describedby="degrees-hint">
                 <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
                 <label
                   ><input type="radio" name="labels" value="notes" checked /><span
@@ -329,7 +339,8 @@
               </fieldset>
               <label class="spelling-control"
                 ><span data-i18n="spelling">Note spelling</span
-                ><select id="spelling">
+                ><select id="spelling" aria-describedby="key-spelling-hint">
+                  <option value="key" data-i18n="keySpelling">Key</option>
                   <option value="both" data-i18n="both">Both</option>
                   <option value="sharp" data-i18n="sharp">Sharps</option>
                   <option value="flat" data-i18n="flat">Flats</option>
@@ -342,6 +353,22 @@
               >
             </div>
             <div class="playback-options">
+              <button
+                type="button"
+                class="drone-button"
+                id="drone"
+                aria-pressed="false"
+                aria-describedby="drone-hint"
+              >
+                <svg class="icon" aria-hidden="true">
+                  <use href="./assets/controls.svg#sound"></use>
+                </svg>
+                <span id="drone-label">Hear tonic</span>
+              </button>
+              <span class="sr-only" id="drone-hint" data-i18n="droneHint"
+                >A steady root note to practice against. Stops when you change key or
+                instrument.</span
+              >
               <div class="tempo-control">
                 <div class="tempo-row">
                   <label for="tempo" data-i18n="tempo">Tempo</label
@@ -356,11 +383,16 @@
               >
             </div>
           </div>
-          <p id="degrees-hint" class="hint" hidden data-i18n="degreesHint"></p>
+          <p
+            id="key-spelling-hint"
+            class="sr-only"
+            hidden
+            data-i18n="keySpellingHint"
+          ></p>
+          <p id="degrees-hint" class="sr-only" hidden data-i18n="degreesHint"></p>
           <div class="scale-reference">
-            <p class="hint playback-hint" id="playback-hint" data-i18n="playbackHint"></p>
+            <p class="sr-only" id="playback-hint" data-i18n="playbackHint"></p>
             <div class="notes-strip" id="notes-strip"></div>
-            <p class="practice-exercise" id="practice-exercise"></p>
           </div>
         </section>
 
@@ -375,10 +407,8 @@
                 <use href="./assets/controls.svg#download"></use></svg
               ><span data-i18n="customizePdf">Customize PDF</span>
             </h2>
-            <p class="hint" data-i18n="exportStyle"></p>
           </div>
           <div class="export-layout">
-            <p id="export-configuration" class="export-configuration"></p>
             <label
               ><span data-i18n="scope">PDF contents</span
               ><select id="scope">
@@ -419,26 +449,6 @@
           </div>
         </section>
       </div>
-      <details class="practice panel">
-        <summary>
-          <svg aria-hidden="true" class="icon">
-            <use href="./assets/controls.svg#music"></use></svg
-          ><span data-i18n="practice">Turn the map into music</span
-          ><svg aria-hidden="true" class="icon chevron">
-            <use href="./assets/controls.svg#chevron"></use>
-          </svg>
-        </summary>
-        <ol>
-          <li data-i18n="practice1"></li>
-          <li data-i18n="practice2"></li>
-          <li data-i18n="practice3"></li>
-        </ol>
-        <div class="notation-help">
-          <p class="hint" data-i18n="noteNotation"></p>
-          <p class="hint" data-i18n="spellingHint"></p>
-          <p class="hint" data-i18n="outsideHint"></p>
-        </div>
-      </details>
     </main>
     <footer class="site-footer">
       <img

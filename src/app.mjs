@@ -5,6 +5,7 @@ import {
   spellScale,
   prettyDegree,
   midiName,
+  spelledMidiName,
   PALETTE,
   SHARPS,
   FLATS,
@@ -34,8 +35,9 @@ import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardSvg, escape } from './board.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { createAtlas } from './pdf.mjs';
-import { positionSequence, practiceExercise, intervalName } from './practice.mjs';
+import { positionSequence, intervalName } from './practice.mjs';
 import { scalePatterns } from './patterns.mjs';
+import { patternSummary } from './pattern-summary.mjs';
 const STORAGE_KEY = 'scales.preferences.v1';
 let saved = {};
 try {
@@ -68,6 +70,8 @@ let view = initialScaleView(state.scale),
   pdfLibraries,
   tuningDraft = false,
   formulaDirty = false;
+let droneEnabled = false,
+  droneVersion = 0;
 const $ = (id) => document.getElementById(id);
 const options = (items, current) =>
   items
@@ -92,11 +96,6 @@ function saveURL() {
   params.set('range', range);
   params.set('neck', neckView);
   history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
-}
-function configuration() {
-  const s = selection(state),
-    t = copy[state.lang];
-  return `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()} · ${tuningName(s.tuningData)} · ${t[s.hand]} · ${s.frets} ${t.frets.toLowerCase()}`;
 }
 function scaleChoiceMarkup(scale) {
   const t = copy[state.lang];
@@ -134,6 +133,7 @@ function renderScalePicker() {
   const count = groups.reduce((n, g) => n + g.scales.length, 0);
   $('scale-results-count').textContent =
     `${count} ${count === 1 ? t.result : t.results}${searching ? ` · ${t.entireCatalog}` : ''}`;
+  $('scale-results-count').hidden = !searching;
   $('scale-results').innerHTML = groups.length
     ? groups.map(scaleGroupMarkup).join('')
     : `<div class="empty-results"><strong>${t.noResults}</strong><p>${t.retrySearch}</p></div>`;
@@ -195,6 +195,16 @@ function practiceFocus() {
   const [lo, hi] = fretBounds(range);
   return pattern ? { points: pattern.points } : { lo, hi };
 }
+function revealPattern() {
+  const board = $('board');
+  const notes = [...board.querySelectorAll('.note:not(.muted)')].map((note) =>
+    note.getBBox(),
+  );
+  if (!notes.length) return;
+  const left = Math.min(...notes.map((note) => note.x));
+  const right = Math.max(...notes.map((note) => note.x + note.width));
+  board.scrollLeft = (left + right - board.clientWidth) / 2;
+}
 function renderBoard() {
   const board = $('board');
   const [lo, hi] = fretBounds(range);
@@ -241,14 +251,7 @@ function renderBoard() {
       : 0
     : scroll;
   if ((reset || rangeChanged) && range !== 'full' && width > board.clientWidth) {
-    const notes = [...board.querySelectorAll('.note:not(.muted)')].map((note) =>
-      note.getBBox(),
-    );
-    if (notes.length) {
-      const left = Math.min(...notes.map((note) => note.x));
-      const right = Math.max(...notes.map((note) => note.x + note.width));
-      board.scrollLeft = (left + right - board.clientWidth) / 2;
-    }
+    revealPattern();
   }
   board.dataset.focus = focus;
   boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
@@ -274,34 +277,27 @@ function renderContent() {
   $('note-count').textContent =
     `${names.length} ${names.length === 1 ? t.singleNote : t.noteCount}`;
   $('scale-title').textContent = `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
+  $('mobile-scale-title').textContent = $('scale-title').textContent;
   $('setup-summary').textContent =
     `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()} · ${tuningName(s.tuningData)}`;
-  // Keep the pitch and its degree in the same column, including long chromatic formulas.
+  // Match the reference row to the chosen diagram labels.
   const tables = [];
   for (let start = 0; start < names.length; start += 7) {
     const group = names.slice(start, start + 7);
-    const notes = [],
-      degrees = [];
+    const cells = [];
     for (const [index, name] of group.entries()) {
       const pitch = (s.root + s.scaleData.intervals[start + index]) % 12;
-      notes.push(
-        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(s.scaleData.formula[start + index], s.lang)}`)}"><i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>${escape(name).replace('/', '/<wbr>')}</button></td>`,
-      );
-      degrees.push(
-        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${prettyDegree(s.scaleData.formula[start + index])} · ${intervalName(s.scaleData.formula[start + index], s.lang)} · ${name}`)}">${prettyDegree(s.scaleData.formula[start + index])}</button></td>`,
+      const degree = s.scaleData.formula[start + index];
+      const label = s.labels === 'degrees' ? prettyDegree(degree) : name;
+      cells.push(
+        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(degree, s.lang)}`)}">${s.labels === 'notes' ? `<i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>` : ''}${escape(label).replace('/', '/<wbr>')}</button></td>`,
       );
     }
     tables.push(
-      `<table class="tone-table"><tbody><tr><th scope="row">${t.notes}</th>${notes.join('')}</tr><tr><th scope="row">${t.degrees}</th>${degrees.join('')}</tr></tbody></table>`,
+      `<table class="tone-table" aria-label="${t[s.labels]}"><tbody><tr>${cells.join('')}</tr></tbody></table>`,
     );
   }
   $('notes-strip').innerHTML = tables.join('');
-  const exercise = practiceExercise(s, practiceFocus());
-  $('practice-exercise').hidden = !exercise.length;
-  $('practice-exercise').textContent = t.exerciseHint.replace(
-    '{notes}',
-    exercise.join('–'),
-  );
   $('playback-hint').textContent = positionSequence(s, practiceFocus()).complete
     ? t.playbackHint
     : t.partialPosition;
@@ -309,6 +305,19 @@ function renderContent() {
   $('pattern-info').textContent = patternInfo.allCount
     ? `${t.patterns} · ${t.patternSystems[patternInfo.system]} · ${t.patternToggleHint}${patternInfo.patterns.length < patternInfo.allCount ? ` ${t.morePatterns}` : ''}`
     : t.patternUnavailable;
+  $('pattern-system').textContent = patternInfo.allCount
+    ? t.patternLabels[patternInfo.system]
+    : t.patternUnavailable;
+  $('pattern-more').hidden =
+    !patternInfo.allCount || patternInfo.patterns.length >= patternInfo.allCount;
+  $('pattern-more').textContent = t.morePatterns;
+  const summary = patternSummary(s, currentPattern());
+  $('pattern-summary').hidden = !summary;
+  $('pattern-summary').innerHTML = summary
+    ? `<strong>${escape(summary.title)}</strong><span>${escape(summary.detail)}</span>`
+    : '';
+  $('key-spelling-hint').hidden = s.spelling !== 'key';
+  renderDrone();
   $('neck-octave-label').textContent = state.hand === 'left' ? '12–0' : '0–12';
   document
     .querySelectorAll('input[name="neck-view"]')
@@ -362,7 +371,8 @@ new ResizeObserver(() => {
   if (board.clientWidth === boardWidth) return;
   boardWidth = board.clientWidth;
   // Preserve the visible position measured from the nut side of a left-handed neck.
-  if (state.hand === 'left')
+  if (range !== 'full' && board.scrollWidth > board.clientWidth) revealPattern();
+  else if (state.hand === 'left')
     board.scrollLeft = board.scrollWidth - board.clientWidth - boardRightOffset;
   boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
   $('scroll-hint').hidden = board.scrollWidth <= board.clientWidth;
@@ -410,18 +420,8 @@ function renderExport({ resetStatus = true } = {}) {
   $('export-keys-hint').hidden = selected;
   const allKeys = selected && $('all-keys').checked,
     estimate = exportPreview(state, { scope: $('scope').value, allKeys });
-  const title =
-    $('scope').value === 'catalog'
-      ? `${rootName(s)} · ${t.catalogScope}`
-      : $('scope').value === 'family'
-        ? `${rootName(s)} · ${FAMILIES[s.scaleData.family][s.lang]}`
-        : allKeys
-          ? `${scaleName(s.scaleData, s.lang)} · ${t.allKeys}`
-          : `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
-  $('export-configuration').innerHTML =
-    `<strong>${escape(title)}</strong>${escape(configuration())}<br>${s.tuningData.notes.map((m) => midiName(m, pitchPreference(s))).join(' – ')}<br>${escape(t[s.lang])}`;
   $('export-estimate').textContent =
-    `${estimate.pages} ${t.pages} · ${estimate.count} ${estimate.count === 1 ? t.scaleMap : t.scaleMaps}${allKeys ? '' : ` · ${s.scaleData.family === 'arpeggio' ? t.chordRoot : t.currentRoot}: ${rootName(s)}`}`;
+    `${estimate.pages} ${t.pages} · ${estimate.count} ${estimate.count === 1 ? t.scaleMap : t.scaleMaps}`;
 }
 function render() {
   const t = copy[state.lang],
@@ -431,6 +431,9 @@ function render() {
   document.querySelector('meta[name=description]').content = t.metaDescription;
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     el.textContent = t[el.dataset.i18n] ?? el.textContent;
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    el.setAttribute('aria-label', t[el.dataset.i18nAria]);
   });
   const arpeggio = s.scaleData.family === 'arpeggio';
   $('play-label').textContent = playing ? t.stop : arpeggio ? t.playArpeggio : t.play;
@@ -461,20 +464,48 @@ function render() {
     tuningDraft ? 'custom' : state.tuning,
   );
   $('preset-notes').innerHTML =
-    `<small>${t.openStrings}</small>${s.tuningData.notes.map((m) => midiName(m, pitchPreference(state))).join(' – ')}`;
-  $('root').innerHTML = options(
-    Array.from({ length: 12 }, (_, i) => [
-      i,
-      SHARPS[i] === FLATS[i] ? SHARPS[i] : `${SHARPS[i]} / ${FLATS[i]}`,
-    ]),
-    state.root,
-  );
+    `<small class="sr-only">${t.openStrings}</small>${s.tuningData.notes.map((m) => midiName(m, pitchPreference(state))).join(' – ')}`;
+  $('root').innerHTML =
+    state.spelling === 'key'
+      ? options(
+          [
+            ...new Set([
+              'C',
+              'C#',
+              'Db',
+              'D',
+              'D#',
+              'Eb',
+              'E',
+              'F',
+              'F#',
+              'Gb',
+              'G',
+              'G#',
+              'Ab',
+              'A',
+              'A#',
+              'Bb',
+              'B',
+              rootName(s).replaceAll('♯', '#').replaceAll('♭', 'b'),
+            ]),
+          ].map((tonic) => [tonic, prettyDegree(tonic)]),
+          rootName(s).replaceAll('♯', '#').replaceAll('♭', 'b'),
+        )
+      : options(
+          Array.from({ length: 12 }, (_, i) => [
+            i,
+            SHARPS[i] === FLATS[i] ? SHARPS[i] : `${SHARPS[i]} / ${FLATS[i]}`,
+          ]),
+          state.root,
+        );
   $('allNotes').checked = state.allNotes;
   $('custom-tuning').hidden = !tuningDraft;
   if (tuningDraft) renderTuningLabels();
   $('edit-pitches').hidden = tuningDraft || state.tuning !== 'custom';
   $('preset-notes').hidden = tuningDraft;
   if (!formulaDirty) $('formula-input').value = s.scaleData.formula.join(' ');
+  $('apply-scale').hidden = !formulaDirty;
   renderScalePicker();
   renderContent();
   renderExport();
@@ -484,6 +515,14 @@ function update(values, { setup = false } = {}) {
   stopAudio();
   const previous = state;
   state = changeSetup(state, values, saved);
+  if (
+    previous.root !== state.root ||
+    previous.instrument !== state.instrument ||
+    previous.strings !== state.strings ||
+    previous.tuning !== state.tuning ||
+    previous.customTuning !== state.customTuning
+  )
+    stopTonic();
   persist();
   status('');
   $('share-fallback').hidden = true;
@@ -564,13 +603,14 @@ function positionNotes() {
 function renderNoteReadout(note = inspectedNote, location = true) {
   const t = copy[state.lang];
   if (!note) {
-    $('note-readout-text').textContent = positionNotes().some((point) => point.active)
-      ? t.tapNote
-      : t.emptyRange;
+    const empty = !positionNotes().some((point) => point.active);
+    $('play-hint').hidden = !empty;
+    $('note-readout-text').textContent = empty ? t.emptyRange : '';
     return;
   }
+  $('play-hint').hidden = false;
   const details = [
-    midiName(note.midi, pitchPreference(state)),
+    spelledMidiName(note.midi, state),
     note.degree
       ? intervalName(note.degree, state.lang)
       : selection(state).scaleData.family === 'arpeggio'
@@ -640,6 +680,49 @@ function stopAudio() {
     selection(state).scaleData.family === 'arpeggio' ? t.playArpeggio : t.play;
   $('play').title = $('play-label').textContent;
   $('play').classList.remove('playing');
+}
+function renderDrone() {
+  const t = copy[state.lang];
+  const chord = selection(state).scaleData.family === 'arpeggio';
+  $('drone-label').textContent = chord
+    ? droneEnabled
+      ? t.stopDroneRoot
+      : t.droneRoot
+    : droneEnabled
+      ? t.stopDrone
+      : t.drone;
+  $('drone').setAttribute('aria-pressed', String(droneEnabled));
+}
+function stopTonic() {
+  droneVersion++;
+  droneEnabled = false;
+  instrumentAudio?.stopDrone();
+  renderDrone();
+}
+async function toggleDrone() {
+  if (droneEnabled) {
+    stopTonic();
+    return;
+  }
+  const version = ++droneVersion;
+  droneEnabled = true;
+  renderDrone();
+  status('');
+  try {
+    const player = await audioPlayer();
+    if (version !== droneVersion || !droneEnabled) return;
+    if (document.hidden) {
+      stopTonic();
+      return;
+    }
+    player.startDrone((state.instrument === 'bass' ? 36 : 48) + state.root, {
+      instrument: state.instrument,
+    });
+  } catch {
+    if (version !== droneVersion) return;
+    stopTonic();
+    status(copy[state.lang].audioUnavailable, true);
+  }
 }
 async function startPlayback(midi) {
   stopAudio();
@@ -761,7 +844,20 @@ $('play').addEventListener('click', () => {
   if (playing) stopAudio();
   else startPlayback();
 });
-window.addEventListener('pagehide', stopAudio);
+$('drone').addEventListener('click', toggleDrone);
+const stopAllAudio = () => {
+  stopAudio();
+  stopTonic();
+};
+window.addEventListener('pagehide', stopAllAudio);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopAllAudio();
+});
+$('jump-to-board').addEventListener('click', (event) => {
+  event.preventDefault();
+  $('scale-title').focus({ preventScroll: true });
+  $('fretboard').scrollIntoView({ block: 'start' });
+});
 enableBoardNavigation($('board'), playNote);
 $('instrument').addEventListener('change', (event) => {
   tuningDraft = false;
@@ -773,8 +869,16 @@ $('strings').addEventListener('change', () => {
   validationMessage('tuning-error');
   update({ strings: $('strings').value }, { setup: true });
 });
-for (const id of ['hand', 'frets', 'root', 'spelling'])
+for (const id of ['hand', 'frets', 'spelling'])
   $(id).addEventListener('change', () => update({ [id]: $(id).value }));
+$('root').addEventListener('change', () => {
+  const root = $('root').value;
+  update(
+    state.spelling === 'key'
+      ? { root: parseNote(`${root}4`) % 12, tonic: root }
+      : { root },
+  );
+});
 $('labels').addEventListener('change', (event) => update({ labels: event.target.value }));
 $('tuning').addEventListener('change', () => {
   if ($('tuning').value === 'custom') editTuning();
@@ -862,6 +966,7 @@ $('cancel-tuning').addEventListener('click', cancelTuning);
 $('apply-scale').addEventListener('click', applyScale);
 $('formula-input').addEventListener('input', () => {
   formulaDirty = true;
+  $('apply-scale').hidden = false;
   validationMessage('formula-error');
   $('formula-input').removeAttribute('aria-invalid');
 });
