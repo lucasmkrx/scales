@@ -4,6 +4,7 @@ import { selection, SCALES } from '../src/music.mjs';
 import {
   restoreWorkspace,
   restoreRange,
+  restoreNeckView,
   rememberWorkspace,
   readPreferences,
   changeSetup,
@@ -99,14 +100,14 @@ test('the last root, custom scale, and position resume without overriding shared
     lang: 'es',
   });
   const saved = readPreferences(
-    JSON.stringify(rememberWorkspace({}, { ...original, range: '5-9' })),
+    JSON.stringify(rememberWorkspace({}, { ...original, range: 'three-per-string-3' })),
   );
   for (const query of [{}, { lang: 'pt-BR' }, { labels: 'degrees' }]) {
     const restored = restoreWorkspace(query, saved);
     assert.equal(restored.root, 9);
     assert.equal(restored.scale, 'custom');
     assert.equal(restored.formula, original.formula);
-    assert.equal(restoreRange(query, saved), '5-9');
+    assert.equal(restoreRange(query, saved), 'three-per-string-3');
   }
   assert.equal(restoreWorkspace({ lang: 'pt-BR' }, saved).lang, 'pt');
 
@@ -131,20 +132,20 @@ test('the last root, custom scale, and position resume without overriding shared
 test('shared ranges, older links, and malformed saved practice have predictable fallbacks', () => {
   const original = restoreWorkspace({ root: 7, scale: 'minor-pentatonic' });
   const saved = rememberWorkspace({}, { ...original, range: '8-12' });
-  assert.equal(restoreRange({ range: '3-7' }, saved), '3-7');
+  assert.equal(restoreRange({ range: '3-7' }, saved), 'full');
   assert.equal(restoreRange({ frets: '24' }, saved), 'full');
-  assert.equal(restoreRange({ frets: '24', range: '0-4' }, saved), '0-4');
-  assert.equal(restoreRange({ root: '2' }, saved), 'lower');
-  assert.equal(restoreRange({ scale: 'major' }, saved, { mobile: true }), '0-4');
-  assert.equal(restoreRange({ range: 'invalid' }, saved), 'lower');
-  assert.equal(restoreRange({ range: 'invalid' }, saved, { mobile: true }), '0-4');
+  assert.equal(restoreRange({ frets: '24', range: '0-4' }, saved), 'full');
+  assert.equal(restoreRange({ root: '2' }, saved), 'full');
+  assert.equal(restoreRange({ scale: 'major' }, saved, { mobile: true }), 'full');
+  assert.equal(restoreRange({ range: 'invalid' }, saved), 'full');
+  assert.equal(restoreRange({ range: 'invalid' }, saved, { mobile: true }), 'full');
 
   const legacy = { ...saved };
   delete legacy.practice;
   assert.equal(restoreWorkspace({}, legacy).root, 0);
   assert.equal(restoreWorkspace({}, legacy).scale, 'major');
-  assert.equal(restoreRange({}, legacy), 'lower');
-  assert.equal(restoreRange({}, legacy, { mobile: true }), '0-4');
+  assert.equal(restoreRange({}, legacy), 'full');
+  assert.equal(restoreRange({}, legacy, { mobile: true }), 'full');
 
   const malformed = {
     ...saved,
@@ -153,7 +154,7 @@ test('shared ranges, older links, and malformed saved practice have predictable 
   const restored = restoreWorkspace({}, malformed);
   assert.equal(restored.root, 0);
   assert.equal(restored.scale, 'major');
-  assert.equal(restoreRange({}, malformed), 'lower');
+  assert.equal(restoreRange({}, malformed), 'full');
   assert.equal(rememberWorkspace(saved, restored).practice.formula, undefined);
 });
 test('export estimates include covers, reading pages, and additional contents pages', () => {
@@ -186,4 +187,42 @@ test('simple scale names retain qualifications that distinguish different scales
     'Diminished (half-whole)',
   );
   assert.match(scaleName(SCALES.find((s) => s.id === 'pelog')), /approximation/);
+});
+
+test('pattern identifiers survive links and saved state without accepting invalid systems or numbers', () => {
+  for (const range of [
+    'caged-major-1',
+    'caged-minor-5',
+    'three-per-string-7',
+    'four-per-string-8',
+    'two-per-string-5',
+    'blues-5',
+    'octave-3',
+  ]) {
+    const saved = rememberWorkspace({}, { scale: 'major', range });
+    assert.equal(restoreRange({}, saved), range);
+    assert.equal(restoreRange({ range }, {}), range);
+  }
+  for (const range of [
+    'caged-major-6',
+    'caged-minor-0',
+    'three-per-string-8',
+    'four-per-string-9',
+    'two-per-string-6',
+    'blues-6',
+    'octave-6',
+    '5-9',
+  ])
+    assert.equal(restoreRange({ range }), 'full');
+});
+
+test('neck view defaults to 0–12, remembers an explicit choice, and respects shared links', () => {
+  assert.equal(restoreNeckView(), 'octave');
+  const saved = rememberWorkspace({}, { neckView: 'full' });
+  assert.equal(saved.preferences.neckView, 'full');
+  assert.equal(restoreNeckView({}, saved), 'full');
+  assert.equal(restoreNeckView({ neck: 'octave' }, saved), 'octave');
+  assert.equal(restoreNeckView({ neck: 'full' }), 'full');
+  assert.equal(restoreNeckView({ neck: 'invalid' }, saved), 'octave');
+  assert.equal(restoreNeckView({}, { preferences: { neckView: 'broken' } }), 'octave');
 });

@@ -3,24 +3,33 @@
 These assets show the actual Scales interface and generated output.
 
 - `desktop.png` shows a left-handed, six-string guitar in E standard at a
-  1360 × 1569 CSS-pixel viewport. The full 21-fret neck shows C natural minor, with frets 0–12 highlighted. The
-  instrument has 21 frets and note labels use both sharps and flats. The scale browser
-  and instrument settings sit side by side above the board. Display, playback, and
-  note information follow it; PDF customization occupies a full-width section below.
-  Range buttons count down for left-handed playing, with Full neck beside 4–0.
-- `mobile.png` shows the same setup at 390 × 1878 CSS pixels, from the page header
-  through the stacked scale and instrument controls and primary exploration surface. The full neck stays in the scrollable diagram, with frets 0–4 highlighted
-  and the remaining notes gray. Note feedback appears directly
-  below the diagram, followed by display, tempo, repeat, and note information.
+  1360 × 1719 CSS-pixel viewport. C major uses compact CAGED Position 1 (E shape)
+  in the default frets 0–12 view. Its 17 exact string/fret points at frets 7–10
+  stay in color, including high-E fret 8; fret 12 and other scale notes turn gray.
+  The limited-view switch label counts down as 12–0 for left-handed playing.
+  Thin bracket caps have centered pattern numbers, shape names, and fret ranges,
+  with one pattern per row. The view switch sits beside playback in the header.
+  Vertical guides connect both ends to the neck behind the notes, with stronger guides for the selection. Only complete patterns that
+  fit the visible neck are offered; the full-neck cue explains missing numbers.
+  Scale and instrument settings share a row, with PDF customization below.
+- `mobile.png` shows the same setup at 390 × 2011 CSS pixels, from the page header
+  through the stacked settings and playing controls. The fixed-size 0–12 diagram
+  and its pattern brackets scroll horizontally together to the selected pattern.
+  Note feedback follows the diagram, then display, tempo, repeat, and note details.
 - `mobile-picker.png` shows the inline scale catalog at 390 × 860 CSS pixels,
-  searching for pentatonic scales while C natural minor remains selected.
+  searching for pentatonic scales while C major remains selected.
 - `walkthrough.gif` follows a desktop player searching for pentatonic scales,
-  choosing C minor pentatonic, viewing degrees with frets 5–9 highlighted, and including all
-  12 root notes in the inline PDF settings. Position buttons follow left-handed
-  playing throughout. Its five frames are screenshots from a local Chromium
-  session, resized to 1020 × 1177 pixels with a shared color palette.
-- `pdf-reference.png` shows a page from the matching three-page A4 landscape
-  guitar reference PDF, including the full neck and nearby positions.
+  choosing A minor pentatonic and its first two-notes-per-string shape, switching
+  to the full neck and viewing Pattern 2 in degrees, then clicking the bracket again
+  to clear it and including all 12 root notes in the PDF settings. The five frames
+  come from a local Chromium session and use left-handed playing throughout. They
+  are resized to 1020 × 1289 pixels with a shared color palette. The desktop frame
+  height accommodates the longer full-neck layout, so the initial 0–12 view has
+  some extra space below its content.
+- `pdf-reference.png` shows an A4 landscape reference page for C major on a
+  left-handed six-string guitar. The full neck and five compact CAGED position
+  diagrams use exact pattern points rather than rectangular fret windows. The
+  homepage's limited view does not crop this printable reference.
 
 The original educational material and screenshots follow [CC BY 4.0](../../CONTENT-LICENSE.md).
 Marques & Co. branding and third-party assets retain their respective rights.

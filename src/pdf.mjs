@@ -13,13 +13,9 @@ import {
   pitchPreference,
 } from './music.mjs';
 import { FAMILIES } from './catalog.mjs';
-import {
-  guideBoardLayout,
-  guitarWindows,
-  bassRoute,
-  guidePlan,
-} from './guide-layout.mjs';
+import { guideBoardLayout, bassRoute, guidePlan } from './guide-layout.mjs';
 import { copy } from './i18n.mjs';
+import { scalePatterns } from './patterns.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 const W = 841.89,
   H = 595.28,
@@ -330,6 +326,8 @@ export async function createAtlas(
       small = false,
       route,
       miniature = false,
+      pattern = false,
+      compact = false,
     } = {},
   ) {
     const model = boardModel(state, { lo, hi }),
@@ -397,8 +395,8 @@ export async function createAtlas(
       const name = noteName(m, pitchPreference(state));
       if (!miniature) {
         const size = small ? 5.8 : 6.7,
-          baseline = l.y(row, lo) + (small ? 2 : 9);
-        if (!small)
+          baseline = l.y(row, lo) + (small || compact ? 2 : 9);
+        if (!small && !compact)
           text(
             page,
             l.labelX,
@@ -462,7 +460,9 @@ export async function createAtlas(
           ? route
             ? n.root
               ? rootMarker(state)
-              : n.degree
+              : pattern
+                ? ''
+                : n.degree
             : n.root
               ? rootMarker(state)
               : ''
@@ -518,7 +518,7 @@ export async function createAtlas(
           undefined,
           'center',
         );
-        if (!small && f > 0 && [0, 3, 5, 7, 9].includes(f % 12)) {
+        if (!small && !compact && f > 0 && [0, 3, 5, 7, 9].includes(f % 12)) {
           const count = f % 12 === 0 ? 2 : 1;
           for (let d = 0; d < count; d++)
             circle(
@@ -530,7 +530,7 @@ export async function createAtlas(
             );
         }
       }
-      if (!small)
+      if (!small && !compact)
         text(
           page,
           l.center(0),
@@ -705,9 +705,9 @@ export async function createAtlas(
       M,
       516,
       tr(
-        'Full fretboard maps, nearby positions, and a practical starting point for backing tracks.',
-        'Mapas completos, posições próximas e um ponto de partida para praticar com backing tracks.',
-        'Mapas del diapasón, posiciones cercanas y un punto de partida para practicar con pistas de acompañamiento.',
+        'Full fretboard maps, supported fingering patterns, and a starting point for backing tracks.',
+        'Mapas completos, padrões de digitação disponíveis e um ponto de partida para backing tracks.',
+        'Mapas del diapasón, patrones de digitación disponibles y un punto de partida para pistas de acompañamiento.',
       ),
       211,
       9.2,
@@ -897,9 +897,9 @@ export async function createAtlas(
             `De arriba hacia abajo, ${pitchNames(initial).reverse().join(', ')}. La cuerda 1 es la más aguda. La línea inferior es la más grave.`,
           ),
           tr(
-            'One fret raises the pitch a half step. Dots mark fret positions. The double dot marks an octave at fret 12.',
-            'Uma casa eleva a nota em um semitom. Os pontos marcam posições. O ponto duplo indica uma oitava na casa 12.',
-            'Cada traste eleva la nota un semitono. Los puntos indican posiciones. El punto doble marca la octava en el traste 12.',
+            'One fret raises the pitch a half step. Fret numbers identify positions; fret 12 is an octave above the open string.',
+            'Uma casa eleva a nota em um semitom. Os números indicam posições; a casa 12 fica uma oitava acima da corda solta.',
+            'Cada traste eleva la nota un semitono. Los números indican posiciones; el traste 12 está una octava por encima de la cuerda al aire.',
           ),
         ],
       ],
@@ -933,9 +933,9 @@ export async function createAtlas(
                 'El mapa completo muestra las notas de la escala o del acorde. Los pequeños trazan recorridos de una octava desde las dos cuerdas más graves. Sigue los grados y regresa. Si la afinación impide completar la octava, aparece un mapa de notas cercanas.',
               )
             : tr(
-                'The full map shows every scale or chord tone. The five smaller maps show the available notes in each fret range as position references. Choose your own fingering.',
-                'O mapa completo mostra as notas da escala ou acorde. Os cinco mapas pequenos mostram as notas de cada região como referências de posição. Você pode escolher sua digitação.',
-                'El mapa completo muestra las notas de la escala o del acorde. Los cinco mapas pequeños muestran las notas de cada región. Sirven de referencia para explorar posiciones. Puedes elegir tu propia digitación.',
+                'Small maps show the labeled fingering system: compact CAGED, two, three, or four notes per string, or pentatonic shapes with blue notes. Some patterns shift along the neck. Black rings mark tonics. Unsupported setups keep the full note map.',
+                'Os mapas pequenos indicam o sistema: CAGED compacto, duas, três ou quatro notas por corda, ou pentatônicas com blue notes. Alguns desenhos se deslocam pelo braço. Anéis pretos marcam tônicas. Os demais casos usam o mapa completo.',
+                'Los mapas pequeños indican el sistema: CAGED compacto, dos, tres o cuatro notas por cuerda, o pentatónicas con notas de blues. Algunos patrones se desplazan por el diapasón. Los anillos negros marcan tónicas. Los demás casos usan el mapa completo.',
               ),
           tr(
             'TAB reads left to right in time. Changing the tuning changes the shapes. These notes are calculated for your selected tuning.',
@@ -1124,28 +1124,81 @@ export async function createAtlas(
       ink,
       610,
     );
-    const height =
-      s.instrument === 'bass' && s.strings === 4 ? 156 : s.strings === 7 ? 190 : 180;
-    drawBoard(page, s, { top: 128, height });
+    const height = s.instrument === 'guitar' ? 140 : s.strings === 4 ? 156 : 180;
+    drawBoard(page, s, { top: 128, height, compact: s.instrument === 'guitar' });
     if (s.instrument === 'guitar') {
+      const { system, patterns } = scalePatterns(s);
       text(
         page,
         M,
-        373,
-        tr(
-          'POSITION MAPS / NEARBY FRET RANGES IN THIS TUNING',
-          'MAPAS DE POSIÇÃO / REGIÕES PRÓXIMAS NESTA AFINAÇÃO',
-          'MAPAS DE POSICIÓN / REGIONES CERCANAS EN ESTA AFINACIÓN',
-        ),
+        301,
+        patterns.length
+          ? `${t.patterns} · ${t.patternSystems[system]}`.toLocaleUpperCase(
+              LANGUAGES[s.lang].tag,
+            )
+          : tr(
+              'FULL-NECK NOTE MAP',
+              'MAPA COMPLETO DO BRAÇO',
+              'MAPA COMPLETO DEL DIAPASÓN',
+            ),
         7.1,
         bold,
         muted,
       );
-      guitarWindows.forEach(([lo, hi], i) => {
-        const x = M + i * 153;
-        text(page, x, 390, `${t.range} ${lo}-${hi}`, 9, bold, ink, 142);
-        drawBoard(page, s, { x, top: 402, width: 142, height: 82, lo, hi, small: true });
-      });
+      if (patterns.length) {
+        const columns = Math.ceil(patterns.length / 2);
+        const gap = 14;
+        const width = (R - M - (columns - 1) * gap) / columns;
+        patterns.forEach((pattern, i) => {
+          const x = M + (i % columns) * (width + gap);
+          const top = 326 + Math.floor(i / columns) * 100;
+          text(
+            page,
+            x,
+            top - 11,
+            tr(
+              pattern.shape
+                ? `Pattern ${pattern.number} · ${pattern.shape} shape`
+                : `Pattern ${pattern.number} · degree ${pattern.startDegree}`,
+              pattern.shape
+                ? `Padrão ${pattern.number} · forma ${pattern.shape}`
+                : `Padrão ${pattern.number} · grau ${pattern.startDegree}`,
+              pattern.shape
+                ? `Patrón ${pattern.number} · forma ${pattern.shape}`
+                : `Patrón ${pattern.number} · grado ${pattern.startDegree}`,
+            ),
+            8.2,
+            bold,
+            ink,
+            width,
+          );
+          drawBoard(page, s, {
+            x,
+            top,
+            width,
+            height: 64,
+            lo: pattern.lo,
+            hi: pattern.hi,
+            small: true,
+            route: pattern,
+            pattern: true,
+          });
+        });
+      } else {
+        para(
+          page,
+          M,
+          326,
+          tr(
+            'No supported fingering pattern is available for this scale and tuning. Use the full-neck note map above; it shows scale tones, not a prescribed fingering.',
+            'Não há um padrão de digitação disponível para esta escala e afinação. Use o mapa completo acima: ele mostra as notas da escala, sem prescrever uma digitação.',
+            'No hay un patrón de digitación disponible para esta escala y afinación. Usa el mapa completo de arriba: muestra las notas de la escala, sin indicar una digitación específica.',
+          ),
+          560,
+          10,
+          16,
+        );
+      }
     } else {
       const lower = s.strings > 4 ? 13 : 0;
       let complete = true;

@@ -24,10 +24,25 @@ or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrume
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
 PDF customization stays inline below the playing surface.
-The full neck stays visible. Use the colored position buttons to highlight a
-pattern or half of the neck and gray out the remaining notes.
+The fretboard starts at frets 0–12. A sliding switch beside playback in the
+fretboard header reveals the full neck. Thin pattern brackets sit above the
+frets they cover, labeled with the pattern number, shape, and fret range.
+Vertical boundary guides connect each bracket to the neck. Click one to highlight its exact string-and-fret shape;
+click it again to return the visible scale notes to color.
+Six-string guitar offers five compact CAGED positions for major and natural
+minor, five two-notes-per-string shapes for major/minor pentatonic, and five
+blues patterns with the extra blue notes. The other major-scale modes, harmonic
+and melodic minor with their modes, and whole-tone scales use three notes per
+string. Diminished scales use four notes per string. Seven-string guitar uses
+three-notes-per-string routes for major/minor instead of extending the CAGED
+templates. Patterns support standard tuning intervals and uniform detuning.
+Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
 Playback tempo, repeat, note labels, and spelling sit below the diagram. Tap a note or degree to inspect its locations, or try the short exercise.
-The app remembers your last selection, and copied links open the same range.
+Only complete patterns that fit the selected view are offered. A whole pattern
+can move by an octave to fit; its notes are never clipped individually. Full neck
+reveals patterns that do not fit frets 0–12. The app remembers your view and
+selection, and copied links reopen them. Unsupported scales or tunings keep a
+note map with an explanation.
 PDF settings below the fretboard show the contents, reference-note options, and
 page estimate before you download.
 These examples demonstrate the controls; choosing a scale for a backing track
@@ -41,7 +56,7 @@ also depends on its chords.
 <img src="docs/assets/mobile-picker.png" alt="The inline scale catalog searching for pentatonic scales on a phone" width="320">
 </p>
 
-![A generated A4 landscape reference page with a full neck, nearby positions, notes, and degrees](docs/assets/pdf-reference.png)
+![A generated major-scale A4 reference page with the full neck and five compact scale positions](docs/assets/pdf-reference.png)
 
 </details>
 
@@ -54,6 +69,8 @@ also depends on its chords.
   and shared sharp/flat names on a single pitch marker.
 - American English (`en-US`), Brazilian Portuguese (`pt-BR`), and Latin American Spanish (`es-419`), remembered instrument setups,
   keyboard controls, and shareable URLs.
+- Scale-derived fingering patterns with playback tied to the exact highlighted
+  notes, plus a note-map fallback for unsupported shapes.
 - Locally synthesized guitar and bass playback, plus vector PDF atlases for a
   scale, a family, or the named catalog.
 - Inline PDF customization with a Download PDF action beneath the fretboard.

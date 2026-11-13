@@ -4,7 +4,12 @@ import { guidePlan } from './guide-layout.mjs';
 const setupKeys = ['instrument', 'strings', 'tuning', 'customTuning', 'hand', 'frets'];
 const preferenceKeys = ['lang', 'spelling', 'labels', 'allNotes'];
 const musicKeys = ['root', 'scale', 'formula'];
-const ranges = ['full', 'lower', 'upper', '0-4', '3-7', '5-9', '8-12'];
+const ranges = ['full', 'lower', 'upper'];
+const validRange = (id) =>
+  ranges.includes(id) ||
+  /^(?:caged-major-[1-5]|caged-minor-[1-5]|three-per-string-[1-7]|four-per-string-[1-8]|two-per-string-[1-5]|blues-[1-5]|octave-[0-5])$/.test(
+    id,
+  );
 const hasMusic = (query) => musicKeys.some((key) => query[key] !== undefined);
 const pick = (value, keys) =>
   Object.fromEntries(
@@ -33,14 +38,17 @@ export function restoreWorkspace(query = {}, saved = {}) {
     ...query,
   });
 }
-export function restoreRange(query = {}, saved = {}, { mobile = false } = {}) {
-  const fallback = mobile ? '0-4' : 'lower';
-  if (query.range !== undefined)
-    return ranges.includes(query.range) ? query.range : fallback;
+export function restoreRange(query = {}, saved = {}) {
+  const fallback = 'full';
+  if (query.range !== undefined) return validRange(query.range) ? query.range : fallback;
   // Earlier shared URLs described the whole neck without a separate range field.
   if (query.frets !== undefined) return 'full';
   if (hasMusic(query)) return fallback;
-  return ranges.includes(saved.practice?.range) ? saved.practice.range : fallback;
+  return validRange(saved.practice?.range) ? saved.practice.range : fallback;
+}
+export function restoreNeckView(query = {}, saved = {}) {
+  if (query.neck !== undefined) return query.neck === 'full' ? 'full' : 'octave';
+  return saved.preferences?.neckView === 'full' ? 'full' : 'octave';
 }
 export function rememberWorkspace(saved, state) {
   const s = normalizeState(state),
@@ -48,11 +56,14 @@ export function rememberWorkspace(saved, state) {
   return {
     version: 1,
     instrument: s.instrument,
-    preferences: pick(s, preferenceKeys),
+    preferences: {
+      ...pick(s, preferenceKeys),
+      neckView: state.neckView === 'full' ? 'full' : 'octave',
+    },
     practice: {
       ...pick(s, ['root', 'scale']),
       ...(s.scale === 'custom' ? { formula: s.formula } : {}),
-      ...(ranges.includes(state.range) ? { range: state.range } : {}),
+      ...(validRange(state.range) ? { range: state.range } : {}),
     },
     setups: { ...saved.setups, [s.instrument]: setup },
     stringSetups: { ...saved.stringSetups, [`${s.instrument}:${s.strings}`]: setup },

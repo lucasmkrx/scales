@@ -22,6 +22,7 @@ import {
   readPreferences,
   restoreWorkspace,
   restoreRange,
+  restoreNeckView,
   rememberWorkspace,
   changeSetup,
   exportPreview,
@@ -34,6 +35,7 @@ import { boardSvg, escape } from './board.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { createAtlas } from './pdf.mjs';
 import { positionSequence, practiceExercise, intervalName } from './practice.mjs';
+import { scalePatterns } from './patterns.mjs';
 const STORAGE_KEY = 'scales.preferences.v1';
 let saved = {};
 try {
@@ -41,21 +43,12 @@ try {
 } catch {}
 const query = new URLSearchParams(location.search);
 let state = restoreWorkspace(Object.fromEntries(query), saved);
-const positions = [
-  [0, 4],
-  [3, 7],
-  [5, 9],
-  [8, 12],
-];
-const rangeIds = [
-  'full',
-  ...positions.map(([lo, hi]) => `${lo}-${hi}`),
-  'lower',
-  'upper',
-];
+let patternInfo = { system: null, patterns: [] },
+  patternKey;
 let range = restoreRange(Object.fromEntries(query), saved, {
   mobile: matchMedia('(max-width: 560px)').matches,
 });
+let neckView = restoreNeckView(Object.fromEntries(query), saved);
 let boardWidth,
   boardRightOffset = 0;
 
@@ -69,6 +62,7 @@ let view = initialScaleView(state.scale),
   tempo = 100,
   playbackVersion = 0,
   soundingMidi = null,
+  soundingPoint = null,
   playTimer,
   exporting,
   pdfLibraries,
@@ -84,7 +78,7 @@ const options = (items, current) =>
     .join('');
 const tuningName = (tuning) => localizedTuningName(tuning, state.lang);
 function persist() {
-  saved = rememberWorkspace(saved, { ...state, range });
+  saved = rememberWorkspace(saved, { ...state, range, neckView });
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   } catch {}
@@ -96,6 +90,7 @@ function status(message, error = false) {
 function saveURL() {
   const params = new URLSearchParams(sharedState(state));
   params.set('range', range);
+  params.set('neck', neckView);
   history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
 }
 function configuration() {
@@ -154,16 +149,57 @@ function renderScalePicker() {
   $('scale-selection').textContent =
     `${t.currentScale} · ${rootName(state)} ${scaleName(selected, state.lang)}`;
 }
+function currentPattern(id = range) {
+  return patternInfo.patterns.find((pattern) => pattern.id === id);
+}
+function syncPatterns() {
+  const key = `${sharedState(state)}|${neckView}`;
+  if (key !== patternKey) {
+    const complete = scalePatterns(state);
+    const octave = scalePatterns(state, { lo: 0, hi: 12 });
+    // Keep matching fingerings in the same octave when expanding the view.
+    const compact = new Map(octave.patterns.map((pattern) => [pattern.id, pattern]));
+    patternInfo =
+      neckView === 'full'
+        ? {
+            ...complete,
+            patterns: complete.patterns.map(
+              (pattern) => compact.get(pattern.id) ?? pattern,
+            ),
+          }
+        : octave;
+    patternInfo.allCount = complete.patterns.length;
+    patternKey = key;
+  }
+  if (range !== 'full' && !currentPattern()) {
+    range = 'full';
+    persist();
+  }
+}
 function fretBounds(id) {
-  if (id === 'full') return [0, state.frets];
-  if (id === 'upper') return [12, state.frets];
-  if (id === 'lower') return [0, 12];
-  return id.split('-').map(Number);
+  const pattern = currentPattern(id);
+  if (pattern) return [pattern.lo, pattern.hi];
+  return [0, neckView === 'full' ? state.frets : 12];
+}
+function isHighlighted(point) {
+  const pattern = currentPattern();
+  if (pattern)
+    return pattern.points.some(
+      (note) => note.row === point.row && note.fret === point.fret,
+    );
+  const [lo, hi] = fretBounds(range);
+  return point.fret >= lo && point.fret <= hi;
+}
+function practiceFocus() {
+  const pattern = currentPattern();
+  const [lo, hi] = fretBounds(range);
+  return pattern ? { points: pattern.points } : { lo, hi };
 }
 function renderBoard() {
   const board = $('board');
   const [lo, hi] = fretBounds(range);
-  const width = 72 + (state.frets + 1) * 45;
+  const displayHi = neckView === 'full' ? state.frets : 12;
+  const width = 72 + (displayHi + 1) * 45;
   const height = 74 + (state.strings - 1) * 31;
   const setup = [
     state.instrument,
@@ -172,9 +208,14 @@ function renderBoard() {
     state.customTuning,
     state.hand,
     state.frets,
+    neckView,
   ].join('|');
   const reset = board.dataset.setup !== setup;
-  const rangeChanged = board.dataset.range !== range;
+  const focus = [
+    range,
+    ...(currentPattern()?.points.map((point) => `${point.row}:${point.fret}`) ?? []),
+  ].join('|');
+  const rangeChanged = board.dataset.focus !== focus;
   const scroll = board.scrollLeft;
   const active = board.contains(document.activeElement)
     ? document.activeElement.dataset
@@ -183,21 +224,22 @@ function renderBoard() {
   board.style.setProperty('--board-width', `${width}px`);
   board.innerHTML = boardSvg(state, {
     lo: 0,
-    hi: state.frets,
+    hi: displayHi,
     width,
     height,
-    focusRange: { lo, hi },
+    focusRange: currentPattern() ? undefined : { lo, hi },
+    focusPoints: currentPattern()?.points,
+    patterns: patternInfo.patterns,
+    selectedPattern: currentPattern()?.id,
   });
   highlightSelection();
-  if (soundingMidi !== null) highlightPitch(soundingMidi);
+  if (soundingMidi !== null) highlightPitch(soundingMidi, soundingPoint);
   board.dataset.setup = setup;
   board.scrollLeft = reset
     ? state.hand === 'left'
       ? board.scrollWidth - board.clientWidth
       : 0
     : scroll;
-  if (rangeChanged && range === 'full')
-    board.scrollLeft = state.hand === 'left' ? board.scrollWidth - board.clientWidth : 0;
   if ((reset || rangeChanged) && range !== 'full' && width > board.clientWidth) {
     const notes = [...board.querySelectorAll('.note:not(.muted)')].map((note) =>
       note.getBBox(),
@@ -208,27 +250,23 @@ function renderBoard() {
       board.scrollLeft = (left + right - board.clientWidth) / 2;
     }
   }
-  board.dataset.range = range;
+  board.dataset.focus = focus;
   boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
   if (active?.fret) {
     const note =
       board.querySelector(`[data-row="${active.row}"][data-fret="${active.fret}"]`) ??
-      board.querySelector('[tabindex="0"]');
+      board.querySelector('[data-midi][tabindex="0"]');
     note?.focus({ preventScroll: true });
   }
+  if (active?.pattern)
+    board
+      .querySelector(`[data-pattern="${active.pattern}"]`)
+      ?.focus({ preventScroll: true });
   $('scroll-hint').hidden = width <= board.clientWidth;
   renderNoteReadout();
 }
-function rangeButtonMarkup(id) {
-  const t = copy[state.lang];
-  const [start, end] = fretBounds(id);
-  const bounds = state.hand === 'left' ? `${end}–${start}` : `${start}–${end}`;
-  const label = id === 'full' ? t.fullNeck : bounds;
-  const kind =
-    id === 'full' ? 'full' : ['lower', 'upper'].includes(id) ? 'half' : 'position';
-  return `<button type="button" class="range-button" data-range-kind="${kind}" data-range="${id}" aria-controls="board" aria-pressed="${range === id}" aria-label="${escape(`${id === 'full' ? t.fullNeck : t.range} ${bounds}`)}">${escape(label)}</button>`;
-}
 function renderContent() {
+  syncPatterns();
   const s = selection(state),
     t = copy[state.lang],
     names = spellScale(s);
@@ -258,26 +296,23 @@ function renderContent() {
     );
   }
   $('notes-strip').innerHTML = tables.join('');
-  const [lo, hi] = fretBounds(range);
-  const exercise = practiceExercise(s, { lo, hi });
+  const exercise = practiceExercise(s, practiceFocus());
   $('practice-exercise').hidden = !exercise.length;
   $('practice-exercise').textContent = t.exerciseHint.replace(
     '{notes}',
     exercise.join('–'),
   );
-  $('playback-hint').textContent = positionSequence(s, { lo, hi }).complete
+  $('playback-hint').textContent = positionSequence(s, practiceFocus()).complete
     ? t.playbackHint
     : t.partialPosition;
   $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
-  const pairedRanges = ['full', '0-4'];
-  const otherRanges = rangeIds.filter((id) => !pairedRanges.includes(id));
-  if (s.hand === 'left') {
-    pairedRanges.reverse();
-    otherRanges.reverse();
-  }
-  const pair = `<div class="range-pair">${pairedRanges.map(rangeButtonMarkup).join('')}</div>`;
-  const others = otherRanges.map(rangeButtonMarkup).join('');
-  $('fret-ranges').innerHTML = s.hand === 'left' ? others + pair : pair + others;
+  $('pattern-info').textContent = patternInfo.allCount
+    ? `${t.patterns} · ${t.patternSystems[patternInfo.system]} · ${t.patternToggleHint}${patternInfo.patterns.length < patternInfo.allCount ? ` ${t.morePatterns}` : ''}`
+    : t.patternUnavailable;
+  $('neck-octave-label').textContent = state.hand === 'left' ? '12–0' : '0–12';
+  document
+    .querySelectorAll('input[name="neck-view"]')
+    .forEach((input) => (input.checked = input.value === neckView));
   renderBoard();
   $('degrees-hint').hidden = s.labels !== 'degrees';
   saveURL();
@@ -291,12 +326,31 @@ function changeRange(id) {
   $('share-fallback').hidden = true;
   renderContent();
 }
-$('fret-ranges').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-range]');
-  if (!button) return;
-  const id = button.dataset.range;
-  changeRange(id);
-  $('fret-ranges').querySelector(`[data-range="${id}"]`).focus({ preventScroll: true });
+function togglePattern(id) {
+  if (!currentPattern(id)) return;
+  changeRange(range === id ? 'full' : id);
+  $('board').querySelector(`[data-pattern="${id}"]`)?.focus({ preventScroll: true });
+}
+$('neck-view').addEventListener('change', (event) => {
+  neckView = event.target.value === 'full' ? 'full' : 'octave';
+  update({});
+});
+$('board').addEventListener('click', (event) => {
+  const marker = event.target.closest('[data-pattern]');
+  if (marker) togglePattern(marker.dataset.pattern);
+});
+$('board').addEventListener('keydown', (event) => {
+  const marker = event.target.closest('[data-pattern]');
+  if (
+    !marker ||
+    !['Enter', ' '].includes(event.key) ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey
+  )
+    return;
+  event.preventDefault();
+  if (!event.repeat) togglePattern(marker.dataset.pattern);
 });
 $('board').addEventListener('scroll', () => {
   const board = $('board');
@@ -502,11 +556,10 @@ async function audioPlayer() {
   return instrumentAudio;
 }
 function visibleNotes() {
-  return boardModel(state).points;
+  return boardModel(state, { hi: neckView === 'full' ? state.frets : 12 }).points;
 }
 function positionNotes() {
-  const [lo, hi] = fretBounds(range);
-  return boardModel(state, { lo, hi }).points;
+  return visibleNotes().filter(isHighlighted);
 }
 function renderNoteReadout(note = inspectedNote, location = true) {
   const t = copy[state.lang];
@@ -556,21 +609,23 @@ function inspectNote(note) {
   highlightSelection();
   renderNoteReadout();
 }
-function highlightPitch(midi) {
+function highlightPitch(midi, point = null) {
   soundingMidi = midi;
+  soundingPoint = point;
   document.querySelectorAll('.sounding').forEach((el) => el.classList.remove('sounding'));
   if (midi === null) {
     renderNoteReadout();
     return;
   }
+  const boardSelector = point
+    ? `#board [data-row="${point.row}"][data-fret="${point.fret}"]`
+    : `#board [data-midi="${midi}"]`;
   document
-    .querySelectorAll(
-      `#board [data-midi="${midi}"], #notes-strip td[data-pitch="${midi % 12}"]`,
-    )
+    .querySelectorAll(`${boardSelector}, #notes-strip td[data-pitch="${midi % 12}"]`)
     .forEach((el) => el.classList.add('sounding'));
   if (playbackMode === 'sequence') {
-    const note = visibleNotes().find((point) => point.midi === midi);
-    if (note) renderNoteReadout(note, false);
+    const note = point ?? positionNotes().find((note) => note.midi === midi);
+    if (note) renderNoteReadout({ ...note, visible: true }, Boolean(point));
   }
 }
 function stopAudio() {
@@ -590,9 +645,12 @@ async function startPlayback(midi) {
   stopAudio();
   const version = playbackVersion,
     snapshot = { ...state };
-  const [lo, hi] = fretBounds(range);
-  const notes =
-    midi === undefined ? positionSequence(snapshot, { lo, hi }).notes : [midi];
+  const route = midi === undefined ? currentPattern()?.sequence : null;
+  const notes = route
+    ? route.map((point) => point.midi)
+    : midi === undefined
+      ? positionSequence(snapshot, practiceFocus()).notes
+      : [midi];
   if (!notes.length) {
     status(copy[state.lang].emptyRange);
     return;
@@ -635,8 +693,10 @@ async function startPlayback(midi) {
         if (now >= end + step) schedulePass();
       }
       const index = Math.floor((now - start) / step);
-      const pitch = now < end ? (notes[Math.min(notes.length - 1, index)] ?? null) : null;
-      if (pitch !== soundingMidi) highlightPitch(pitch);
+      const stepIndex = Math.max(0, Math.min(notes.length - 1, index));
+      const pitch = now < end ? (notes[stepIndex] ?? null) : null;
+      const point = pitch === null ? null : (route?.[stepIndex] ?? null);
+      if (pitch !== soundingMidi || point !== soundingPoint) highlightPitch(pitch, point);
       playTimer = setTimeout(followAudio, 25);
     }
     schedulePass();
@@ -659,7 +719,7 @@ function playNote(midi, element) {
   if (note)
     inspectNote({
       ...note,
-      visible: note.fret >= fretBounds(range)[0] && note.fret <= fretBounds(range)[1],
+      visible: isHighlighted(note),
     });
   startPlayback(midi);
 }
@@ -671,8 +731,8 @@ $('notes-strip').addEventListener('click', (event) => {
     .filter((point) => point.pc === pitch)
     .sort((a, b) => a.midi - b.midi)[0];
   const visible = Boolean(note);
-  note ??= boardModel(state)
-    .points.filter((point) => point.pc === pitch)
+  note ??= visibleNotes()
+    .filter((point) => point.pc === pitch)
     .sort((a, b) => a.midi - b.midi)[0];
   if (!note) return;
   inspectNote({ ...note, visible });
@@ -688,7 +748,7 @@ $('board').addEventListener('focusin', (event) => {
   if (point)
     inspectNote({
       ...point,
-      visible: point.fret >= fretBounds(range)[0] && point.fret <= fretBounds(range)[1],
+      visible: isHighlighted(point),
     });
 });
 $('tempo').addEventListener('input', () => {

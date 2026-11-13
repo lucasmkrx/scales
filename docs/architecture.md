@@ -28,21 +28,23 @@ the selected root; the displayed label is separate from the sounding pitch.
 
 ## Module boundaries
 
-| Module                                      | Responsibility                                                                                                    |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [catalog.mjs](../src/catalog.mjs)           | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
-| [music.mjs](../src/music.mjs)               | Validate selections; calculate notes, degrees, SVG coordinates, shared URLs, and playback sequences               |
-| [practice.mjs](../src/practice.mjs)         | Visible-position playback sequences, short exercises, and localized interval names                                |
-| [workspace.mjs](../src/workspace.mjs)       | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
-| [scale-picker.mjs](../src/scale-picker.mjs) | Curate common choices and search the multilingual catalog without changing the active scale                       |
-| [board.mjs](../src/board.mjs)               | Render the shared model into keyboard-accessible SVG markup                                                       |
-| [guide-layout.mjs](../src/guide-layout.mjs) | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
-| [pdf.mjs](../src/pdf.mjs)                   | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
-| [string-audio.mjs](../src/string-audio.mjs) | Synthesize strings and manage cached buffers, gain, scheduling, and cancellation                                  |
-| [guides.mjs](../src/guides.mjs)             | Match the four archived lesson PDFs against a configuration                                                       |
-| [locales.mjs](../src/locales.mjs)           | Regional language tags, locale normalization, and tuning names                                                    |
-| [i18n.mjs](../src/i18n.mjs)                 | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
-| [app.mjs](../src/app.mjs)                   | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
+| Module                                          | Responsibility                                                                                                    |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [catalog.mjs](../src/catalog.mjs)               | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
+| [music.mjs](../src/music.mjs)                   | Validate selections; calculate notes, degrees, SVG coordinates, shared URLs, and playback sequences               |
+| [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align pattern brackets with fret geometry and place patterns in numbered rows                                     |
+| [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets and ordered playback routes for supported setups                        |
+| [practice.mjs](../src/practice.mjs)             | Visible-position playback sequences, short exercises, and localized interval names                                |
+| [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
+| [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and search the multilingual catalog without changing the active scale                       |
+| [board.mjs](../src/board.mjs)                   | Render the shared model into keyboard-accessible SVG markup                                                       |
+| [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
+| [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
+| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize strings and manage cached buffers, gain, scheduling, and cancellation                                  |
+| [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                                       |
+| [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                                    |
+| [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
+| [app.mjs](../src/app.mjs)                       | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
 
 The pure model and layout functions can be tested without a browser. The DOM and
 Web Audio integration remain in their respective controllers. See
@@ -71,9 +73,12 @@ systems and density constraints, so they have separate layout functions.
 
 This prevents duplicated musical facts, but does not eliminate separate visual
 QA. The PDF uses a continuous tapered neck; the web uses its own SVG layout.
-Guitar windows describe nearby notes, while bass routes derive an ascending
-octave from the two lowest strings. A route that cannot be reached under an
-extreme custom tuning falls back to a position map.
+Both renderers use the shared guitar pattern model. The homepage favors complete
+first-octave instances where available; the PDF can use a different whole-octave
+instance on the full instrument neck. Each renderer uses exact pattern points.
+The bass PDF shows octave routes from the two lowest strings; the homepage
+offers compact routes from any viable starting string. Unavailable fingerings
+retain an explicitly labeled note-map fallback.
 
 ### Sounding pitches, note labels, and degree formulas
 
@@ -92,7 +97,11 @@ beside D♯/E♭; the shared marker still represents one pitch.
 
 The URL contains a reproducible musical configuration. On startup, stored
 preferences are read defensively, explicit URL fields are applied, and the result
-is normalized. Bare URLs resume the last root, scale, custom formula, and fret range.
+is normalized. Bare URLs resume the last root, scale, custom formula, neck view,
+and selected pattern. New sessions start at frets 0–12; the full-neck view is an
+explicit switch choice. Shared URLs encode this as `neck=octave` or `neck=full`;
+the device preference is `preferences.neckView`. An explicit neck URL value
+takes priority over that saved preference.
 Explicit musical links take priority over that saved practice selection. Preferences are versioned and optional: unavailable storage does
 not prevent use of the app.
 
@@ -123,14 +132,71 @@ resets the formula editor to that scale's degrees. Custom tuning and formula
 validation appear beside their inputs. Keyboard selection returns focus to the
 chosen result after its active state updates.
 
-Compact colored position buttons choose nearby ranges, frets 0–12, or the full
-neck. Their order and numeric range labels follow handedness, and Full neck stays
-beside the first-position button. The complete neck always stays visible, with
-notes outside the selected range grayed out. The diagram's dimensions depend on
-the instrument's fret and string counts and stay fixed across viewport sizes. Narrow screens
-scroll the diagram horizontally; selecting a pattern brings it into view.
-Shared links include the selected range. The settings panels stretch to equal
-height when they share a row.
+Clickable pattern ranges above the neck select exact string/fret point sets.
+Their spans describe where a fingering lies, rather than selecting every note
+inside a rectangular fret window. Thin bracket caps use centered pattern, shape,
+and fret-range labels, with one pattern per row in pattern-number order. They
+share the neck's SVG geometry and horizontal scrolling. Both ends have vertical guides extending
+through the neck behind the notes; selection strengthens those guides. A marker
+toggles on with a click, Enter, or Space, and toggles off when activated again. Pressed
+state and keyboard focus survive the SVG update.
+Six-string guitars with standard tuning intervals (including uniform
+transpositions) use verified five-position CAGED templates for major and natural
+minor scales. Major position numbers follow E, D, C, A, G shape order; minor
+positions follow Em, Dm, Cm, Am, Gm. They are not scale-degree or mode numbers.
+Templates preserve the exact extension notes shown by the reference diagrams.
+C major Position 1, for example, has 17 points on frets 7–10, including high-E
+fret 8 and no fret 12.
+
+Major/minor pentatonic scales retain five two-notes-per-string shapes, including
+supported seven-string extensions. Six-string blues uses five reference-checked
+boxes for each blues scale, preserving the source's edge passing tones.
+Seven-string blues adds intervening blue notes to generated pentatonic routes.
+The remaining diatonic modes, harmonic and melodic minor with
+their modes, and whole tone use generated three-notes-per-string routes. Seven-string
+major/minor also use that system rather than unverified CAGED extensions. Both
+diminished scales use four notes per string. Symmetric scales have repeated
+interval geometry across different starting degrees; their position numbers do
+not claim that every fingering is a distinct shape. Three- and four-note routes
+can shift along the neck and span more frets than compact CAGED positions.
+Other collections and unsupported tuning intervals retain the explicit note-map
+fallback. A complete fingering must fit the selected view; no point is individually
+clipped or wrapped.
+
+Bass patterns are generated compact root-to-octave routes, each beginning on an
+available starting string. Their exact points follow the selected scale and sounding tuning.
+The model avoids presenting a clipped or unreachable route as a complete pattern.
+
+A sliding switch in the fretboard header beside playback selects frets 0–12 or
+the full neck, with both choices visibly labeled. The header controls wrap into
+their own row on narrow screens. The limited-view label counts down as 12–0 for left-handed playing.
+Frets 0–12 is the default; the chosen view is remembered and shared.
+Each view offers only complete patterns within its visible fret bounds. A whole
+shape may move by an octave to fit, preserving its fingering and identity. Patterns
+that still cannot fit are omitted with a cue that the full neck shows more. A
+selection that no longer fits is cleared rather than partially drawn or played.
+Expanding the view retains first-octave instances when available, so a selected
+pattern does not move to another octave just because more frets are shown.
+PDF atlases continue to include the full instrument neck and available patterns;
+the homepage view switch does not crop the printable reference.
+
+Notes outside a selected pattern's point set turn gray, including notes at frets
+that other strings use inside the pattern. Marker geometry and range labels
+follow handedness, while pattern identities stay musically stable. There are no
+separate pattern or half-neck buttons. An unselected marker state shows all scale
+notes in the chosen view. The diagram's dimensions depend on the selected view
+and instrument string count and remain fixed across viewport sizes. Narrow
+screens scroll the diagram horizontally with its pattern brackets; choosing a pattern
+brings its points into view. Clearing the pattern preserves that horizontal
+position. The settings panels stretch to equal height when they share a row.
+
+Pattern IDs for CAGED, two-, three-, and four-notes-per-string systems, blues,
+and bass routes survive device preferences and shared links. Old numeric-range
+and region links clear the fingering selection rather than pretending that a
+legacy window is a pattern. A 3NPS ID only restores for a scale/setup that uses
+that system; it is never reinterpreted as a CAGED position. New pattern links restore a
+valid selected marker in
+the chosen neck view.
 
 Display controls, tempo, repeat, and the interactive note/degree table sit below
 the diagram, where they remain available without preceding the visual result.
@@ -150,11 +216,13 @@ different excitation and decay settings.
 An LRU cache holds up to 48 generated mono buffers. Sources play through a gain
 stage and compressor. Stop fades active voices and cancels scheduled ones; a
 version token invalidates audio starts waiting for a resumed AudioContext.
-The app prewarms a position's unique notes before choosing its schedule start time.
-Playback uses a complete visible octave when available and otherwise follows the
-notes present in the selected range. Tempo controls the interval between note
+The app prewarms the selected route's unique notes before choosing its schedule
+start time. Pattern playback follows the exact ordered string/fret route up and
+back, and sounding highlights stay on those route points. Full-map playback
+uses a complete available octave when possible, with partial-route handling
+for sparse custom scales. Tempo controls the interval between note
 onsets. Repeat schedules one pass at a time with a one-beat rest after each pass.
-Changing the setup or range cancels the current pass.
+Changing the setup or pattern cancels the current pass.
 
 The note and degree table doubles as a set of pitch controls. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and
