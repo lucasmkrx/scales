@@ -104,11 +104,19 @@ horizontal fretboard position; a new setup starts at its open-string end.
 
 ### Inline settings and focused interaction
 
-Instrument setup and a searchable scale catalog sit above the fretboard. The
-instrument card includes string count, handedness, fret count, and tuning. Choosing
-a custom tuning reveals its pitch fields in that card. The scale card keeps root,
-search, collections, results, and the custom formula editor together. Search and
+A compact searchable scale browser sits beside instrument setup above the
+fretboard on wider screens. The groups stack on narrow screens, with scale
+selection first. The browser keeps root, search, collections, results, and the
+custom formula editor together. Search and
 collection browsing retain the current musical selection until a result is chosen.
+The selected scale and Play action lead into the diagram, keeping the musical
+result close to its controls. A compact introduction replaces the decorative hero.
+
+The instrument section includes string count, handedness, fret count, and tuning;
+choosing a custom tuning reveals its pitch fields in place. PDF customization
+remains in its own full-width section below the playing surface.
+An instrument anchor near the title provides a direct route to those settings.
+All settings remain on the homepage without application popup menus.
 
 Custom formula drafts survive unrelated setting changes. Selecting a named scale
 resets the formula editor to that scale's degrees. Custom tuning and formula
@@ -117,15 +125,20 @@ chosen result after its active state updates.
 
 Compact colored position buttons choose nearby ranges, frets 0–12, or the full
 neck. Their order and numeric range labels follow handedness, and Full neck stays
-beside the first-position button. The diagram's dimensions depend on the selected
-fret range and string count and stay fixed across viewport sizes. Narrow screens
-scroll the diagram horizontally. Shared links include the selected range.
+beside the first-position button. The complete neck always stays visible, with
+notes outside the selected range grayed out. The diagram's dimensions depend on
+the instrument's fret and string counts and stay fixed across viewport sizes. Narrow screens
+scroll the diagram horizontally; selecting a pattern brings it into view.
+Shared links include the selected range. The settings panels stretch to equal
+height when they share a row.
 
-Tempo and repeat are inline beside Play. Note/degree labels, note spelling, and
-outside-note visibility sit near the diagram. The main board has one tab stop,
-with arrow keys moving along strings and frets in the displayed orientation.
+Display controls, tempo, repeat, and the interactive note/degree table sit below
+the diagram, where they remain available without preceding the visual result.
+Note feedback and the share action sit directly beneath the diagram. The main
+board has one tab stop, with arrow keys moving along strings and frets in the displayed orientation.
 The page groups these controls by their musical task and stacks the groups on
-phones. Assistive-technology compatibility still needs broader validation.
+phones. The rationale and research sources are recorded in [design.md](design.md).
+Assistive-technology compatibility still needs broader validation.
 
 ### Procedural instrument audio
 

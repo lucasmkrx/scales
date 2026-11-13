@@ -30,6 +30,10 @@ export function boardSvg(state, options = {}) {
   const t = copy[model.state.lang];
   const arpeggio = model.state.scaleData.family === 'arpeggio';
   const ink = '#28372e';
+  const inPattern = (note) =>
+    !options.focusRange ||
+    (note.fret >= options.focusRange.lo && note.fret <= options.focusRange.hi);
+  const entry = points.find(inPattern) ?? points[0];
   const el = [];
   const text = (x, y, s, size = 12, fill = ink, weight = 400) =>
     `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" fill="${fill}" font-weight="${weight}">${escape(s)}</text>`;
@@ -88,7 +92,10 @@ export function boardSvg(state, options = {}) {
         ? n.degree
         : n.name;
     if (!n.active && state.labels === 'degrees') label = '';
-    const fg = n.lightText ? 'white' : ink;
+    const muted = !inPattern(n);
+    const fill = muted ? '#d2d6d1' : n.fill;
+    const rootInk = muted ? '#8d9690' : '#111111';
+    const fg = muted ? '#59645d' : n.lightText ? 'white' : ink;
     let interactive = '';
     if (!small) {
       const fret = n.fret === 0 ? t.open : `${t.fret} ${n.fret}`;
@@ -96,15 +103,16 @@ export function boardSvg(state, options = {}) {
         n.name,
         n.root ? (arpeggio ? t.chordRoot : t.root) : '',
         n.active ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
+        muted ? t.noteOutsideRange : '',
         `${t.string} ${n.string}`,
         fret,
       ]
         .filter(Boolean)
         .join(', ');
-      interactive = ` role="button" tabindex="${n === points[0] ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}"`;
+      interactive = ` role="button" tabindex="${n === entry ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}"`;
     }
     el.push(
-      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? '#111111' : n.fill}" stroke="${n.root ? '#111111' : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="white"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${n.fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
+      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}${muted ? ' muted' : ''}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? rootInk : fill}" stroke="${n.root ? rootInk : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="white"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
     );
   }
   const accessibility = small

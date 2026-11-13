@@ -17,6 +17,7 @@ import {
 } from './music.mjs';
 import { PluckedStringPlayer, STRING_SOUNDS } from './string-audio.mjs';
 import { scaleGroups, initialScaleView } from './scale-picker.mjs';
+import { chooseNextIndex } from './choice-navigation.mjs';
 import {
   readPreferences,
   restoreWorkspace,
@@ -162,7 +163,7 @@ function fretBounds(id) {
 function renderBoard() {
   const board = $('board');
   const [lo, hi] = fretBounds(range);
-  const width = 72 + (hi - lo + 1) * 45;
+  const width = 72 + (state.frets + 1) * 45;
   const height = 74 + (state.strings - 1) * 31;
   const setup = [
     state.instrument,
@@ -171,16 +172,22 @@ function renderBoard() {
     state.customTuning,
     state.hand,
     state.frets,
-    range,
   ].join('|');
   const reset = board.dataset.setup !== setup;
+  const rangeChanged = board.dataset.range !== range;
   const scroll = board.scrollLeft;
   const active = board.contains(document.activeElement)
     ? document.activeElement.dataset
     : null;
   boardWidth = board.clientWidth;
   board.style.setProperty('--board-width', `${width}px`);
-  board.innerHTML = boardSvg(state, { lo, hi, width, height });
+  board.innerHTML = boardSvg(state, {
+    lo: 0,
+    hi: state.frets,
+    width,
+    height,
+    focusRange: { lo, hi },
+  });
   highlightSelection();
   if (soundingMidi !== null) highlightPitch(soundingMidi);
   board.dataset.setup = setup;
@@ -189,6 +196,19 @@ function renderBoard() {
       ? board.scrollWidth - board.clientWidth
       : 0
     : scroll;
+  if (rangeChanged && range === 'full')
+    board.scrollLeft = state.hand === 'left' ? board.scrollWidth - board.clientWidth : 0;
+  if ((reset || rangeChanged) && range !== 'full' && width > board.clientWidth) {
+    const notes = [...board.querySelectorAll('.note:not(.muted)')].map((note) =>
+      note.getBBox(),
+    );
+    if (notes.length) {
+      const left = Math.min(...notes.map((note) => note.x));
+      const right = Math.max(...notes.map((note) => note.x + note.width));
+      board.scrollLeft = (left + right - board.clientWidth) / 2;
+    }
+  }
+  board.dataset.range = range;
   boardRightOffset = board.scrollWidth - board.clientWidth - board.scrollLeft;
   if (active?.fret) {
     const note =
@@ -216,6 +236,8 @@ function renderContent() {
   $('note-count').textContent =
     `${names.length} ${names.length === 1 ? t.singleNote : t.noteCount}`;
   $('scale-title').textContent = `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
+  $('setup-summary').textContent =
+    `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()} · ${tuningName(s.tuningData)}`;
   // Keep the pitch and its degree in the same column, including long chromatic formulas.
   const tables = [];
   for (let start = 0; start < names.length; start += 7) {
@@ -379,10 +401,7 @@ function render() {
     [
       ...TUNINGS.filter(
         (v) => v.instrument === state.instrument && v.strings === state.strings,
-      ).map((v) => [
-        v.id,
-        `${tuningName(v)} · ${v.notes.map((m) => midiName(m, 'sharp')).join(' – ')}`,
-      ]),
+      ).map((v) => [v.id, tuningName(v)]),
       ['custom', t.custom],
     ],
     tuningDraft ? 'custom' : state.tuning,
@@ -483,13 +502,16 @@ async function audioPlayer() {
   return instrumentAudio;
 }
 function visibleNotes() {
+  return boardModel(state).points;
+}
+function positionNotes() {
   const [lo, hi] = fretBounds(range);
   return boardModel(state, { lo, hi }).points;
 }
 function renderNoteReadout(note = inspectedNote, location = true) {
   const t = copy[state.lang];
   if (!note) {
-    $('note-readout-text').textContent = visibleNotes().some((point) => point.active)
+    $('note-readout-text').textContent = positionNotes().some((point) => point.active)
       ? t.tapNote
       : t.emptyRange;
     return;
@@ -634,14 +656,18 @@ function playNote(midi, element) {
         (point.row === Number(element.dataset.row) &&
           point.fret === Number(element.dataset.fret))),
   );
-  if (note) inspectNote({ ...note, visible: true });
+  if (note)
+    inspectNote({
+      ...note,
+      visible: note.fret >= fretBounds(range)[0] && note.fret <= fretBounds(range)[1],
+    });
   startPlayback(midi);
 }
 $('notes-strip').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-pitch]');
   if (!button) return;
   const pitch = Number(button.dataset.pitch);
-  let note = visibleNotes()
+  let note = positionNotes()
     .filter((point) => point.pc === pitch)
     .sort((a, b) => a.midi - b.midi)[0];
   const visible = Boolean(note);
@@ -659,7 +685,11 @@ $('board').addEventListener('focusin', (event) => {
     (point) =>
       point.row === Number(note.dataset.row) && point.fret === Number(note.dataset.fret),
   );
-  if (point) inspectNote({ ...point, visible: true });
+  if (point)
+    inspectNote({
+      ...point,
+      visible: point.fret >= fretBounds(range)[0] && point.fret <= fretBounds(range)[1],
+    });
 });
 $('tempo').addEventListener('input', () => {
   tempo = Number($('tempo').value);
@@ -730,11 +760,11 @@ $('scale-results').addEventListener('keydown', (event) => {
   const buttons = [...$('scale-results').querySelectorAll('[data-scale]')],
     index = buttons.indexOf(event.target);
   if (index < 0) return;
-  let next;
-  if (event.key === 'ArrowDown') next = Math.min(index + 1, buttons.length - 1);
-  if (event.key === 'ArrowUp') next = Math.max(index - 1, 0);
-  if (event.key === 'Home') next = 0;
-  if (event.key === 'End') next = buttons.length - 1;
+  const next = chooseNextIndex(
+    buttons.map((button) => button.getBoundingClientRect()),
+    index,
+    event.key,
+  );
   if (next !== undefined) {
     event.preventDefault();
     buttons.forEach((button, i) => (button.tabIndex = i === next ? 0 : -1));

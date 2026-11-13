@@ -40,7 +40,6 @@
     <main>
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
-          <p class="eyebrow" data-i18n="guitarBass">Guitar &amp; bass</p>
           <h1 id="page-title" data-i18n="title">Fretboard explorer</h1>
           <p data-i18n="subtitle">
             Choose a scale, hear its notes, and find them on your fretboard.
@@ -48,9 +47,106 @@
         </div>
       </section>
       <div class="workspace" id="explorer" tabindex="-1">
-        <div class="settings-grid">
+        <div class="scale-selection-area">
+          <section
+            class="panel settings-card scale-settings-card"
+            aria-labelledby="scale-heading"
+          >
+            <div class="settings-card-heading">
+              <h2 class="settings-heading" id="scale-heading">
+                <svg class="icon" aria-hidden="true">
+                  <use href="./assets/controls.svg#music"></use></svg
+                ><span data-i18n="scaleSettings">Scale settings</span>
+              </h2>
+              <p id="scale-selection" class="selection-summary sr-only"></p>
+            </div>
+            <div id="scale-catalog">
+              <div class="picker-filters">
+                <div class="scale-search-controls">
+                  <label class="root-control"
+                    ><span data-i18n="root">Root note</span
+                    ><select id="root" aria-describedby="root-hint"></select
+                  ></label>
+                  <div class="picker-search-row">
+                    <label class="scale-search" for="search"
+                      ><span data-i18n="search">Find a scale</span></label
+                    >
+                    <input
+                      id="search"
+                      type="search"
+                      autocomplete="off"
+                      aria-describedby="search-hint"
+                      aria-controls="scale-results"
+                    />
+                    <button
+                      type="button"
+                      id="clear-search"
+                      class="text-button"
+                      hidden
+                      data-i18n="clearSearch"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <p id="search-hint" class="sr-only" data-i18n="searchHint"></p>
+                <div class="catalog-navigation">
+                  <div
+                    class="scale-tabs"
+                    id="scale-tabs"
+                    role="group"
+                    aria-label="Scale collections"
+                  >
+                    <button type="button" data-view="common" data-i18n="common">
+                      Common</button
+                    ><button type="button" data-view="all" data-i18n="allScales">
+                      All scales</button
+                    ><button type="button" data-view="arpeggios" data-i18n="arpeggios">
+                      Arpeggios
+                    </button>
+                  </div>
+                  <p
+                    id="scale-results-count"
+                    class="hint"
+                    role="status"
+                    aria-live="polite"
+                  ></p>
+                </div>
+              </div>
+              <div
+                id="scale-results"
+                class="scale-results"
+                role="group"
+                aria-label="Scale choices"
+              ></div>
+            </div>
+
+            <p id="root-hint" class="sr-only" data-i18n="rootHint"></p>
+            <div id="custom-scale" class="custom-scale editor">
+              <label class="formula-control"
+                ><span data-i18n="customScale">Scale degrees</span
+                ><input
+                  id="formula-input"
+                  value="1 2 b3 4 5 b6 b7"
+                  autocomplete="off"
+                  aria-describedby="formula-hint formula-error"
+              /></label>
+              <button
+                type="button"
+                class="secondary"
+                id="apply-scale"
+                data-i18n="applyScale"
+              >
+                Use custom scale
+              </button>
+              <p id="formula-hint" class="hint" data-i18n="formulaHint"></p>
+              <p id="formula-error" class="hint error" role="alert"></p>
+            </div>
+          </section>
           <section
             class="panel settings-card instrument-card"
+            id="instrument-settings"
+            tabindex="-1"
             aria-labelledby="instrument-heading"
           >
             <h2 class="settings-heading" id="instrument-heading">
@@ -143,105 +239,13 @@
               </p>
             </form>
           </section>
-          <section
-            class="panel settings-card scale-settings-card"
-            aria-labelledby="scale-heading"
-          >
-            <div class="settings-card-heading">
-              <h2 class="settings-heading" id="scale-heading">
-                <svg class="icon" aria-hidden="true">
-                  <use href="./assets/controls.svg#music"></use></svg
-                ><span data-i18n="scaleSettings">Scale settings</span>
-              </h2>
-              <p id="scale-selection" class="selection-summary"></p>
-            </div>
-            <div id="scale-catalog">
-              <div class="picker-filters">
-                <div class="scale-search-controls">
-                  <label class="root-control"
-                    ><span data-i18n="root">Root note</span
-                    ><select id="root" aria-describedby="root-hint"></select
-                  ></label>
-                  <div class="picker-search-row">
-                    <label class="scale-search" for="search"
-                      ><span class="sr-only" data-i18n="search">Find a scale</span></label
-                    >
-                    <input
-                      id="search"
-                      type="search"
-                      autocomplete="off"
-                      aria-describedby="search-hint"
-                      aria-controls="scale-results"
-                    />
-                    <button
-                      type="button"
-                      id="clear-search"
-                      class="text-button"
-                      hidden
-                      data-i18n="clearSearch"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-                <p id="search-hint" class="sr-only" data-i18n="searchHint"></p>
-                <div
-                  class="scale-tabs"
-                  id="scale-tabs"
-                  role="group"
-                  aria-label="Scale collections"
-                >
-                  <button type="button" data-view="common" data-i18n="common">
-                    Common</button
-                  ><button type="button" data-view="all" data-i18n="allScales">
-                    All scales</button
-                  ><button type="button" data-view="arpeggios" data-i18n="arpeggios">
-                    Arpeggios
-                  </button>
-                </div>
-                <p
-                  id="scale-results-count"
-                  class="hint"
-                  role="status"
-                  aria-live="polite"
-                ></p>
-              </div>
-              <div
-                id="scale-results"
-                class="scale-results"
-                role="group"
-                aria-label="Scale choices"
-              ></div>
-            </div>
-
-            <p id="root-hint" class="sr-only" data-i18n="rootHint"></p>
-            <div id="custom-scale" class="custom-scale editor">
-              <label
-                ><span data-i18n="customScale">Scale degrees</span
-                ><input
-                  id="formula-input"
-                  value="1 2 b3 4 5 b6 b7"
-                  autocomplete="off"
-                  aria-describedby="formula-hint formula-error"
-              /></label>
-              <button
-                type="button"
-                class="secondary"
-                id="apply-scale"
-                data-i18n="applyScale"
-              >
-                Use custom scale
-              </button>
-              <p id="formula-hint" class="hint" data-i18n="formulaHint"></p>
-              <p id="formula-error" class="hint error" role="alert"></p>
-            </div>
-          </section>
         </div>
         <section class="scale-panel panel" aria-labelledby="scale-title">
           <header class="scale-header">
             <div class="scale-heading">
               <h2 id="scale-title"></h2>
-              <p id="scale-meta">
+              <a id="setup-summary" class="setup-summary" href="#instrument-settings"></a>
+              <p id="scale-meta" class="sr-only">
                 <span id="family-label"></span
                 ><span class="meta-dot" aria-hidden="true">·</span
                 ><span id="note-count"></span>
@@ -255,32 +259,8 @@
                   <use href="./assets/controls.svg#stop"></use></svg
                 ><span id="play-label" data-i18n="play">Play scale</span>
               </button>
-              <div class="playback-options">
-                <div class="tempo-control">
-                  <div class="tempo-row">
-                    <label for="tempo" data-i18n="tempo">Tempo</label
-                    ><output id="tempo-value" for="tempo">100 BPM</output>
-                  </div>
-                  <input
-                    id="tempo"
-                    type="range"
-                    min="40"
-                    max="200"
-                    step="5"
-                    value="100"
-                  />
-                </div>
-                <label class="check"
-                  ><input id="repeat" type="checkbox" /><span data-i18n="repeatPosition"
-                    >Repeat position</span
-                  ></label
-                >
-              </div>
             </div>
           </header>
-          <p class="hint playback-hint" id="playback-hint" data-i18n="playbackHint"></p>
-          <div class="notes-strip" id="notes-strip"></div>
-          <p class="practice-exercise" id="practice-exercise"></p>
           <div class="diagram">
             <div class="board-toolbar">
               <div class="range-controls">
@@ -292,38 +272,7 @@
                   aria-labelledby="range-label"
                 ></div>
               </div>
-              <div class="display-controls">
-                <fieldset class="segmented" id="labels">
-                  <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
-                  <label
-                    ><input type="radio" name="labels" value="notes" checked /><span
-                      data-i18n="notes"
-                      >Notes</span
-                    ></label
-                  >
-                  <label
-                    ><input type="radio" name="labels" value="degrees" /><span
-                      data-i18n="degrees"
-                      >Degrees</span
-                    ></label
-                  >
-                </fieldset>
-                <label class="spelling-control"
-                  ><span data-i18n="spelling">Note spelling</span
-                  ><select id="spelling">
-                    <option value="both" data-i18n="both">Both</option>
-                    <option value="sharp" data-i18n="sharp">Sharps</option>
-                    <option value="flat" data-i18n="flat">Flats</option>
-                  </select></label
-                >
-                <label class="check outside-control"
-                  ><input id="allNotes" type="checkbox" /><span data-i18n="showAll"
-                    >Show other notes</span
-                  ></label
-                >
-              </div>
             </div>
-            <p id="degrees-hint" class="hint" hidden data-i18n="degreesHint"></p>
             <div class="board-scroll" id="board" tabindex="-1"></div>
             <div class="board-foot">
               <span class="legend"
@@ -354,6 +303,58 @@
             ><span data-i18n="manualCopy">Copy this link</span
             ><input type="url" id="share-url" readonly
           /></label>
+          <div class="playing-options">
+            <div class="display-controls">
+              <fieldset class="segmented" id="labels">
+                <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
+                <label
+                  ><input type="radio" name="labels" value="notes" checked /><span
+                    data-i18n="notes"
+                    >Notes</span
+                  ></label
+                >
+                <label
+                  ><input type="radio" name="labels" value="degrees" /><span
+                    data-i18n="degrees"
+                    >Degrees</span
+                  ></label
+                >
+              </fieldset>
+              <label class="spelling-control"
+                ><span data-i18n="spelling">Note spelling</span
+                ><select id="spelling">
+                  <option value="both" data-i18n="both">Both</option>
+                  <option value="sharp" data-i18n="sharp">Sharps</option>
+                  <option value="flat" data-i18n="flat">Flats</option>
+                </select></label
+              >
+              <label class="check outside-control"
+                ><input id="allNotes" type="checkbox" /><span data-i18n="showAll"
+                  >Show other notes</span
+                ></label
+              >
+            </div>
+            <div class="playback-options">
+              <div class="tempo-control">
+                <div class="tempo-row">
+                  <label for="tempo" data-i18n="tempo">Tempo</label
+                  ><output id="tempo-value" for="tempo">100 BPM</output>
+                </div>
+                <input id="tempo" type="range" min="40" max="200" step="5" value="100" />
+              </div>
+              <label class="check"
+                ><input id="repeat" type="checkbox" /><span data-i18n="repeatPosition"
+                  >Repeat position</span
+                ></label
+              >
+            </div>
+          </div>
+          <p id="degrees-hint" class="hint" hidden data-i18n="degreesHint"></p>
+          <div class="scale-reference">
+            <p class="hint playback-hint" id="playback-hint" data-i18n="playbackHint"></p>
+            <div class="notes-strip" id="notes-strip"></div>
+            <p class="practice-exercise" id="practice-exercise"></p>
+          </div>
         </section>
 
         <section
