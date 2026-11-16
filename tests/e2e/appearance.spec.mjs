@@ -105,6 +105,9 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'light');
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  // Light is already applied, so wait for the device change to update the
+  // advertised next action before activating it (WebKit delivers this later).
+  await expect(toggle).toHaveAccessibleName('Theme: Light. Switch to Dark.');
   await toggle.press('Enter');
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'dark');
   await toggle.press('Enter');
@@ -208,9 +211,14 @@ test('reduced motion disables control and fretboard animations during interactio
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
   await page.goto(url());
-  await page.locator('#play').click();
-  await expect(page.locator('#play')).toHaveClass(/playing/);
-  await expect(page.locator('.note.sounding').first()).toBeVisible();
+  await page.locator('#theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  // Exercise strike styling without depending on an audio output device in CI.
+  // Audio synthesis and playback controls have separate coverage.
+  await page
+    .locator('#board .note')
+    .first()
+    .evaluate((note) => note.classList.add('sounding'));
   const styles = await page.evaluate(() => {
     const targets = [
       document.querySelector('#theme-toggle'),
@@ -229,5 +237,4 @@ test('reduced motion disables control and fretboard animations during interactio
     expect(style.animation).toBe('none');
     expect(style.transitions.every((duration) => duration === 0)).toBe(true);
   }
-  await page.locator('#play').click();
 });
