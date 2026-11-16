@@ -10,6 +10,7 @@
     />
     <title>Scales · Notes, scales, and improvisation</title>
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <script src="./theme.js"></script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body id="top">
@@ -35,6 +36,17 @@
             <use href="./assets/controls.svg#chevron"></use>
           </svg>
         </label>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Theme: System. Switch to dark mode"
+          title="Theme: System. Switch to dark mode"
+        >
+          <svg class="icon" aria-hidden="true">
+            <use id="theme-icon" href="./assets/controls.svg#monitor"></use>
+          </svg>
+        </button>
       </div>
     </header>
     <main>
@@ -45,7 +57,11 @@
         aria-label="Quick navigation"
       >
         <strong id="mobile-scale-title"></strong>
-        <a id="jump-to-board" href="#fretboard" data-i18n="goToBoard">Go to fretboard</a>
+        <a id="jump-to-board" href="#fretboard"
+          ><span data-i18n="goToBoard">Go to fretboard</span
+          ><svg class="icon" aria-hidden="true">
+            <use href="./assets/controls.svg#arrow"></use></svg
+        ></a>
       </nav>
       <div class="workspace" id="explorer" tabindex="-1">
         <div class="scale-selection-area">
@@ -161,27 +177,53 @@
                 <legend class="sr-only" data-i18n="instrument">Instrument</legend>
                 <label
                   ><input type="radio" name="instrument" value="guitar" checked /><span
-                    data-i18n="guitar"
-                    >Guitar</span
+                    ><svg class="icon" aria-hidden="true">
+                      <use href="./assets/controls.svg#guitar"></use></svg
+                    ><span data-i18n="guitar">Guitar</span></span
                   ></label
                 ><label
                   ><input type="radio" name="instrument" value="bass" /><span
-                    data-i18n="bass"
-                    >Bass</span
+                    ><svg class="icon" aria-hidden="true">
+                      <use href="./assets/controls.svg#bass"></use></svg
+                    ><span data-i18n="bass">Bass</span></span
                   ></label
                 >
               </fieldset>
               <div class="instrument-fields">
                 <label
                   ><span data-i18n="strings">Strings</span
-                  ><select id="strings"></select></label
-                ><label
-                  ><span data-i18n="hand">Handedness</span
-                  ><select id="hand">
-                    <option value="right" data-i18n="right">Right-handed</option>
-                    <option value="left" data-i18n="left">Left-handed</option>
-                  </select></label
-                >
+                  ><select id="strings"></select
+                ></label>
+                <div class="hand-control">
+                  <button
+                    type="button"
+                    id="hand"
+                    data-hand="right"
+                    aria-label="Guitar · Orientation: Right-handed. Switch to Left-handed."
+                    title="Guitar · Orientation: Right-handed. Switch to Left-handed."
+                  >
+                    <span class="orientation-graphic">
+                      <img
+                        id="hand-instrument"
+                        class="orientation-instrument"
+                        src="./assets/instruments/guitar.webp"
+                        width="640"
+                        height="160"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span class="orientation-copy">
+                      <span class="orientation-caption" data-i18n="hand"
+                        >Orientation</span
+                      >
+                      <span id="hand-label">Right-handed</span>
+                    </span>
+                    <svg class="icon orientation-cue" aria-hidden="true">
+                      <use href="./assets/controls.svg#flip"></use>
+                    </svg>
+                  </button>
+                </div>
                 <label class="frets-field"
                   ><span data-i18n="frets">Frets</span
                   ><select id="frets">
@@ -377,8 +419,10 @@
                 <input id="tempo" type="range" min="40" max="200" step="5" value="100" />
               </div>
               <label class="check"
-                ><input id="repeat" type="checkbox" /><span data-i18n="repeatPosition"
-                  >Repeat position</span
+                ><input id="repeat" type="checkbox" /><span
+                  ><svg class="icon" aria-hidden="true">
+                    <use href="./assets/controls.svg#repeat"></use></svg
+                  ><span data-i18n="repeatPosition">Repeat</span></span
                 ></label
               >
             </div>
@@ -435,8 +479,10 @@
             <p id="export-status" class="hint" role="status" aria-live="polite"></p>
           </div>
           <div class="export-actions">
-            <button class="primary" id="export" type="button" data-i18n="pdf">
-              Download PDF</button
+            <button class="primary" id="export" type="button">
+              <svg class="icon" aria-hidden="true">
+                <use href="./assets/controls.svg#download"></use></svg
+              ><span data-i18n="pdf">Download PDF</span></button
             ><button
               id="cancel-export"
               type="button"
@@ -460,6 +506,9 @@
       <p data-i18n="license"></p>
       <a href="https://github.com/lucasmkrx/scales" data-i18n="source"
         >Source &amp; contributions</a
+      >
+      <a href="./assets/instruments/credits.html" data-i18n="artworkCredits"
+        >Artwork credits</a
       >
     </footer>
     <noscript

@@ -64,6 +64,37 @@ custom formula stays inline, with its apply action appearing after an edit. A
 single reference row follows the current note/degree mode. Repeated setup cards,
 practice prose, and the PDF configuration summary are removed.
 
+The handedness control has its own full-width row so its illustration and full
+“Right-handed” or “Left-handed” label are easy to read. The guitar and bass use
+locally served transparent product artwork adapted from Ryan_Nein’s instrument
+previews. AI-assisted background removal preserves the approved visual direction;
+the images are padded and resized without stretching. Clicking or pressing
+Enter or Space flips the artwork and switches the fretboard orientation. Its
+accessible name describes the next action. Only the illustration mirrors, so the
+label stays readable. The artwork follows the chosen instrument and represents
+a six-string guitar or four-string bass; the fretboard follows the selected string count.
+Reduced motion switches immediately without the flip animation. A small footer
+link provides the author, original sources, license, and adaptation details.
+
+### Appearance and feedback
+
+Icons reinforce familiar actions while their text labels stay visible. The
+appearance control is the compact exception: its accessible name describes both
+the current choice and the next action. It is an ordinary button rather than a
+two-state toggle, since it offers System, Light, and Dark. From System, its first
+activation switches to the opposite visible theme; repeated activation also
+returns to following the device.
+
+Light and dark themes share the same layout and note colors. Dedicated fretboard
+surfaces, labels, guides, and focus colors keep the diagram integrated with the
+rest of the interface. Theme changes recolor the existing surface without moving
+the notes, clearing a selection, or restarting playback. Printable references
+keep their separate light palette.
+
+Motion is brief feedback for selection, button activation, and sounding notes.
+It does not stretch or move the neck. Reduced-motion preferences disable those
+animations and transitions while retaining the same visible states.
+
 ## Constraints
 
 - No application popup menus or modal settings; settings remain on the homepage.
@@ -184,8 +215,9 @@ playing, compact Position 1, and frets 0–12. After local fonts loaded:
 
 | Viewport width | Scale panel top | Pattern-and-neck surface top | Settings layout               |
 | -------------- | --------------- | ---------------------------- | ----------------------------- |
-| 1360px         | 495px           | 608px                        | Side by side, each 394px high |
-| 390px          | 835px           | 1017px                       | Stacked                       |
+| 1360px         | 498px           | 611px                        | Side by side, each 397px high |
+| 390px          | 920px           | 1102px                       | Stacked                       |
 
 Both captures contain the page width without horizontal page overflow. The phone
-scrolls the fixed-size diagram inside its own surface.
+scrolls the fixed-size diagram inside its own surface. The light and dark captures
+have matching settings, scale-panel, and fretboard positions.

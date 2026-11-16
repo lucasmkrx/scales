@@ -1,9 +1,10 @@
 # Documentation media
 
-These assets show the actual Scales interface and generated output.
+These assets show the actual Scales interface and generated output. UI captures
+use local build `2536f8f25890`; static captures honor reduced motion.
 
 - `desktop.png` shows a left-handed, six-string guitar in E standard at a
-  1360 × 1445 CSS-pixel viewport. C major uses compact CAGED Position 1 (E shape)
+  1360 × 1447 CSS-pixel viewport. C major uses compact CAGED Position 1 (E shape)
   in the default frets 0–12 view. Its 17 exact string/fret points at frets 7–10
   stay in color, including high-E fret 8; fret 12 and other scale notes turn gray.
   The limited-view switch label counts down as 12–0 for left-handed playing.
@@ -11,27 +12,38 @@ These assets show the actual Scales interface and generated output.
   with one pattern per row. The view switch sits beside playback in the header.
   Vertical guides connect both ends to the neck behind the notes, with stronger guides for the selection. Only complete patterns that
   fit the visible neck are offered; the full-neck cue explains missing numbers.
-  Scale and instrument settings share a row, with PDF customization below.
+  Scale and instrument settings share a row, with PDF customization below. The
+  orientation button has its own full-width row below the string and fret
+  controls. Its transparent six-string guitar artwork is mirrored beside the explicit
+  Left-handed label and flip cue.
   A compact inline caption identifies the pattern and its lowest note B (7); it
   does not repeat the bracket range or note count. Hear tonic sits beside tempo
   and repeat. The formula action appears after editing, and repeated setup,
   practice, and PDF-summary cards are absent.
-- `mobile.png` shows the same setup at 390 × 1674 CSS pixels, from the page header
+- `desktop-dark.png` shows the same 1360 × 1447 layout with a saved Dark choice.
+  The moon control in the header identifies that preference. Dedicated dark
+  fretboard surfaces keep the note colors, root rings, bracket guides, and labels
+  readable while retaining the same 17 selected points and geometry.
+- `mobile.png` shows the same setup at 390 × 1758 CSS pixels, from the page header
   through the stacked settings and playing controls. The fixed-size 0–12 diagram
   and its pattern brackets scroll horizontally together to the selected pattern.
   The root legend and Copy link share a footer; note feedback appears after
   inspection. Display, tempo, repeat, and one note/degree reference row follow it.
   A sticky current-scale shortcut provides a direct route from settings to the
   fretboard; the selected pattern remains visible when the viewport changes.
+- `mobile-dark.png` shows the same 390 × 1758 phone layout in Dark, including
+  the appearance control, instrument icons, fixed-size neck, and compact playback
+  controls. Switching appearance does not change the measured page positions.
 - `mobile-picker.png` shows the inline scale catalog at 390 × 860 CSS pixels,
   searching for pentatonic scales while C major remains selected, with the sticky
   shortcut above the scale settings.
 - `walkthrough.gif` follows a desktop player searching for pentatonic scales,
   choosing A minor pentatonic and its first two-notes-per-string shape, switching
   to the full neck and viewing Pattern 2 in degrees, then clicking the bracket again
-  to clear it and including all 12 root notes in the PDF settings. The five frames
+  to clear it, including all 12 root notes in the PDF settings, and switching to
+  Dark in the last frame. The five frames
   come from a local Chromium session and use left-handed playing throughout. They
-  are resized to 1020 × 1084 pixels with a shared color palette. The desktop frame
+  are resized to 1020 × 1085 pixels with a shared color palette. The desktop frame
   height accommodates the longer full-neck layout, so the initial 0–12 view has
   some extra space below its content.
 - `pdf-reference.png` shows an A4 landscape reference page for C major on a

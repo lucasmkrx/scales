@@ -68,7 +68,7 @@ test('pattern emphasis preserves the complete neck and dims only frets outside i
         assert.equal(classes.includes('muted'), Number(fret) < 5 || Number(fret) > 9);
       }
       assert.match(focused, /tabindex="0"[^>]*data-fret="5"/);
-      assert.match(focused, /fill="#d2d6d1"/);
+      assert.match(focused, /fill="var\(--board-muted-fill, #d2d6d1\)"/);
       assert.doesNotMatch(full, /class="[^"]*muted/);
       assert.doesNotMatch(
         boardSvg(state, { focusRange: { lo: 0, hi: frets } }),
