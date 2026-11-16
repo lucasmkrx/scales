@@ -155,7 +155,8 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(page.locator('#apply-scale')).toBeHidden();
   await page.locator('#formula-input').fill('1 2 b3 4 5 6 b7');
   await expect(page.locator('#apply-scale')).toBeVisible();
-  await page.locator('#hand').selectOption('left');
+  await page.locator('#hand').click();
+  await expect(page.locator('#hand')).toHaveAttribute('data-hand', 'left');
   await expect(page.locator('#formula-input')).toHaveValue('1 2 b3 4 5 6 b7');
   await page.locator('#apply-scale').click();
   await expect(page).toHaveURL(/scale=custom/);
@@ -165,7 +166,7 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(page.locator('#formula-input')).toHaveAttribute('aria-invalid', 'true');
   await expect(page).toHaveURL(/formula=1\+2\+b3\+4\+5\+6\+b7/);
   await page.goto('/');
-  await expect(page.locator('#hand')).toHaveValue('left');
+  await expect(page.locator('#hand')).toHaveAttribute('data-hand', 'left');
   await expect(page.locator('#root')).toHaveValue('9');
   await expect(page.locator('#formula-input')).toHaveValue('1 2 b3 4 5 6 b7');
 });

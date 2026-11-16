@@ -44,6 +44,7 @@ the selected root; the displayed label is separate from the sounding pitch.
 | [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                                       |
 | [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                                    |
 | [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
+| [theme.js](../public/theme.js)                  | Resolve device appearance before paint and manage local System, Light, and Dark preferences                       |
 | [app.mjs](../src/app.mjs)                       | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
 
 The pure model and layout functions can be tested without a browser. The DOM and
@@ -113,6 +114,14 @@ counts of 21 for guitar and 20 for bass when no explicit choice exists. Custom
 tuning and formula edits commit only after validation. Display changes retain
 horizontal fretboard position; a new setup starts at its open-string end.
 
+Appearance is a separate device preference, stored as `scales.theme`, and is not
+part of a musical URL or instrument setup. A small script in the document head
+resolves System, Light, or Dark before the stylesheet paints. System follows
+`prefers-color-scheme`, including changes while the page is open; an explicit
+choice remains in effect until changed. Unavailable storage does not prevent
+theme switching during the current visit. Theme changes update CSS variables
+without rerendering the fretboard or touching playback state.
+
 ### Inline settings and focused interaction
 
 A compact searchable scale browser sits beside instrument setup above the
@@ -126,6 +135,16 @@ result close to its controls. The page begins directly with settings; its main h
 The instrument section includes string count, handedness, fret count, and tuning;
 choosing a custom tuning reveals its pitch fields in place. PDF customization
 remains in its own full-width section below the playing surface.
+Handedness uses a full-width button below the string and fret controls. Transparent
+guitar or bass product artwork sits beside the explicit current label, such as
+“Right-handed” or “Left-handed.” Only the artwork mirrors; the text stays readable.
+The button keeps keyboard focus across updates, and the same preference and URL
+state drive the illustration, fretboard geometry, range labels, and PDF output.
+The locally served WebP files are adapted from Ryan_Nein's public model previews
+using AI-assisted background removal, mirroring, padding, and resizing. They are
+representative six-string guitar and four-string bass images; the fretboard uses
+the actual selected string count. A localized footer link opens the shipped
+source, author, license, and modification credits.
 All settings remain on the homepage without application popup menus.
 On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses
 its heading. The mobile settings use tighter spacing without hiding controls.
@@ -266,8 +285,9 @@ Larger atlases still require more browser memory and time.
 
 ### Cache-consistent releases
 
-The build hashes the source modules and stylesheet. It appends that revision to
-the entry script, stylesheet URL, and relative module imports throughout the graph.
+The build hashes the source modules, appearance bootstrap, icon sprite, and
+stylesheet. It appends that revision to the entry script, appearance script,
+icon references, stylesheet URL, and relative module imports throughout the graph.
 An updated entry point therefore requests matching dependencies rather than
 reusing an older unversioned import. All paths remain relative for project hosting.
 

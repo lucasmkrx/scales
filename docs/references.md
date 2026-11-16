@@ -88,6 +88,19 @@ Key mode applies the selected formula to the tonic's letter spelling. Explicit
 enharmonic roots override automatic simpler-name selection; these names do not
 change the underlying equal-tempered pitches.
 
+## Appearance and interaction
+
+- Device light/dark preference and native control appearance:
+  [MDN: prefers-color-scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-color-scheme)
+  and [color-scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/color-scheme).
+- Respecting motion preferences:
+  [MDN: prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion)
+  and [W3C technique C39](https://www.w3.org/WAI/WCAG22/Techniques/css/C39.html).
+- Accessible button names and the distinction between ordinary and two-state
+  toggle buttons: [W3C button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/).
+- Meaningful visual cues and component states:
+  [W3C non-text contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).
+
 ## Regional languages and musical terminology
 
 The interface and generated scale atlases use American English (`en-US`),
@@ -126,3 +139,14 @@ seventh. A–G note letters and scientific pitch notation remain consistent acro
 languages, with a solfège key in Portuguese and Spanish help. Enharmonic display
 names describe equal-tempered sounding pitches. The degree formulas retain the
 interval relationships, including double flats.
+
+## Instrument artwork
+
+The handedness control uses adapted previews of Ryan_Nein's
+[Fender Stratocaster Guitar](https://sketchfab.com/3d-models/fender-stratocaster-guitar-15a37147641b4c1b963bb494b234593f)
+and [Fender PJ Bass](https://sketchfab.com/3d-models/fender-pj-bass-50bdb58f21dd4d2bb6d4b884b760ce52).
+Both source works are offered under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The app uses transparent image adaptations rather than locally rendered models.
+See [third-party notices](../THIRD-PARTY-NOTICES.md) for the author credit and
+AI-assisted background-removal, mirroring, padding, and resizing details.

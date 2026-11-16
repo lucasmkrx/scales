@@ -91,6 +91,41 @@ function status(message, error = false) {
   $('status').textContent = message;
   $('status').classList.toggle('error', error);
 }
+function renderAppearance() {
+  const theme = window.scalesTheme;
+  if (!theme) return;
+  const t = copy[state.lang];
+  const label = t.themeLabel
+    .replace('{current}', t.themeModes[theme.preference])
+    .replace('{next}', t.themeModes[theme.nextPreference]);
+  $('theme-toggle').setAttribute('aria-label', label);
+  $('theme-toggle').title = label;
+  $('theme-icon').setAttribute(
+    'href',
+    `./assets/controls.svg#${{ system: 'monitor', light: 'sun', dark: 'moon' }[theme.preference]}`,
+  );
+}
+function renderOrientation() {
+  const t = copy[state.lang];
+  const next = state.hand === 'left' ? 'right' : 'left';
+  const label = t.flipInstrument
+    .replace('{instrument}', t[state.instrument])
+    .replace('{current}', t[state.hand])
+    .replace('{next}', t[next]);
+  $('hand').dataset.hand = state.hand;
+  $('hand').setAttribute('aria-label', label);
+  $('hand').title = label;
+  $('hand-label').textContent = t[state.hand];
+  const graphic = $('hand-instrument');
+  if (graphic.dataset.instrument !== state.instrument) {
+    // Representative instrument artwork; the fretboard renders the selected strings.
+    graphic.src = {
+      guitar: './assets/instruments/guitar.webp',
+      bass: './assets/instruments/bass.webp',
+    }[state.instrument];
+    graphic.dataset.instrument = state.instrument;
+  }
+}
 function saveURL() {
   const params = new URLSearchParams(sharedState(state));
   params.set('range', range);
@@ -435,6 +470,8 @@ function render() {
   document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
     el.setAttribute('aria-label', t[el.dataset.i18nAria]);
   });
+  renderAppearance();
+  renderOrientation();
   const arpeggio = s.scaleData.family === 'arpeggio';
   $('play-label').textContent = playing ? t.stop : arpeggio ? t.playArpeggio : t.play;
   document.querySelectorAll('[data-i18n="root"]').forEach((el) => {
@@ -453,7 +490,7 @@ function render() {
     (state.instrument === 'guitar' ? [6, 7] : [4, 5, 6]).map((n) => [n, n]),
     state.strings,
   );
-  for (const id of ['hand', 'frets', 'spelling']) $(id).value = String(state[id]);
+  for (const id of ['frets', 'spelling']) $(id).value = String(state[id]);
   $('tuning').innerHTML = options(
     [
       ...TUNINGS.filter(
@@ -869,7 +906,11 @@ $('strings').addEventListener('change', () => {
   validationMessage('tuning-error');
   update({ strings: $('strings').value }, { setup: true });
 });
-for (const id of ['hand', 'frets', 'spelling'])
+$('hand').addEventListener('click', () => {
+  $('hand').dataset.interactive = 'true';
+  update({ hand: state.hand === 'left' ? 'right' : 'left' });
+});
+for (const id of ['frets', 'spelling'])
   $(id).addEventListener('change', () => update({ [id]: $(id).value }));
 $('root').addEventListener('change', () => {
   const root = $('root').value;
@@ -1068,5 +1109,10 @@ $('export').addEventListener('click', async () => {
   }
 });
 $('cancel-export').addEventListener('click', () => exporting?.abort());
+$('theme-toggle').addEventListener('click', () => {
+  const theme = window.scalesTheme;
+  theme?.setPreference(theme.nextPreference);
+});
+window.addEventListener('themechange', renderAppearance);
 persist();
 render();

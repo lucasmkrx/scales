@@ -38,6 +38,7 @@ HTML report.
 | Pattern explanations          | Compact lowest-note captions distinguish tonic playback starts and follow key spelling/locales                                                                | [pattern-summary.test.mjs](../tests/pattern-summary.test.mjs)                                      |
 | Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works                                           | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
 | Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                                                         | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
+| Handedness interaction        | Illustrated click/keyboard control, mirrored geometry, unchanged fingering points, preferences, and reduced motion                                            | [handedness.spec.mjs](../tests/e2e/handedness.spec.mjs)                                            |
 | Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                                                  | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
 | Scale patterns                | Exact string/fret membership, reference fixtures, main-scale coverage, complete routes, tuning restrictions, and honest map fallback                          | [patterns.test.mjs](../tests/patterns.test.mjs)                                                    |
 | Pattern range markers         | Fret-aligned brackets, distinct pattern rows, mirrored geometry, localized labels, and bounded hit areas                                                      | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                        |
@@ -47,7 +48,8 @@ HTML report.
 | PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                                                      | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
 | Audio                         | Tune seven pitches at 44.1 and 48 kHz within 3 cents; check harmonic balance, decay, caching, pluck stopping, and independent drone lifecycle                 | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
 | Browser flows                 | Chromium, Firefox, and WebKit checks cover exact patterns, mobile layouts, jump focus, drafts/preferences, key spelling, audio, and PDF cancellation/download | [workspace.spec.mjs](../tests/e2e/workspace.spec.mjs)                                              |
-| Published assets              | Check that entry point, stylesheet, and module imports use one revision                                                                                       | [build.test.mjs](../tests/build.test.mjs)                                                          |
+| Appearance preferences        | Device theme, saved overrides, system changes, unavailable storage, keyboard switching, dark mobile layouts, and reduced motion                               | [appearance.spec.mjs](../tests/e2e/appearance.spec.mjs)                                            |
+| Published assets              | Check that entry point, appearance bootstrap, icon sprite, stylesheet, and module imports use one revision                                                    | [build.test.mjs](../tests/build.test.mjs)                                                          |
 
 Some checks enumerate the full finite catalog; others use representative cases.
 The tests do not independently certify the cultural naming of every scale,
@@ -68,6 +70,11 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   tuning with octave numbers. Invalid input must remain uncommitted with an inline
   explanation. Apply and cancel custom pitch edits and change instrument/string
   count while editing to check that the draft state resets cleanly.
+- Click the handedness illustration and use Enter and Space to flip it. Confirm
+  the full current label stays readable at phone widths, keyboard focus remains on the button, and the
+  selected pattern keeps the same string/fret points while its geometry and range
+  labels mirror. Check guitar/bass and each string count, reload and shared links,
+  and an immediate state change with reduced motion enabled.
 - Search all three languages in the inline catalog, browse scales and arpeggios,
   and choose results with the pointer or keyboard. Browsing retains the selection.
   After selection, check that keyboard focus stays on the chosen result. Arrow
@@ -78,6 +85,14 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   labels and active validation messages translate.
 - Use the inline notes/degrees, spelling, and outside-note controls. Confirm that
   settings remain available and horizontal fretboard scroll is retained.
+- Check System, Light, and Dark from the appearance button. An explicit choice
+  should survive reload and musical links; returning to System should follow
+  later device changes. Repeat with storage unavailable. Confirm focused notes,
+  selected patterns, and playing audio survive a theme change.
+- Inspect dark controls, note labels, root rings, pattern guides, and keyboard
+  focus. Icons should reinforce action labels. Emulate reduced motion and confirm
+  motion stops while selection and playback states remain visible. Downloaded
+  PDFs should retain their light reference palette.
 - Choose multiple numbered patterns and confirm the sounding string/fret points
   match the highlights exactly, including when the same MIDI pitch exists elsewhere.
   Change tempo, repeat a position, and stop or change configuration during a pass.
@@ -132,9 +147,9 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   scroll horizontally; inline control groups and the scale results must stay within
   the page width.
 
-The permanent suite runs eight focused flows in each of Chromium, Firefox, and
-WebKit: 24 browser tests in total. It includes phone-width checks in all three
-languages and both handedness settings. Additional visual checks inspect complete
+The permanent suite runs workspace and appearance flows in Chromium, Firefox, and
+WebKit. It includes phone-width checks in all three languages, both handedness
+settings, and the illustrated orientation control. Additional visual checks inspect complete
 pages and generated PDFs; the layout measurement approach is recorded in
 [design.md](design.md#layout-measurement).
 

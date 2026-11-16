@@ -14,6 +14,26 @@ The four initial guided books were adapted from the PDFs supplied by Lucas
 Marques, retaining their original visual system.
 Marques & Co. branding has its own terms in BRANDING.md.
 
+## Handedness instrument artwork
+
+The locally served [guitar](public/assets/instruments/guitar.webp) and
+[bass](public/assets/instruments/bass.webp) artwork is adapted from the public
+previews of these models by [Ryan_Nein](https://sketchfab.com/Ryan_Nein):
+
+- [Fender Stratocaster Guitar](https://sketchfab.com/3d-models/fender-stratocaster-guitar-15a37147641b4c1b963bb494b234593f)
+- [Fender PJ Bass](https://sketchfab.com/3d-models/fender-pj-bass-50bdb58f21dd4d2bb6d4b884b760ce52)
+
+The source works and adapted artwork are licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+Changes for Scales: AI-assisted background removal using the built-in OpenAI
+image generation tool, horizontal mirroring, transparent padding, resizing, and
+WebP encoding. These are adapted preview images, not new renders from downloaded
+3D models. They represent a six-string guitar and four-string bass; the playable
+fretboard uses the user's selected string count.
+
+The same attribution is shipped in [the artwork credits](public/assets/instruments/credits.html)
+and linked from the homepage footer.
+
 ## Explorer header image
 
 The [guitar header image](public/assets/guitar-banner.webp) was generated for Scales using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE).

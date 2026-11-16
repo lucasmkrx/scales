@@ -8,11 +8,11 @@ import {
 import { copy } from './i18n.mjs';
 import { patternRanges } from './pattern-ranges.mjs';
 const screenFretColors = {
-  open: '#ece9dc',
-  octave: '#dddcca',
-  marker: '#ecebdd',
-  upper: '#f5f3e9',
-  lower: '#fcfaf3',
+  open: 'var(--board-open, #ece9dc)',
+  octave: 'var(--board-octave, #dddcca)',
+  marker: 'var(--board-marker, #ecebdd)',
+  upper: 'var(--board-upper, #f5f3e9)',
+  lower: 'var(--board-lower, #fcfaf3)',
 };
 export const escape = (s) =>
   String(s)
@@ -30,7 +30,7 @@ export function boardSvg(state, options = {}) {
   const { points, rows, lo, hi } = model;
   const t = copy[model.state.lang];
   const arpeggio = model.state.scaleData.family === 'arpeggio';
-  const ink = '#28372e';
+  const ink = 'var(--board-ink, #28372e)';
   const focus =
     options.focusPoints &&
     new Set(options.focusPoints.map((point) => `${point.row}:${point.fret}`));
@@ -57,15 +57,21 @@ export function boardSvg(state, options = {}) {
     const top = l.top - 12 - (hi - f) * 0.12;
     const bottom = l.bottom + 12 + (hi - f) * 0.12;
     el.push(
-      `<rect x="${x}" y="${top}" width="${z - x}" height="${bottom - top}" fill="${fretFill(f, screenFretColors)}" stroke="#b7b8a8" stroke-width=".8"/>`,
+      `<rect class="fret" x="${x}" y="${top}" width="${z - x}" height="${bottom - top}" fill="${fretFill(f, screenFretColors)}" stroke="var(--board-grid, #b7b8a8)" stroke-width=".8"/>`,
     );
     el.push(
-      text(l.center(f), height - 10, f === 0 ? t.open : f, small ? 10 : 12, '#565e51'),
+      text(
+        l.center(f),
+        height - 10,
+        f === 0 ? t.open : f,
+        small ? 10 : 12,
+        'var(--board-ink, #565e51)',
+      ),
     );
   }
   rows.forEach((m, row) => {
     el.push(
-      `<line x1="${l.left}" x2="${l.right}" y1="${l.y(row)}" y2="${l.y(row)}" stroke="#959988" stroke-width="${0.8 + row * 0.14}"/>`,
+      `<line class="board-string" x1="${l.left}" x2="${l.right}" y1="${l.y(row)}" y2="${l.y(row)}" stroke="var(--board-string, #959988)" stroke-width="${0.8 + row * 0.14}"/>`,
     );
     el.push(
       labelText(
@@ -100,9 +106,15 @@ export function boardSvg(state, options = {}) {
         : n.name;
     if (!n.active && state.labels === 'degrees') label = '';
     const muted = !inPattern(n);
-    const fill = muted ? '#d2d6d1' : n.fill;
-    const rootInk = muted ? '#8d9690' : '#111111';
-    const fg = muted ? '#59645d' : n.lightText ? 'white' : ink;
+    const fill = muted ? 'var(--board-muted-fill, #d2d6d1)' : n.fill;
+    const rootInk = muted
+      ? 'var(--board-root-muted, #8d9690)'
+      : 'var(--board-root-ink, #111111)';
+    const fg = muted
+      ? 'var(--board-muted-ink, #59645d)'
+      : n.lightText
+        ? 'white'
+        : 'var(--note-ink, #28372e)';
     let interactive = '';
     if (!small) {
       const fret = n.fret === 0 ? t.open : `${t.fret} ${n.fret}`;
@@ -119,7 +131,7 @@ export function boardSvg(state, options = {}) {
       interactive = ` role="button" tabindex="${n === entry ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}"`;
     }
     el.push(
-      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}${muted ? ' muted' : ''}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? rootInk : fill}" stroke="${n.root ? rootInk : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="white"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
+      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}${muted ? ' muted' : ''}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? rootInk : fill}" stroke="${n.root ? rootInk : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="var(--board-root-halo, white)"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
     );
   }
   const ranges = patternRanges(small ? [] : (options.patterns ?? []), l, {

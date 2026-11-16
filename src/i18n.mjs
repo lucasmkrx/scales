@@ -1,6 +1,9 @@
 // Interface copy and concise educational descriptions, grouped by locale.
 export const copy = {
   en: {
+    flipInstrument: '{instrument} · Orientation: {current}. Switch to {next}.',
+    themeLabel: 'Theme: {current}. Switch to {next}.',
+    themeModes: { system: 'System', light: 'Light', dark: 'Dark' },
     quickNavigation: 'Quick navigation',
     goToBoard: 'Go to fretboard',
     keySpelling: 'Key',
@@ -101,7 +104,7 @@ export const copy = {
     bass: 'Bass',
     strings: 'Strings',
     tuning: 'Tuning',
-    hand: 'Handedness',
+    hand: 'Orientation',
     right: 'Right-handed',
     left: 'Left-handed',
     frets: 'Frets',
@@ -163,6 +166,7 @@ export const copy = {
     ready: 'Ready',
     credits: 'Made by',
     source: 'Source & contributions',
+    artworkCredits: 'Artwork credits',
     license: 'Code: MIT · Educational content: CC BY 4.0 · Logo rights reserved',
     customKey: 'Custom scales can be transposed to any of the 12 reference notes.',
     noResults: 'No scales match this search.',
@@ -267,6 +271,9 @@ export const copy = {
       'Letter names are A, B, C, D, E, F, and G. Octave numbers use middle C = C4. For example, E2 is the lowest open string of a standard six-string guitar.',
   },
   pt: {
+    flipInstrument: '{instrument} · Orientação: {current}. Mudar para {next}.',
+    themeLabel: 'Tema: {current}. Mudar para {next}.',
+    themeModes: { system: 'Sistema', light: 'Claro', dark: 'Escuro' },
     quickNavigation: 'Navegação rápida',
     goToBoard: 'Ir ao braço',
     keySpelling: 'Da escala',
@@ -369,7 +376,7 @@ export const copy = {
     bass: 'Baixo',
     strings: 'Cordas',
     tuning: 'Afinação',
-    hand: 'Lateralidade',
+    hand: 'Orientação',
     right: 'Destro',
     left: 'Canhoto',
     frets: 'Casas',
@@ -432,6 +439,7 @@ export const copy = {
     ready: 'Pronto',
     credits: 'Criado por',
     source: 'Código e contribuições',
+    artworkCredits: 'Créditos das imagens',
     license: 'Código: MIT · Conteúdo: CC BY 4.0 · Direitos do logo reservados',
     customKey:
       'Escalas personalizadas podem ser transpostas para qualquer uma das 12 notas de referência.',
@@ -540,6 +548,9 @@ export const copy = {
       'As letras indicam A = lá, B = si, C = dó, D = ré, E = mi, F = fá e G = sol. Os números de oitava usam dó central = C4. E2 é a corda solta mais grave da guitarra padrão de seis cordas.',
   },
   es: {
+    flipInstrument: '{instrument} · Orientación: {current}. Cambiar a {next}.',
+    themeLabel: 'Tema: {current}. Cambiar a {next}.',
+    themeModes: { system: 'Sistema', light: 'Claro', dark: 'Oscuro' },
     quickNavigation: 'Navegación rápida',
     goToBoard: 'Ir al diapasón',
     keySpelling: 'De la escala',
@@ -642,7 +653,7 @@ export const copy = {
     bass: 'Bajo',
     strings: 'Cuerdas',
     tuning: 'Afinación',
-    hand: 'Lateralidad',
+    hand: 'Orientación',
     right: 'Diestro',
     left: 'Zurdo',
     frets: 'Trastes',
@@ -706,6 +717,7 @@ export const copy = {
     ready: 'Listo',
     credits: 'Creado por',
     source: 'Código y contribuciones',
+    artworkCredits: 'Créditos de las imágenes',
     license:
       'Código MIT · Contenido educativo CC BY 4.0 · Derechos del logotipo reservados',
     customKey:

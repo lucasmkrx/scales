@@ -26,6 +26,9 @@ fretboard on wider screens. They stack on phones, with scale selection first.
 PDF customization stays inline below the playing surface, with contents, reference-note options, a page estimate, and Download PDF. Repeated setup summaries and instructional sections are omitted.
 On phones, a sticky current-scale shortcut jumps directly to the fretboard while
 keeping every setting on the homepage.
+Click the illustrated handedness control to flip between right- and left-handed
+playing. Its full label stays readable beside the guitar or bass artwork while
+the instrument and fretboard update together.
 The fretboard starts at frets 0–12. A sliding switch beside playback in the
 fretboard header reveals the full neck. Thin pattern brackets sit above the
 frets they cover, labeled with the pattern number, shape, and fret range.
@@ -43,6 +46,11 @@ Bass offers generated compact octave routes. Other notes turn gray while a patte
 Playback tempo, repeat, note labels, and spelling sit below the diagram. A single interactive reference row follows the chosen note or degree labels; tapping one highlights its locations.
 Hear tonic adds a quiet sustained root independently of scale playback. Key spelling
 follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
+The appearance button follows the device theme by default and cycles through
+system, light, and dark choices. Icons reinforce the labeled controls, and short
+selection and playback animations respect the device's reduced-motion setting.
+See the [dark desktop](docs/assets/desktop-dark.png) and
+[dark mobile](docs/assets/mobile-dark.png) previews.
 Only complete patterns that fit the selected view are offered. A whole pattern
 can move by an octave to fit; its notes are never clipped individually. Full neck
 reveals patterns that do not fit frets 0–12. The app remembers your view and
@@ -141,7 +149,8 @@ npm run test:browser
 ```
 
 The suite covers Chromium, Firefox, and WebKit, including mobile layouts,
-pattern selection, key spelling, saved settings, audio controls, and PDF downloads.
+pattern selection, key spelling, saved settings, audio controls, PDF downloads,
+theme preferences, and reduced-motion behavior.
 
 Browser flows and visual output receive separate manual checks. See
 [testing and known limits](docs/testing.md) for the evidence, reproduction
