@@ -57,22 +57,6 @@ function assertMusicalPattern(input, pattern, { consecutive = true } = {}) {
           'a notes-per-string route does not skip scale tones',
         );
   }
-  assert.equal(pattern.sequence[0].root, true, 'playback begins on the tonic');
-  assert.deepEqual(pattern.sequence[0], pattern.sequence.at(-1));
-  assert.deepEqual(new Set(pattern.sequence.map(coordinate)), selected);
-  for (let index = 1; index < pattern.sequence.length; index++) {
-    const before = pattern.points.findIndex(
-      (point) => coordinate(point) === coordinate(pattern.sequence[index - 1]),
-    );
-    const after = pattern.points.findIndex(
-      (point) => coordinate(point) === coordinate(pattern.sequence[index]),
-    );
-    assert.equal(
-      Math.abs(after - before),
-      1,
-      'playback visits neighboring selected notes',
-    );
-  }
 }
 
 test('A harmonic minor and A Dorian first 3NPS fingerings match independent note spellings', () => {

@@ -33,16 +33,16 @@ HTML report.
 | Pitch calculation             | 44 tunings × 67 catalog entries × 12 roots = 35,376 configurations; each point agrees with string pitch plus fret                                             | [music.test.mjs](../tests/music.test.mjs)                                                          |
 | Handedness                    | Coordinates reverse horizontally while row order and sounding pitches remain consistent                                                                       | [music.test.mjs](../tests/music.test.mjs), [guide-layout.test.mjs](../tests/guide-layout.test.mjs) |
 | Custom input and URLs         | Reject invalid notes, ordering, and formulas; round-trip custom states and normalize malformed values                                                         | [music.test.mjs](../tests/music.test.mjs)                                                          |
-| Enharmonic labels             | Both names refer to the same pitch; label choices preserve pitch, colors, geometry, and playback                                                              | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
+| Enharmonic labels             | Both names refer to the same pitch, and label choices preserve pitch, colors, and geometry                                                                    | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
 | Key spelling                  | Written-degree spellings, explicit enharmonic tonics, double accidentals, and correct notated octaves across the catalog                                      | [spelling.test.mjs](../tests/spelling.test.mjs)                                                    |
-| Pattern explanations          | Compact lowest-note captions distinguish tonic playback starts and follow key spelling/locales                                                                | [pattern-summary.test.mjs](../tests/pattern-summary.test.mjs)                                      |
+| Pattern explanations          | Compact captions identify the lowest note and follow key spelling and language settings                                                                       | [pattern-summary.test.mjs](../tests/pattern-summary.test.mjs)                                      |
 | Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works                                           | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
 | Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                                                         | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
 | Handedness interaction        | Illustrated click/keyboard control, mirrored geometry, unchanged fingering points, preferences, and reduced motion                                            | [handedness.spec.mjs](../tests/e2e/handedness.spec.mjs)                                            |
 | Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                                                  | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
 | Scale patterns                | Exact string/fret membership, reference fixtures, main-scale coverage, complete routes, tuning restrictions, and honest map fallback                          | [patterns.test.mjs](../tests/patterns.test.mjs)                                                    |
 | Pattern range markers         | Fret-aligned brackets, distinct pattern rows, mirrored geometry, localized labels, and bounded hit areas                                                      | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                        |
-| Practice positions            | Playback and exercises follow exact pattern points or the full map, including partial octaves                                                                 | [practice.test.mjs](../tests/practice.test.mjs)                                                    |
+| Interval names                | Written intervals have localized names in all three languages                                                                                                 | [intervals.test.mjs](../tests/intervals.test.mjs)                                                  |
 | Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                                                            | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
 | Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents                                          | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
 | PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                                                      | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
@@ -60,7 +60,7 @@ perceptual realism of synthesized audio, or every possible custom tuning.
 Serve a fresh build with `node scripts/serve.mjs` and check the following:
 
 - Confirm scale selection and clickable pattern ranges lead into the fretboard, with note
-  details and playback/display options below it. Scale selection and instrument
+  details, display options, and the tonic control below it. Scale selection and instrument
   setup should be side by side on wider screens and stacked on phones, with scale
   selection first. The two panels should have equal height when side by side. PDF settings remain inline below the playing surface, without
   application dialogs or popovers. Repeated intro, setup-summary, exercise, and PDF-configuration cards should not appear.
@@ -91,15 +91,12 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   selected patterns, and playing audio survive a theme change.
 - Inspect dark controls, note labels, root rings, pattern guides, and keyboard
   focus. Icons should reinforce action labels. Emulate reduced motion and confirm
-  motion stops while selection and playback states remain visible. Downloaded
+  motion stops while selection and sounding notes remain visible. Downloaded
   PDFs should retain their light reference palette.
-- Choose multiple numbered patterns and confirm the sounding string/fret points
-  match the highlights exactly, including when the same MIDI pitch exists elsewhere.
-  Change tempo, repeat a position, and stop or change configuration during a pass.
-  No old scheduled sequence should continue.
 - Switch the reference row between notes and degrees, tap its values, then use
   board notes with the pointer or keyboard. Check pitch-class highlights and the
-  exact string/fret detail, which appears only after inspection.
+  exact string/fret detail, which appears only after inspection. Check that changing
+  the pattern stops the current note and that the tonic can sound alongside a pluck.
 - Start without saved preferences and confirm frets 0–12 is selected. Use the
   sliding switch to show the full neck, reload, and confirm the view is remembered.
   Check that the limited-view label changes from 0–12 to 12–0 for left-handed playing.
@@ -127,8 +124,8 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
 - In frets 0–12, verify every offered pattern fits completely. Compare octave
   placements with the full-neck view: a pattern may shift as a whole by 12 frets,
   but individual notes must not be clipped or wrapped. Select a full-neck pattern
-  that cannot fit, switch to 0–12, and confirm the selection clears and playback
-  stops. The full-neck cue should explain missing pattern numbers.
+  that cannot fit, switch to 0–12, and confirm the selection clears. The full-neck
+  cue should explain missing pattern numbers.
 - Check old numeric-range links clear the pattern selection, and new pattern links
   and saved preferences restore valid selections in the chosen neck view. Click a
   selected pattern bracket again to clear it and restore visible scale notes to color
@@ -141,7 +138,7 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   activated range after the SVG updates. Pattern selection must not resize the
   neck; only changing the neck view or instrument changes its geometry. Navigate
   muted and highlighted notes by keyboard and confirm pattern brackets retain access.
-  Check that the 0–12/full-neck switch sits with playback in the header, wraps
+  Check that the 0–12/full-neck switch sits in the header, wraps
   cleanly on phones, and remains keyboard-operable.
 - Check 320, 390, 720, 860, and 1280 CSS-pixel layouts. Only the fretboard should
   scroll horizontally; inline control groups and the scale results must stay within

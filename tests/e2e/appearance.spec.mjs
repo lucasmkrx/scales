@@ -62,8 +62,6 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
   await page.locator('#drone').click();
   await expect(page.locator('#drone')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('#play').click();
-  await expect(page.locator('#play')).toHaveClass(/playing/);
   await page.evaluate(() => {
     window.appearanceBoard = document.querySelector('#board svg');
     window.appearancePattern = document.querySelector('[data-pattern="caged-major-1"]');
@@ -77,7 +75,6 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'dark');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(toggle).toBeFocused();
-  await expect(page.locator('#play')).toHaveClass(/playing/);
   await expect(page.locator('#drone')).toHaveAttribute('aria-pressed', 'true');
   expect(
     await page.evaluate(
@@ -93,7 +90,6 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
           ),
     ),
   ).toBe(true);
-  await page.locator('#play').click();
   await page.locator('#drone').click();
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'dark');
@@ -214,7 +210,7 @@ test('reduced motion disables control and fretboard animations during interactio
   await page.locator('#theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   // Exercise strike styling without depending on an audio output device in CI.
-  // Audio synthesis and playback controls have separate coverage.
+  // Audio synthesis has separate coverage.
   await page
     .locator('#board .note')
     .first()

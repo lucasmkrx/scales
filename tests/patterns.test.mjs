@@ -154,28 +154,10 @@ function assertPattern(state, pattern) {
   assert.equal(new Set(pattern.points.map(key)).size, pattern.points.length);
   assert.equal(pattern.lo, Math.min(...pattern.points.map((point) => point.fret)));
   assert.equal(pattern.hi, Math.max(...pattern.points.map((point) => point.fret)));
-  const membership = new Set(pattern.points.map(key));
-  assert.ok(pattern.sequence.every((point) => membership.has(key(point))));
-  assert.deepEqual(new Set(pattern.sequence.map(key)), membership);
-  assert.equal(pattern.sequence[0].root, true);
-  assert.deepEqual(pattern.sequence[0], pattern.sequence.at(-1));
   for (let i = 1; i < pattern.points.length; i++) {
     assert.ok(pattern.points[i].midi > pattern.points[i - 1].midi);
     for (let midi = pattern.points[i - 1].midi + 1; midi < pattern.points[i].midi; midi++)
       assert.ok(!s.scaleData.intervals.includes((((midi - s.root) % 12) + 12) % 12));
-  }
-  for (let i = 1; i < pattern.sequence.length; i++) {
-    const a = pattern.points.findIndex(
-      (point) => key(point) === key(pattern.sequence[i - 1]),
-    );
-    const b = pattern.points.findIndex(
-      (point) => key(point) === key(pattern.sequence[i]),
-    );
-    assert.equal(
-      Math.abs(b - a),
-      1,
-      'playback follows neighboring notes, including the lower extension',
-    );
   }
 }
 
@@ -217,7 +199,6 @@ test('C major first pattern includes high E fret 8, excludes fret 12, and fits f
     '7',
     'the checked shape includes its lower leading tone',
   );
-  assert.equal(pattern.sequence[0].pc, 0, 'audition still begins on C');
   assertPattern(state, pattern);
 });
 

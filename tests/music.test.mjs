@@ -11,7 +11,6 @@ import {
   boardModel,
   layoutBoard,
   normalizeState,
-  scaleMidiSequence,
   sharedState,
   noteName,
   midiName,
@@ -132,22 +131,6 @@ test('URL state round-trips custom configurations and malformed parameters fall 
   assert.equal(bad.strings, 4);
   assert.equal(bad.tuning, 'bass-4-standard');
 });
-test('audio starts on a playable root, reaches its octave, and returns to the root', () => {
-  for (const t of TUNINGS) {
-    const sequence = scaleMidiSequence({
-      instrument: t.instrument,
-      strings: t.strings,
-      tuning: t.id,
-      root: 1,
-      scale: 'major',
-    });
-    assert.ok(sequence[0] >= t.notes[0]);
-    assert.equal(sequence[0] % 12, 1);
-    assert.equal(sequence[7], sequence[0] + 12);
-    assert.equal(sequence.at(-1), sequence[0]);
-  }
-});
-
 test('seven-string presets, custom tuning, and share links retain all seven strings', () => {
   const standard = selection({ instrument: 'guitar', strings: 7 });
   assert.equal(standard.tuning, 'guitar-7-standard');
@@ -232,7 +215,7 @@ test('Both is the default and legacy Automatic links migrate without changing pi
         });
       }
 });
-test('spelling changes labels but preserves pitches, degrees, colors, geometry, and playback', () => {
+test('spelling changes labels but preserves pitches, degrees, colors, and geometry', () => {
   const input = { instrument: 'bass', root: 0, scale: 'natural-minor', allNotes: true };
   const sharp = boardModel({ ...input, spelling: 'sharp' }),
     flat = boardModel({ ...input, spelling: 'flat' });
@@ -251,10 +234,6 @@ test('spelling changes labels but preserves pitches, degrees, colors, geometry, 
   );
   assert.equal(both.points.length, sharp.points.length);
   assert.equal(both.points.find((n) => n.pc === 3).name, 'D♯/E♭');
-  assert.deepEqual(
-    scaleMidiSequence({ ...input, spelling: 'sharp' }),
-    scaleMidiSequence({ ...input, spelling: 'flat' }),
-  );
   assert.equal(
     normalizeState(
       Object.fromEntries(

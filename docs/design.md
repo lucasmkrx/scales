@@ -2,7 +2,7 @@
 
 The homepage should help a player choose a scale, see its notes on the fretboard,
 and hear or practice a nearby position. The refactor prioritizes that sequence
-while keeping instrument, display, custom-scale, playback, and PDF settings inline.
+while keeping instrument, display, custom-scale, and PDF settings inline.
 
 ## Evidence
 
@@ -42,8 +42,8 @@ making the main task easier to identify.
 
 Begin directly with a concise scale browser beside instrument setup above the
 board and one prominent exploration surface. The two setup groups
-stack on phones, with scale selection first. Keep the selected scale, Play action,
-pattern ranges, and fretboard closely related. Reduce repeated selected-scale summaries,
+stack on phones, with scale selection first. Keep the selected scale, pattern
+ranges, and fretboard closely related. Reduce repeated selected-scale summaries,
 tuning pitches, and formulas. Keep instrument controls grouped next to music
 selection, and give export work a quieter inline section below the board. Use alignment, spacing,
 and consistent type sizes before adding more cards or decorative elements.
@@ -52,12 +52,8 @@ On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 while leaving the settings visible in normal page order. Activating it focuses
 the scale heading below the shortcut. A single inline caption explains the selected
 pattern and its lowest note and degree. The bracket already supplies its fret span.
-The caption does not call the lowest note the playback start, since playback
-begins on the tonic.
-
-The optional tonic reference shares the playback area with tempo and repeat but
-has an independent stop control. Key spelling adds one display choice and
-enharmonic entries to the existing root selector, keeping the control surface
+The optional tonic reference sits beside the display controls. Key spelling adds
+one display choice and enharmonic entries to the existing root selector, keeping the control surface
 small while making written scale degrees available. Routine help is kept in
 accessible descriptions; validation and meaningful status remain visible. The
 custom formula stays inline, with its apply action appearing after an edit. A
@@ -88,7 +84,7 @@ returns to following the device.
 Light and dark themes share the same layout and note colors. Dedicated fretboard
 surfaces, labels, guides, and focus colors keep the diagram integrated with the
 rest of the interface. Theme changes recolor the existing surface without moving
-the notes, clearing a selection, or restarting playback. Printable references
+the notes, clearing a selection, or interrupting audio. Printable references
 keep their separate light palette.
 
 Motion is brief feedback for selection, button activation, and sounding notes.
@@ -107,7 +103,7 @@ animations and transitions while retaining the same visible states.
   handedness. Click once to select and again to clear; selection must also work
   by keyboard and expose its pressed state.
 - English, Português, and Español retain their regional musical terminology.
-- Preserve custom-input validation, draft values, keyboard operation, playback,
+- Preserve custom-input validation, draft values, keyboard operation, note audio,
   remembered setup, shared links, and PDF snapshot behavior.
 
 ## Verification
@@ -124,7 +120,7 @@ behavior; they do not establish improved usability without observing players.
 
 Fret windows are useful map regions, but they are not fingering patterns. The
 implementation now stores membership as exact string/fret coordinates and uses
-those same points for emphasis and ordered playback.
+those same points for highlighting.
 
 ### Accuracy audit and chosen system
 
@@ -193,7 +189,7 @@ and neck scroll as one surface; clearing a selected range restores the visible m
 a spatial guide to an exact fingering, not a rectangle defining note membership.
 
 The default 0–12 view reduces the amount of neck a new player must scan. A visible,
-two-position sliding switch sits with playback in the fretboard header, keeping
+two-position sliding switch sits in the fretboard header, keeping
 view controls separate from pattern annotations. It offers the full neck without
 hiding settings and wraps below the title on phones. View choices are remembered
 and shareable. Only complete patterns are offered within

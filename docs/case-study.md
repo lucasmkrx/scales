@@ -32,9 +32,9 @@ changes the actual notes and patterns rather than relabeling a standard diagram.
 
 The initial interface collected setup, scale browsing, display settings, and PDF
 export in one sidebar. The current workspace keeps instrument setup and a
-searchable scale catalog above the fretboard, with the custom formula editor
-visible in the scale card, with its apply action shown only after editing. Tempo,
-repeat, and display controls sit beside the playing surface. Thin pattern brackets
+searchable scale catalog above the fretboard. The custom formula editor stays in
+the scale card and shows its apply action after editing. Display controls and
+the tonic reference sit below the playing surface. Thin pattern brackets
 select exact fingerings; a separate switch chooses frets 0–12 or the full neck.
 These groups stack on phones. Repeated instructions, setup cards, and practice
 prose are removed from the main flow.
@@ -46,7 +46,7 @@ The four original lesson books are available as repository source assets. The
 browser now centers on the interactive fretboard and an inline PDF section below
 it, where the contents, reference notes, and estimate are visible before download.
 
-Playback uses a procedural plucked-string model with different guitar and bass
+Individual notes use a procedural plucked-string model with different guitar and bass
 settings. This adds an audible connection to the diagram without introducing a
 sample catalog or an external audio service.
 

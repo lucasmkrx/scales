@@ -8,7 +8,6 @@ import {
   normalizeState,
   pitchPreference,
   rootName,
-  scaleMidiSequence,
   sharedState,
   spellDegree,
   spelledMidiName,
@@ -136,7 +135,7 @@ test('every named scale and enharmonic tonic preserves actual pitches and declar
   }
 });
 
-test('key spelling changes labels without changing fret geometry, membership, or playback', () => {
+test('key spelling changes labels without changing fret geometry or membership', () => {
   const input = { root: 6, scale: 'major', allNotes: true, tonic: 'Gb' };
   const both = boardModel(input);
   const key = boardModel({ ...input, spelling: 'key' });
@@ -148,10 +147,6 @@ test('key spelling changes labels without changing fret geometry, membership, or
   const bothLayout = layoutBoard(both);
   const keyLayout = layoutBoard(key);
   assert.equal(bothLayout.center(8), keyLayout.center(8));
-  assert.deepEqual(
-    scaleMidiSequence(input),
-    scaleMidiSequence({ ...input, spelling: 'key' }),
-  );
 });
 
 test('optional tonic names normalize safely and survive shared links without changing legacy URLs', () => {
