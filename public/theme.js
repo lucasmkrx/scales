@@ -18,7 +18,7 @@
       ?.setAttribute('content', preference === 'dark' ? '#142019' : '#fffefa');
     window.dispatchEvent(new Event('themechange'));
   };
-  window.scalesTheme = Object.freeze({
+  window.tukanyTheme = Object.freeze({
     get preference() {
       return preference;
     },

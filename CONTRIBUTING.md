@@ -1,6 +1,6 @@
 # Contributing
 
-Scales accepts corrections and improvements to its music model, interface,
+Tukany accepts corrections and improvements to its music model, interface,
 printable references, and educational content. Start with the [architecture](docs/architecture.md)
 and [testing guide](docs/testing.md).
 

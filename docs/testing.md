@@ -1,6 +1,6 @@
 # Testing and known limits
 
-Scales separates automated model checks from browser interaction and visual review.
+Tukany separates automated model checks from browser interaction and visual review.
 
 ## Run the checks
 

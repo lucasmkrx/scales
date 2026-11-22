@@ -79,6 +79,7 @@ test('downloaded guides embed the book fonts and link the contents to real pages
   ]) {
     const bytes = await createAtlas(state, { asset }),
       doc = await PDFLib.PDFDocument.load(bytes);
+    assert.match(doc.getTitle(), /^Tukany · /);
     assert.equal(doc.getPageCount(), 3);
     assert.deepEqual(doc.getPage(2).getSize(), { width: 841.89, height: 595.28 });
     assert.equal(

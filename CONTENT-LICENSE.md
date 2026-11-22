@@ -2,7 +2,7 @@
 
 Copyright © 2026 Lucas Marques.
 
-The original educational prose, scale catalog, diagrams, and guides in Scales
+The original educational prose, scale catalog, diagrams, and guides in Tukany
 are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**:
 https://creativecommons.org/licenses/by/4.0/
 
@@ -10,7 +10,7 @@ The legal code governs: https://creativecommons.org/licenses/by/4.0/legalcode
 
 You may share and adapt this material, including commercially, provided you
 give appropriate credit, link to the license, and indicate changes. Suggested
-attribution: “Scales by Lucas Marques — https://github.com/lucasmkrx/scales —
+attribution: “Tukany by Lucas Marques — https://github.com/lucasmkrx/tukany —
 CC BY 4.0.” Do not imply endorsement of a derivative work.
 
 This applies to the educational catalog in `src/catalog.mjs`, instructional

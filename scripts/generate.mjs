@@ -14,7 +14,7 @@ for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
     await readFile(new URL(`../public/vendor/${name}`, import.meta.url), 'utf8'),
     { filename: name },
   );
-const output = resolve(args.output ?? 'work/scales-atlas.pdf');
+const output = resolve(args.output ?? 'work/tukany-atlas.pdf');
 await mkdir(resolve(output, '..'), { recursive: true });
 const bytes = await createAtlas(args, {
   scope: args.scope ?? 'selected',

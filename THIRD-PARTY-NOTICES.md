@@ -1,6 +1,6 @@
 # Third-party notices
 
-All browser assets are served locally; no CDN or account is needed to use Scales.
+All browser assets are served locally; no CDN or account is needed to use Tukany.
 
 | Component                      | Version / source                                                                         | License / notice                                                                                   |
 | ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ The four initial guided books were adapted from the PDFs supplied by Lucas
 Marques, retaining their original visual system.
 Marques & Co. branding has its own terms in BRANDING.md.
 
-The Scales favicon renders the Font Awesome Free Solid guitar glyph in the site's colors.
+The Tukany favicon renders the Font Awesome Free Solid guitar glyph in the site's colors.
 
 ## Instrument selector icons
 
@@ -25,12 +25,12 @@ licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 - Guitar uses [Fender Telecaster Headstock, icon 511263](https://thenounproject.com/icon/fender-telecaster-headstock-511263/).
 - Bass uses [Fender Bass Headstock, icon 154940](https://thenounproject.com/icon/fender-bass-headstock-154940/).
 
-Scales crops the artwork to the headstocks and uses transparent PNG masks to
+Tukany crops the artwork to the headstocks and uses transparent PNG masks to
 match the switch labels in both themes.
 
 ## Explorer header image
 
-The [guitar header image](public/assets/guitar-banner.webp) was generated for Scales using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE).
+The [guitar header image](public/assets/guitar-banner.webp) was generated for Tukany using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE).
 
 <details>
 <summary>Image prompt</summary>

@@ -20,6 +20,7 @@ function textKeys(value, prefix = '') {
 test('each supported locale covers the interface, musical catalog, families, and tuning names', () => {
   for (const lang of Object.keys(LANGUAGES)) {
     assert.deepEqual(textKeys(copy[lang]), textKeys(copy.en), lang);
+    assert.match(copy[lang].pageTitle, /^Tukany · /);
     const values = [
       ...SCALES.map((scale) => scale.name[lang]),
       ...Object.values(FAMILIES).map((family) => family[lang]),

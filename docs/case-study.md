@@ -1,6 +1,6 @@
-# From fretboard PDFs to Scales
+# From fretboard PDFs to Tukany
 
-[Live app](https://lucasmkrx.github.io/scales/) · [Architecture](architecture.md) · [Validation](testing.md)
+[Live app](https://tukany.com/) · [Architecture](architecture.md) · [Validation](testing.md)
 
 ## The problem
 
@@ -10,7 +10,7 @@ tuning, switches instruments, or needs a left-handed version. A large catalog
 also creates a second problem: finding a useful starting point without already
 knowing the theory vocabulary.
 
-Scales began as guitar and bass learning PDFs. The brief expanded to multiple
+Tukany began as guitar and bass learning PDFs. The brief expanded to multiple
 tunings, orientations, string counts, and languages. Maintaining a separate
 hand-edited drawing for every combination would make corrections difficult to
 keep consistent.

@@ -254,7 +254,7 @@ export const copy = {
     result: 'result',
     exportFailed: 'The PDF could not be created. Please try again.',
     es: 'Español',
-    pageTitle: 'Scales · Guitar and bass fretboard explorer',
+    pageTitle: 'Tukany · Guitar and bass fretboard explorer',
     metaDescription:
       'Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, interactive note sounds, and printable PDFs in American English, Brazilian Portuguese, and Latin American Spanish.',
     fret: 'Fret',
@@ -528,7 +528,7 @@ export const copy = {
     result: 'resultado',
     exportFailed: 'Não foi possível gerar o PDF. Tente novamente.',
     es: 'Español',
-    pageTitle: 'Scales · Explore escalas na guitarra e no baixo',
+    pageTitle: 'Tukany · Explore escalas na guitarra e no baixo',
     metaDescription:
       'Explore escalas para guitarra e baixo em várias afinações. Diagramas para destros e canhotos, notas interativas com som e PDFs em inglês americano, português brasileiro e espanhol latino-americano.',
     fret: 'Casa',
@@ -804,7 +804,7 @@ export const copy = {
       'Ordena las notas de la más grave a la más aguda, sin repetir alturas. Revisa los números de octava.',
     result: 'resultado',
     exportFailed: 'No se pudo crear el PDF. Inténtalo de nuevo.',
-    pageTitle: 'Scales · Explora escalas de guitarra y bajo',
+    pageTitle: 'Tukany · Explora escalas de guitarra y bajo',
     metaDescription:
       'Explora escalas de guitarra y bajo en distintas afinaciones. Diagramas para diestros y zurdos, notas interactivas con sonido y PDF en inglés de Estados Unidos, portugués de Brasil y español latinoamericano.',
     fret: 'Traste',

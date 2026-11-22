@@ -121,7 +121,7 @@ function status(message, error = false) {
   $('status').classList.toggle('error', error);
 }
 function renderAppearance() {
-  const theme = window.scalesTheme;
+  const theme = window.tukanyTheme;
   if (!theme) return;
   const t = copy[state.lang];
   const label = t.themeLabel
@@ -895,7 +895,7 @@ $('export').addEventListener('click', async () => {
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })),
       link = document.createElement('a');
     link.href = url;
-    link.download = `scales-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${snapshot.scale}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat')}-${snapshot.hand}-${snapshot.lang}.pdf`;
+    link.download = `tukany-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${snapshot.scale}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat')}-${snapshot.hand}-${snapshot.lang}.pdf`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 30000);
     $('export-status').textContent = t.ready;
@@ -913,7 +913,7 @@ $('export').addEventListener('click', async () => {
 });
 $('cancel-export').addEventListener('click', () => exporting?.abort());
 $('theme-toggle').addEventListener('click', () => {
-  const theme = window.scalesTheme;
+  const theme = window.tukanyTheme;
   theme?.setPreference(theme.nextPreference);
 });
 window.addEventListener('themechange', renderAppearance);

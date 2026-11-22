@@ -1,7 +1,7 @@
 # Documentation media
 
-These assets show the actual Scales interface and generated output. UI captures
-use local build `3fba7e0d712c` with reduced motion and all local fonts loaded.
+These assets show the actual Tukany interface and generated output. UI captures
+use local build `7af9dc2c6224` with reduced motion and all local fonts loaded.
 The browser requested a dark color scheme for every capture. Fresh sessions
 opened in Light, and the saved Dark choice restored the dark palette.
 

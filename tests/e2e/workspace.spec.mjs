@@ -382,7 +382,7 @@ test('PDF customization can cancel and then download a valid localized reference
     page.locator('#export').click(),
   ]);
   expect(await download.failure()).toBeNull();
-  expect(download.suggestedFilename()).toMatch(/harmonic-minor.*-es\.pdf$/);
+  expect(download.suggestedFilename()).toMatch(/^tukany-.*harmonic-minor.*-es\.pdf$/);
   const bytes = await readFile(await download.path());
   expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
   expect(bytes.length).toBeGreaterThan(20000);

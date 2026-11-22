@@ -31,8 +31,8 @@ jobs:
         run: |
           sudo apt-get install -y pulseaudio pulseaudio-utils
           pulseaudio --start --exit-idle-time=-1
-          pactl load-module module-null-sink sink_name=scales_ci
-          pactl set-default-sink scales_ci
+          pactl load-module module-null-sink sink_name=tukany_ci
+          pactl set-default-sink tukany_ci
       - name: Check browser flows
         run: npm run test:browser
       - name: Upload browser failure report

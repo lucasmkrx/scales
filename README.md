@@ -1,15 +1,15 @@
-# Scales
+# Tukany
 
 **Explore guitar and bass scales, hear the notes, and take the same fretboard into a printable guide.**
 
-[![Tests, formatting, and deployment](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/scales/actions/workflows/pages.yml)
+[![Tests, formatting, and deployment](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml)
 [![Code license: MIT](https://img.shields.io/badge/code-MIT-20343f)](LICENSE)
 
-[**Try the live app**](https://lucasmkrx.github.io/scales/) · [Português](https://lucasmkrx.github.io/scales/?lang=pt) · [Español](https://lucasmkrx.github.io/scales/?lang=es) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
+[**Try the live app**](https://tukany.com/) · [Português](https://tukany.com/?lang=pt) · [Español](https://tukany.com/?lang=es) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
 
-![Scales showing a right-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
+![Tukany showing a right-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
 
-Scales helps players who learned songs from TAB connect familiar fret positions
+Tukany helps players who learned songs from TAB connect familiar fret positions
 with notes, scale degrees, and improvisation. Change the instrument, tuning, or
 handedness and every diagram is recalculated from the sounding pitches. Note playback
 and PDF generation run locally. The optional backing-track finder searches YouTube
@@ -19,8 +19,8 @@ on request and plays a selected video alongside the diagram.
 
 ![A short walkthrough of choosing a scale, exploring the fretboard, and customizing a PDF](docs/assets/walkthrough.gif)
 
-Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
-or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
+Try [A minor pentatonic on guitar](https://tukany.com/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
+or [D natural minor on Drop C bass](https://tukany.com/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
 Choose a root note directly on the card, then pick a scale. Common scales appear
@@ -55,8 +55,8 @@ For example, the same fret can show C♯, D♭, or both. **By key** follows the
 scale’s written degrees. When a key has two common names, you can choose
 which to use, such as F♯ major or G♭ major. The Scale card always offers
 the same 12 root notes.
-Scales opens in Light on first visit, even on a device set to dark mode. Use the
-sun-and-moon button in the header to switch themes. Scales remembers your choice
+Tukany opens in Light on first visit, even on a device set to dark mode. Use the
+sun-and-moon button in the header to switch themes. Tukany remembers your choice
 on this device. Selection and note animations respect the device's
 reduced-motion setting.
 See the [dark desktop](docs/assets/desktop-dark.png) and
@@ -75,7 +75,7 @@ also depends on its chords.
 <summary>Mobile workspace and printable output</summary>
 
 <p>
-<img src="docs/assets/mobile.png" alt="Scales on a phone, with the scale browser, fretboard, and playing controls" width="320">
+<img src="docs/assets/mobile.png" alt="Tukany on a phone, with the scale browser, fretboard, and playing controls" width="320">
 <img src="docs/assets/mobile-picker.png" alt="The Pentatonic family and its scale choices on a phone" width="320">
 </p>
 
@@ -130,7 +130,7 @@ node scripts/serve.mjs
 ```
 
 Open **http://127.0.0.1:4173**. The build goes into `dist/` and uses relative paths,
-so it also works under GitHub Pages' `/scales/` project path.
+so it also works under GitHub Pages' `/tukany/` project path.
 
 To enable backing-track search, set a website-restricted YouTube Data API key
 in `.env` before building. [Local and GitHub Pages setup](docs/backing-tracks.md)

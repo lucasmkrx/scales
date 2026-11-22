@@ -1,6 +1,6 @@
 # YouTube backing tracks
 
-Scales runs on GitHub Pages. When a player chooses **Find backing tracks**, the browser reads its local configuration and calls YouTube Data API v3. One search returns up to three videos that allow embedding and playback outside YouTube. Opening a result starts a YouTube player beside the practice controls. YouTube controls availability and may require a video to be watched on its website. [YouTube search reference](https://developers.google.com/youtube/v3/docs/search/list)
+Tukany runs on GitHub Pages. When a player chooses **Find backing tracks**, the browser reads its local configuration and calls YouTube Data API v3. One search returns up to three videos that allow embedding and playback outside YouTube. Opening a result starts a YouTube player beside the practice controls. YouTube controls availability and may require a video to be watched on its website. [YouTube search reference](https://developers.google.com/youtube/v3/docs/search/list)
 
 ## Local setup
 
@@ -14,7 +14,7 @@ The build publishes this browser key in `dist/youtube-config.json`. Anyone who o
 
 ## GitHub Pages
 
-Create a production website-restricted key for the published origin, such as `https://lucasmkrx.github.io/*`. Add it as a repository **Actions variable** named `YOUTUBE_API_KEY` under **Settings → Secrets and variables → Actions → Variables**. Run the Pages workflow again to publish the new configuration. Monitor the project’s search quota in Google Cloud. [YouTube API quota](https://developers.google.com/youtube/v3/determine_quota_cost)
+In Google Cloud, allow `https://tukany.com/*` in the production key’s website restrictions and restrict the key to **YouTube Data API v3**. If the key already allows the GitHub Pages hostname, add the custom domain so searches work after the redirect. Add the production key as a repository **Actions variable** named `YOUTUBE_API_KEY` under **Settings → Secrets and variables → Actions → Variables**. Run the Pages workflow again to publish the new configuration. Monitor the project’s search quota in Google Cloud. [YouTube API quota](https://developers.google.com/youtube/v3/determine_quota_cost)
 
 ## What gets searched
 

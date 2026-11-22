@@ -1,6 +1,6 @@
 # Architecture and engineering decisions
 
-Scales is a static browser application with a shared music model, an HTML fretboard,
+Tukany is a static browser application with a shared music model, an HTML fretboard,
 Web Audio playback, and vector PDF export. Node.js is used for development,
 testing, the static build, and an optional PDF command-line entry point.
 

@@ -301,7 +301,7 @@ export async function createAtlas(
       undefined,
       'right',
     );
-    text(page, 30, 589, 'Scales / Lucas Marques / CC BY 4.0', 5.5, body, muted);
+    text(page, 30, 589, 'Tukany / Lucas Marques / CC BY 4.0', 5.5, body, muted);
     page.drawImage(logo, {
       x: (W - logoSize.width) / 2,
       y: 16 - logoSize.height,
@@ -1400,7 +1400,7 @@ export async function createAtlas(
   doc.catalog.set(PDFName.of('Outlines'), outlineRef);
   doc.catalog.set(PDFName.of('Lang'), PDFString.of(LANGUAGES[initial.lang].tag));
   doc.setTitle(
-    `Scales · ${instrument(initial)} · ${variants.length === 1 ? variants[0].title : tr('Scale atlas', 'Atlas de escalas', 'Atlas de escalas')} · ${tuningName(initial)}`,
+    `Tukany · ${instrument(initial)} · ${variants.length === 1 ? variants[0].title : tr('Scale atlas', 'Atlas de escalas', 'Atlas de escalas')} · ${tuningName(initial)}`,
   );
   doc.setAuthor('Lucas Marques');
   doc.setSubject(
@@ -1411,7 +1411,8 @@ export async function createAtlas(
     ) + ' · Marques & Co.',
   );
   doc.setKeywords([
-    'Scales',
+    'Tukany',
+    'scales',
     instrument(initial),
     hand(initial),
     LANGUAGES[initial.lang].tag,

@@ -14,6 +14,7 @@ FILES={
  'Guitar_Standard_Tuning_Left_Handed_Notes_Scales_and_Improvisation.pdf':'guitar-standard-left-en.pdf',
  'Bass_Standard_Tuning_Left_Handed_Notes_Scales_and_Improvisation.pdf':'bass-standard-left-en.pdf',
 }
+CREDIT='Tukany / Lucas Marques / CC BY 4.0'
 def main():
  parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',type=Path,required=True);args=parser.parse_args()
  logo=fitz.Pixmap(str(ROOT/'public/assets/marques-and-co.png'))
@@ -28,7 +29,7 @@ def main():
    scale=(h-18)/h;tx=(w-w*scale)/2;matrix=fitz.Matrix(scale,0,0,scale,tx,0);transforms.append(matrix)
    logo_rect=fitz.Rect(w/2-42,h-16,w/2+42,h-16+logo_height)
    logo_xref=page.insert_image(logo_rect,pixmap=logo,xref=logo_xref)
-   page.insert_text((30,h-7),'Scales / Lucas Marques / CC BY 4.0',fontsize=5.5,color=(.27,.34,.40))
+   page.insert_text((30,h-7),CREDIT,fontsize=5.5,color=(.27,.34,.40))
   for old in source:
    for item in old.get_links():
     link={k:v for k,v in item.items() if k not in ['xref','id']};link['from']=link['from']*transforms[old.number]
@@ -38,13 +39,13 @@ def main():
      link={'kind':fitz.LINK_GOTO,'from':link['from'],'page':int(link['page'])-1,'to':fitz.Point(0,0)}
     if link['kind']==fitz.LINK_GOTO and link.get('page',-1)>=0 and link.get('to') is not None:link['to']=link['to']*transforms[link['page']]
     out[old.number].insert_link(link)
-  out.set_toc(source.get_toc());metadata=source.metadata;metadata['author']='Lucas Marques';metadata['keywords']=(metadata.get('keywords') or '')+', Scales, CC BY 4.0, Marques & Co.';out.set_metadata(metadata)
+  out.set_toc(source.get_toc());metadata=source.metadata;metadata['author']='Lucas Marques';metadata['keywords']=(metadata.get('keywords') or '')+', Tukany, CC BY 4.0, Marques & Co.';out.set_metadata(metadata)
   lang=source.xref_get_key(source.pdf_catalog(),'Lang');out.xref_set_key(out.pdf_catalog(),'Lang',f'({lang[1] if lang[0]=="string" else "en-US"})')
   out.save(outdir/target,garbage=4,deflate=True);check=fitz.open(outdir/target)
   assert len(check)==len(source) and check.get_toc()==source.get_toc()
   for i,p in enumerate(check):
    assert len(p.get_links())==len(source[i].get_links()),(target,i+1)
-   assert 'CC BY 4.0' in p.get_text()
+   assert CREDIT in p.get_text()
    expected=fitz.Rect(p.rect.width/2-42,p.rect.height-16,p.rect.width/2+42,p.rect.height-16+logo_height)
    assert any(image['width']==logo.width and image['height']==logo.height
               and max(abs(a-b) for a,b in zip(image['bbox'],expected))<0.01
