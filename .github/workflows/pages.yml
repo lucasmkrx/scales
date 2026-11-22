@@ -25,6 +25,12 @@ jobs:
       - run: node scripts/build.mjs
       - name: Install browser engines
         run: npx playwright install --with-deps chromium firefox webkit
+      - name: Provide an audio output for browser playback tests
+        run: |
+          sudo apt-get install -y pulseaudio pulseaudio-utils
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=scales_ci
+          pactl set-default-sink scales_ci
       - name: Check browser flows
         run: npm run test:browser
       - name: Upload browser failure report
