@@ -186,17 +186,19 @@ test('key spelling preserves distinct sharp and flat tonic names across reloads'
   await expect(page.locator('#notes-strip')).toContainText('C♭');
 });
 
-test('scale playback and the tonic reference have independent stop controls', async ({
-  page,
-}) => {
+test('individual notes and the tonic reference sound independently', async ({ page }) => {
   await page.goto(url());
   const drone = page.locator('#drone');
   await drone.click();
   await expect(drone).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('#play').click();
-  await expect(page.locator('#play')).toHaveClass(/playing/);
-  await page.locator('#play').click();
-  await expect(page.locator('#play')).not.toHaveClass(/playing/);
+  const referenceNote = page.locator('#notes-strip button[data-pitch="0"]');
+  const soundingTone = page.locator('#notes-strip td.sounding');
+  await referenceNote.click();
+  await expect(soundingTone).toHaveAttribute('data-pitch', '0');
+  await expect(page.locator('#board .note.sounding').first()).toBeVisible();
+  await expect(page.locator('#note-readout')).toContainText('unison');
+  await expect(soundingTone).toHaveCount(0);
+  await expect(referenceNote).toHaveAttribute('aria-pressed', 'true');
   await expect(drone).toHaveAttribute('aria-pressed', 'true');
   await page.locator('#root').selectOption('2');
   await expect(drone).toHaveAttribute('aria-pressed', 'false');

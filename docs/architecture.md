@@ -16,9 +16,10 @@ flowchart TD
     Music --> SVG[Interactive SVG fretboard]
     Music --> Layout[PDF geometry and contents plan]
     Layout --> PDF[Vector PDF atlas]
-    Music --> Sequence[Ascending and descending MIDI sequence]
-    Sequence --> Synth[Plucked-string synthesis]
-    Synth --> Audio[Web Audio playback]
+    SVG --> Synth[Plucked-string synthesis]
+    Music --> Tonic[Sustained tonic]
+    Synth --> Audio[Web Audio]
+    Tonic --> Audio
     State --> Saved[Updated URL and optional device storage]
 ```
 
@@ -31,16 +32,16 @@ the selected root; the displayed label is separate from the sounding pitch.
 | Module                                          | Responsibility                                                                                                    |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | [catalog.mjs](../src/catalog.mjs)               | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
-| [music.mjs](../src/music.mjs)                   | Validate selections; calculate notes, degrees, SVG coordinates, shared URLs, and playback sequences               |
+| [music.mjs](../src/music.mjs)                   | Validate selections and calculate notes, degrees, SVG coordinates, and shared URLs                                |
 | [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align pattern brackets with fret geometry and place patterns in numbered rows                                     |
-| [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets and ordered playback routes for supported setups                        |
-| [practice.mjs](../src/practice.mjs)             | Visible-position playback sequences, short exercises, and localized interval names                                |
+| [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets for supported setups                                                    |
+| [intervals.mjs](../src/intervals.mjs)           | Name written intervals in all supported languages                                                                 |
 | [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
 | [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and search the multilingual catalog without changing the active scale                       |
 | [board.mjs](../src/board.mjs)                   | Render the shared model into keyboard-accessible SVG markup                                                       |
 | [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
 | [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
-| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize strings and manage cached buffers, gain, scheduling, and cancellation                                  |
+| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes and the tonic, manage cached buffers, and fade stopped sounds                            |
 | [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                                       |
 | [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                                    |
 | [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
@@ -129,8 +130,8 @@ fretboard on wider screens. The groups stack on narrow screens, with scale
 selection first. The browser keeps root, search, collections, results, and the
 custom formula editor together. Search and
 collection browsing retain the current musical selection until a result is chosen.
-The selected scale and Play action lead into the diagram, keeping the musical
-result close to its controls. The page begins directly with settings; its main heading remains available to screen readers.
+The diagram header shows the selected scale and the neck-view switch. The page
+begins directly with settings, with the main heading available to screen readers.
 
 The instrument section includes string count, handedness, fret count, and tuning;
 choosing a custom tuning reveals its pitch fields in place. PDF customization
@@ -165,7 +166,7 @@ toggles on with a click, Enter, or Space, and toggles off when activated again. 
 state and keyboard focus survive the SVG update.
 A restrained inline caption names the selected pattern and its lowest note and
 degree. It does not repeat the fret span already drawn on the bracket or add a
-note-count card. The lowest note is distinct from the tonic where playback begins.
+note-count card.
 The full toggle instructions remain accessible to screen readers.
 Six-string guitars with standard tuning intervals (including uniform
 transpositions) use verified five-position CAGED templates for major and natural
@@ -194,14 +195,14 @@ Bass patterns are generated compact root-to-octave routes, each beginning on an
 available starting string. Their exact points follow the selected scale and sounding tuning.
 The model avoids presenting a clipped or unreachable route as a complete pattern.
 
-A sliding switch in the fretboard header beside playback selects frets 0–12 or
-the full neck, with both choices visibly labeled. The header controls wrap into
-their own row on narrow screens. The limited-view label counts down as 12–0 for left-handed playing.
+A sliding switch in the fretboard header selects frets 0–12 or the full neck,
+with both choices visibly labeled. The switch sits below the title on narrow
+screens. The limited-view label counts down as 12–0 for left-handed playing.
 Frets 0–12 is the default; the chosen view is remembered and shared.
 Each view offers only complete patterns within its visible fret bounds. A whole
 shape may move by an octave to fit, preserving its fingering and identity. Patterns
 that still cannot fit are omitted with a cue that the full neck shows more. A
-selection that no longer fits is cleared rather than partially drawn or played.
+selection that no longer fits is cleared.
 Expanding the view retains first-octave instances when available, so a selected
 pattern does not move to another octave just because more frets are shown.
 PDF atlases continue to include the full instrument neck and available patterns;
@@ -225,12 +226,11 @@ that system; it is never reinterpreted as a CAGED position. New pattern links re
 valid selected marker in
 the chosen neck view.
 
-Display controls, tempo, repeat, and a single interactive reference row sit below
+Display controls, Hear tonic, and a single interactive reference row sit below
 the diagram. That row follows the chosen note or degree labels. The root legend
 and share action share one footer beneath the neck; note feedback appears there
-only after inspection. Repeated playback hints, suggested exercises, the lesson
-section, and a visible orientation sentence are omitted. The main
-board has one tab stop, with arrow keys moving along strings and frets in the displayed orientation.
+only after inspection. The main board has one tab stop, with arrow keys moving
+along strings and frets in the displayed orientation.
 The page groups these controls by their musical task and stacks the groups on
 phones. The rationale and research sources are recorded in [design.md](design.md).
 Assistive-technology compatibility still needs broader validation.
@@ -243,21 +243,15 @@ a stable fundamental, with filtered pick noise for attack texture and separate
 guitar/bass harmonic balance and decay settings. The fractional correction avoids
 rounding every note's delay to an integer number of samples.
 
-An LRU cache holds up to 48 generated mono buffers. Sources play through a gain
-stage and compressor. Stop fades active voices and cancels scheduled ones; a
-version token invalidates audio starts waiting for a resumed AudioContext.
-The app prewarms the selected route's unique notes before choosing its schedule
-start time. Pattern playback follows the exact ordered string/fret route up and
-back, and sounding highlights stay on those route points. Full-map playback
-uses a complete available octave when possible, with partial-route handling
-for sparse custom scales. Tempo controls the interval between note
-onsets. Repeat schedules one pass at a time with a one-beat rest after each pass.
-Changing the setup or pattern cancels the current pass.
+An LRU cache holds up to 48 generated mono buffers. Plucked notes play through
+a gain stage and compressor. Activating another note or changing the setup or
+pattern fades the current pluck. A version token cancels pending audio starts
+and prevents an older pluck from clearing the current note's highlight when it
+ends.
 
 Hear tonic uses quiet sine oscillators at the root and octave with short gain
-fades. It has independent lifecycle state, so stopping a scale leaves the tonic
-reference playing. Root, instrument, string-count, or tuning changes stop it,
-as do page hiding and navigation. It never starts from saved preferences or URLs.
+fades. It sounds independently of plucked notes. Root, instrument, string-count,
+or tuning changes stop it, as do page hiding and navigation.
 
 The note and degree table doubles as a set of pitch controls. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and

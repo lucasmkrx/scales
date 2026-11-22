@@ -192,17 +192,9 @@ const minorBlues = [
 
 const coordinate = ({ row, fret }) => `${row}:${fret}`;
 function pattern(points, details) {
-  const tonic = Math.max(
-    0,
-    points.findIndex((point) => point.root),
-  );
-  const sequence = points
-    .slice(tonic)
-    .concat(points.slice(0, -1).reverse(), points.slice(1, tonic + 1));
   return {
     ...details,
     points,
-    sequence,
     lo: Math.min(...points.map((point) => point.fret)),
     hi: Math.max(...points.map((point) => point.fret)),
     startFret: points[0].fret,

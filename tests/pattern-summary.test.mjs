@@ -3,10 +3,9 @@ import assert from 'node:assert/strict';
 import { scalePatterns } from '../src/patterns.mjs';
 import { patternSummary } from '../src/pattern-summary.mjs';
 
-test('a CAGED summary distinguishes the lowest note from the tonic that begins playback', () => {
+test('a CAGED summary shows the lowest note and its degree', () => {
   const state = { root: 0, scale: 'major' };
   const pattern = scalePatterns(state).patterns[0];
-  assert.equal(pattern.sequence[0].name, 'C');
   const summary = patternSummary(state, pattern);
   assert.equal(summary.title, 'Pattern 1 · E shape');
   assert.match(summary.detail, /Lowest note: B \(7\)/);

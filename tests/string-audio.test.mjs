@@ -183,7 +183,7 @@ function droneContext({ hold = false } = {}) {
   return { context, oscillators, gains };
 }
 
-test('the tonic drone stays independent of scale Stop, reuses its pitch, and releases every node', () => {
+test('the tonic drone survives stopping plucks, reuses its pitch, and releases every node', () => {
   const { context, oscillators, gains } = droneContext({ hold: true });
   const player = new PluckedStringPlayer(context);
   const first = player.startDrone(45);
@@ -238,7 +238,7 @@ test('drone release handles partial attacks without cancel-and-hold and rejects 
   assert.throws(() => player.startDrone(151), RangeError);
   assert.equal(player.drone, null);
 });
-test('Stop cancels active and future voices with a fade, and cached buffers are reused', () => {
+test('plucks reuse cached buffers, signal completion, and fade when stopped', () => {
   const sources = [],
     gains = [];
   const param = () => ({
@@ -299,16 +299,20 @@ test('Stop cancels active and future voices with a fade, and cached buffers are 
   const player = new PluckedStringPlayer(ctx),
     buffer = player.buffer(52, 'guitar');
   assert.equal(player.buffer(52, 'guitar'), buffer);
-  player.play(52, { when: 1, duration: 1 });
-  player.play(55, { when: 3, duration: 1 });
+  let ended = 0;
+  player.play(52, { onEnded: () => ended++ });
+  assert.deepEqual(sources[0].starts, [1]);
+  sources[0].onended();
+  assert.equal(ended, 1);
+  assert.equal(player.voices.size, 0);
+
+  player.play(55);
   ctx.currentTime = 1.2;
   player.stop();
   assert.equal(player.voices.size, 0);
-  sources.forEach((source) => assert.ok(Math.abs(source.stops.at(-1) - 1.225) < 1e-9));
-  gains
-    .slice(1)
-    .forEach((gain) =>
-      assert.ok(gain.gain.events.some((e) => e[0] === 'target' && e[1] === 0)),
-    );
-  sources.forEach((source) => source.onended());
+  assert.ok(Math.abs(sources[1].stops.at(-1) - 1.225) < 1e-9);
+  assert.ok(
+    gains.at(-1).gain.events.some((event) => event[0] === 'target' && event[1] === 0),
+  );
+  sources[1].onended();
 });

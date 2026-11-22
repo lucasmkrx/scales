@@ -322,13 +322,6 @@ export function layoutBoard(model, { width = 1100, height = 270, small = false }
     labelX: state.hand === 'left' ? right + 20 : left - 20,
   };
 }
-export function scaleMidiSequence(input) {
-  const s = selection(input);
-  const lowest = s.tuningData.notes[0];
-  const root = lowest + mod(s.root - lowest);
-  const up = s.scaleData.intervals.map((i) => root + i).concat(root + 12);
-  return up.concat(up.slice(0, -1).reverse());
-}
 export function sharedState(s) {
   const clean = normalizeState(s);
   const params = new URLSearchParams();
