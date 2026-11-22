@@ -79,8 +79,8 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   count while editing to check that the draft state resets cleanly.
 - Check that the instrument and handedness choices are visible on phones in all
   three languages. Select Guitar, Bass, Right-handed, and Left-handed by pointer
-  and by keyboard. Tap and drag each switch. Check that its slider moves toward the selected label
-  and that the keyboard focus is visible. Select the numeric string and fret
+  and by keyboard. Tap and drag each switch. Check that the filled pill and checkmark move to the selected
+  label in both themes and that keyboard focus is visible. Select the numeric string and fret
   counts, then confirm the tuning picker shows the matching open pitches. Changing handedness
   should mirror the board and range labels while keeping the same fingering points.
   Verify the choice on reload and when reopening a shared link.

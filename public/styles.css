@@ -509,12 +509,37 @@ main {
 }
 .switch-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
-  align-items: center;
-  background: var(--subtle);
-  border: 1px solid var(--rule);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  isolation: isolate;
+  padding: 3px;
+  background: var(--segmented);
+  border: 1px solid var(--control-border);
   border-radius: var(--pill-radius);
-  padding: 2px;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+}
+.switch-control label {
+  grid-row: 1;
+  z-index: 1;
+  margin: 0;
+}
+.switch-control label:first-of-type,
+.switch-thumb {
+  grid-column: 1;
+}
+.switch-control label:last-of-type {
+  grid-column: 2;
+}
+.switch-thumb {
+  grid-row: 1;
+  border-radius: var(--pill-radius);
+  background: var(--accent-solid);
+  pointer-events: none;
+  transition: transform 160ms ease-out;
+}
+.switch-control:not([data-preview]):has(label:last-of-type input:checked) .switch-thumb,
+.switch-control[data-preview='1'] .switch-thumb {
+  transform: translateX(100%);
 }
 .switch-control label,
 .number-keys label {
@@ -535,27 +560,36 @@ main {
 }
 .switch-option {
   min-height: 44px;
+  height: 100%;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 0;
+  gap: 6px;
   border-radius: var(--pill-radius);
-  color: var(--muted);
+  color: var(--ink);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 550;
+  line-height: 1.2;
 }
 #instrument .switch-option {
   min-height: 48px;
   font-size: 16px;
 }
-.switch-control input:checked + .switch-option {
-  color: var(--accent);
+.switch-check {
+  flex: none;
+  font-size: 0.82em;
+  visibility: var(--check-visibility, hidden);
+}
+.switch-control:not([data-preview]) input:checked + .switch-option,
+.switch-control[data-preview='0'] label:first-of-type .switch-option,
+.switch-control[data-preview='1'] label:last-of-type .switch-option {
+  --check-visibility: visible;
+  color: var(--accent-contrast);
   font-weight: 700;
 }
-.switch-control label:hover .switch-option {
-  background: var(--pale);
+.switch-control[data-preview] input {
+  cursor: grabbing;
 }
 .instrument-glyph {
   flex: 0 0 24px;
@@ -568,47 +602,6 @@ main {
 }
 .bass-headstock {
   --headstock: url('./assets/instruments/bass-headstock.png');
-}
-.switch-track {
-  --slide-position: 0%;
-  position: relative;
-  width: 56px;
-  height: 44px;
-  touch-action: pan-y;
-  user-select: none;
-  cursor: grab;
-}
-.switch-control:has(label:last-child input:checked) .switch-track {
-  --slide-position: 100%;
-}
-.switch-track::before {
-  content: '';
-  position: absolute;
-  inset: 9px 4px;
-  border-radius: var(--pill-radius);
-  background: #295740;
-  box-shadow: inset 0 1px 3px #10271955;
-}
-.switch-thumb {
-  position: absolute;
-  top: 12px;
-  left: calc(50% - 20px);
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fcfff6;
-  box-shadow: 0 1px 3px #001c1359;
-  transform: translateX(var(--slide-position));
-  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.switch-track.is-dragging {
-  cursor: grabbing;
-}
-.switch-track.is-dragging .switch-thumb {
-  transition: none;
-}
-:root[data-theme='dark'] .switch-track::before {
-  background: #427657;
 }
 .instrument-counts {
   display: grid;
@@ -856,15 +849,15 @@ button.tuning-picker {
   }
 }
 @media (forced-colors: active) {
-  .instrument-glyph {
+  .switch-control {
     forced-color-adjust: none;
-    background-color: CanvasText;
+    --accent-solid: Highlight;
+    --accent-contrast: HighlightText;
+    --segmented: Canvas;
+    --control-border: ButtonText;
+    --ink: CanvasText;
+    --focus: Highlight;
   }
-  .switch-track::before,
-  .switch-thumb {
-    border: 2px solid ButtonText;
-  }
-  .switch-thumb,
   .number-keys input:checked + span {
     forced-color-adjust: none;
     background: Highlight;

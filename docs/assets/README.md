@@ -1,7 +1,8 @@
 # Documentation media
 
-These assets show the actual Tukany interface and generated output. UI captures
-use local build `7af9dc2c6224` with reduced motion and all local fonts loaded.
+These assets show the actual Tukany interface and generated output. The desktop and mobile
+workspace captures and walkthrough use local build `534f8810212d` with reduced
+motion and all local fonts loaded.
 The browser requested a dark color scheme for every capture. Fresh sessions
 opened in Light, and the saved Dark choice restored the dark palette.
 
@@ -17,8 +18,8 @@ opened in Light, and the saved Dark choice restored the dark palette.
   Scale and instrument settings share a row above the panel titled “Fretboard”. PDF customization follows the panel.
   The Scale card shows C major, its root note and its degrees. Twelve circles
   show all available roots. The scale family menu opens on Common scales, with
-  Major (Ionian) selected. The instrument card’s Guitar and Bass labels have matching headstock icons, with
-  Guitar and Right-handed selected. The numeric controls
+  Major (Ionian) selected. The instrument card shows both headstock icons. Filled
+  segments and checkmarks identify Guitar and Right-handed as the selected options. The numeric controls
   show six strings and 21 frets. The tuning picker includes the E standard pitches.
   The inline caption identifies Pattern 1 and its lowest note B (7). The backing-track
   finder shows C major and Guitar, with Any style and Any tempo selected before a
@@ -36,7 +37,7 @@ opened in Light, and the saved Dark choice restored the dark palette.
 - `mobile-dark.png` shows the same 390 × 1880 phone layout in Dark, including
   the appearance control, instrument icons, and fixed-size neck.
   Switching appearance preserves the measured page positions.
-- `mobile-picker.png` shows the Pentatonic family at 390 × 860 CSS pixels.
+- `mobile-picker.png` shows the Pentatonic family at 390 × 860 CSS pixels in build `7af9dc2c6224`.
   The card and sticky shortcut still show C major while the player browses.
 - `walkthrough.gif` opens with C major. The player browses the Pentatonic
   family, chooses A as the root and Minor pentatonic as the scale, and selects

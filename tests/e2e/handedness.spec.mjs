@@ -150,35 +150,54 @@ test('keyboard choices restore each instrument’s orientation, fret count, and 
   await expect(pitches.first()).toHaveValue('G0');
 });
 
-test('track clicks toggle and directional drags select the side released', async ({
+test('the highlighted segment and check follow clicks and drags in both themes', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(url());
-  for (const [group, initial, other, initialSide] of [
-    ['instrument', 'guitar', 'bass', -1],
-    ['hand', 'right', 'left', 1],
-  ]) {
-    const track = page.locator(`#${group} .switch-track`);
-    const selected = (value) => page.locator(`#${group} input[value="${value}"]`);
-    await expect(selected(initial)).toBeChecked();
-    await track.click();
-    await expect(selected(other)).toBeChecked();
-    const { x, y, width, height } = await track.boundingBox();
-    const middle = x + width / 2;
-    const row = y + height / 2;
-    const drag = async (side) => {
-      await page.mouse.move(middle, row);
-      await page.mouse.down();
-      await page.mouse.move(middle + side * width * 0.4, row, { steps: 5 });
-      await page.mouse.up();
-    };
-    // Dragging farther toward the active side should leave that option selected.
-    await drag(-initialSide);
-    await expect(selected(other)).toBeChecked();
-    await drag(initialSide);
-    await expect(selected(initial)).toBeChecked();
-    await expect(selected(initial)).toBeFocused();
+
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') await page.locator('#theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    for (const [group, initial, other] of [
+      ['instrument', 'guitar', 'bass'],
+      ['hand', 'right', 'left'],
+    ]) {
+      const control = page.locator(`#${group} .switch-control`);
+      const label = (value) => control.locator(`label:has(input[value="${value}"])`);
+      const selected = async (value) => {
+        const active = label(value);
+        const inactive = label(value === initial ? other : initial);
+        await expect(active.getByRole('radio')).toBeChecked();
+        await expect(active.locator('.switch-check')).toBeVisible();
+        await expect(inactive.locator('.switch-check')).toBeHidden();
+        const face = await active.boundingBox();
+        const fill = await control.locator('.switch-thumb').boundingBox();
+        expect(Math.abs(fill.x + fill.width / 2 - face.x - face.width / 2)).toBeLessThan(
+          3,
+        );
+        expect(fill.width).toBeGreaterThan(face.width * 0.85);
+      };
+      const drag = async (from, to) => {
+        const start = await label(from).boundingBox();
+        const end = await label(to).boundingBox();
+        await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, {
+          steps: 5,
+        });
+        await page.mouse.up();
+      };
+
+      await selected(initial);
+      await label(initial).click();
+      await selected(initial);
+      await label(other).click();
+      await selected(other);
+      await drag(other, initial);
+      await selected(initial);
+      await expect(label(initial).getByRole('radio')).toBeFocused();
+    }
   }
 });
 
@@ -334,9 +353,9 @@ test.describe('phone instrument setup', () => {
       const query = new URL(page.url()).searchParams;
       expect(query.get('strings')).toBe('5');
       expect(query.get('frets')).toBe('22');
-      await hands.locator('.switch-track').tap();
+      await hands.locator('label:has(input[value="right"])').tap();
       await expect(hands.getByRole('radio', { name: right, exact: true })).toBeChecked();
-      await instruments.locator('.switch-track').tap();
+      await instruments.locator('label:has(input[value="guitar"])').tap();
       await expect(
         instruments.getByRole('radio', { name: guitar, exact: true }),
       ).toBeChecked();

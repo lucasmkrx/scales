@@ -1,55 +1,59 @@
-// Labels and keyboards operate the native radios. The track also accepts a tap or drag.
+// Keep the native radios for keyboard input. A horizontal drag previews the
+// destination, and releasing commits it through the same radio change handler.
 export function enableSlideSwitch(group) {
-  const radios = group.querySelectorAll('input[type="radio"]');
-  const track = group.querySelector('.switch-track');
-  const thumb = track.querySelector('.switch-thumb');
+  const control = group.querySelector('.switch-control');
+  const radios = control.querySelectorAll('input[type="radio"]');
   let gesture;
+
+  function sideAt(x) {
+    const { left, width } = control.getBoundingClientRect();
+    return Number(x >= left + width / 2);
+  }
 
   function clear(event) {
     if (gesture?.id !== event.pointerId) return;
     gesture = undefined;
-    track.classList.remove('is-dragging');
-    track.style.removeProperty('--slide-position');
-    if (track.hasPointerCapture(event.pointerId))
-      track.releasePointerCapture(event.pointerId);
+    delete control.dataset.preview;
+    if (control.hasPointerCapture(event.pointerId))
+      control.releasePointerCapture(event.pointerId);
   }
 
   function move(event) {
-    if (gesture?.id !== event.pointerId) return;
-    const dx = event.clientX - gesture.x;
-    const dy = event.clientY - gesture.y;
-    if (!gesture.dragging) {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < 4) return;
-      if (Math.abs(dy) > Math.abs(dx)) return clear(event);
-      gesture.dragging = true;
-      track.classList.add('is-dragging');
+    if (gesture?.id !== event.pointerId || gesture.scrolling) return;
+    if (control.dataset.preview === undefined) {
+      const dx = Math.abs(event.clientX - gesture.x);
+      const dy = Math.abs(event.clientY - gesture.y);
+      if (Math.max(dx, dy) < 5) return;
+      if (dy > dx) {
+        gesture.scrolling = true;
+        return;
+      }
     }
-    gesture.position = Math.max(0, Math.min(1, gesture.start + dx / thumb.offsetWidth));
-    track.style.setProperty('--slide-position', `${gesture.position * 100}%`);
+    control.dataset.preview = String(sideAt(event.clientX));
   }
 
-  track.addEventListener('pointerdown', (event) => {
+  control.addEventListener('pointerdown', (event) => {
     if (!event.isPrimary || event.button !== 0 || gesture) return;
     gesture = {
       id: event.pointerId,
       x: event.clientX,
       y: event.clientY,
-      start: Number(radios[1].checked),
-      dragging: false,
+      scrolling: false,
     };
-    track.setPointerCapture(event.pointerId);
+    control.setPointerCapture(event.pointerId);
   });
-  track.addEventListener('pointermove', move);
-  track.addEventListener('pointerup', (event) => {
-    // A fast drag can end between pointermove events.
-    move(event);
+  control.addEventListener('pointermove', move);
+  control.addEventListener('pointerup', (event) => {
     if (gesture?.id !== event.pointerId) return;
-    const index = gesture.dragging ? Math.round(gesture.position) : 1 - gesture.start;
+    move(event);
+    const select = !gesture.scrolling && event.button === 0;
     clear(event);
-    if (event.button !== 0) return;
-    radios[index].focus({ preventScroll: true });
-    radios[index].click();
+    if (select) {
+      const radio = radios[sideAt(event.clientX)];
+      radio.focus({ preventScroll: true });
+      radio.click();
+    }
   });
-  track.addEventListener('pointercancel', clear);
-  track.addEventListener('lostpointercapture', clear);
+  control.addEventListener('pointercancel', clear);
+  control.addEventListener('lostpointercapture', clear);
 }
