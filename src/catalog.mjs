@@ -25,12 +25,15 @@ function add(
   intervals,
   formula = degreeFormula(intervals),
   aliases = [],
+  modeIndex,
 ) {
-  catalog.push({ id, name: { en, pt, es }, family, intervals, formula, aliases });
+  const scale = { id, name: { en, pt, es }, family, intervals, formula, aliases };
+  if (modeIndex !== undefined) scale.modeIndex = modeIndex;
+  catalog.push(scale);
 }
 function modes(base, family, rows) {
   rows.forEach(([id, en, pt, es, aliases = []], i) =>
-    add(id, en, pt, es, family, mode(base, i), undefined, aliases),
+    add(id, en, pt, es, family, mode(base, i), undefined, aliases, i),
   );
 }
 modes(major, 'major', [
@@ -130,6 +133,9 @@ for (const [id, en, pt, es, base] of [
       i ? `${es} · modo ${i + 1}` : es,
       id,
       mode(base, i),
+      undefined,
+      [],
+      i,
     );
 }
 for (const row of [

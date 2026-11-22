@@ -85,6 +85,37 @@ Key mode applies the selected formula to the tonic's letter spelling. Explicit
 enharmonic roots override automatic simpler-name selection; these names do not
 change the underlying equal-tempered pitches.
 
+## Grand staff notation
+
+The staff shows the fretboard's sounding pitches in ascending order. Each clef
+carries the same key signature at the appropriate lines and spaces. A signature
+alters a letter in every octave. An inline accidental changes that letter at
+one written octave. For example, if G major includes both F♮4 and F♯4, the
+second F needs its sharp restored. [Music Theory for the 21st-Century Classroom on key signatures](https://musictheory.pugetsound.edu/mt21c/MajorKeySignatures.html)
+and [accidentals](https://musictheory.pugetsound.edu/mt21c/Accidentals.html).
+
+- **Major, minor, and modes.** For a scale exercise, Tukany uses the signature
+  of the parent diatonic collection. D Dorian shares C major’s empty signature.
+  D harmonic minor keeps D minor’s B♭ signature and writes C♯ inline. D ascending
+  melodic minor adds B♮ and C♯ inline. Modes of an altered parent scale inherit
+  its signature. [Open Music Theory on diatonic modes](https://viva.pressbooks.pub/openmusictheory/chapter/intro-to-diatonic-modes-and-the-chromatic-scale/)
+  and [minor scales](https://viva.pressbooks.pub/openmusictheory/chapter/minor-scales/).
+- **Pentatonic, blues, and bebop scales.** For the named major and minor pentatonic
+  and blues scales, Tukany uses the corresponding major or minor signature.
+  Bebop scales use the catalog’s underlying major, Mixolydian, or Dorian collection
+  with the passing tone written inline. These are conventions for displaying
+  individual scales. [Open Music Theory on blues scales](https://viva.pressbooks.pub/openmusictheory/chapter/blues-melodies-and-the-blues-scale/).
+- **Other collections.** Standalone arpeggios, symmetric scales, and collections
+  without a specified parent use an open signature and explicit accidentals.
+  A custom formula inherits a catalog entry’s convention when its written degrees
+  uniquely match. Theoretical signatures beyond seven sharps or flats also use
+  inline accidentals to preserve the chosen spelling.
+
+The staff spells each scale tone from its degree. For instance, the seventh of
+C♯ major is B♯, and sounding middle C is written B♯3 in that scale. The sharps
+and flats display preferences can choose the tonic spelling, while an explicit
+tonic takes precedence.
+
 ## Appearance and interaction
 
 - Native control appearance in the selected theme. [MDN color-scheme reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/color-scheme).

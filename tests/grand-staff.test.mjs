@@ -50,20 +50,27 @@ test('the staff uses every visible sounding pitch once in ascending order, in ei
     [...new Set(pattern.points.map(({ midi }) => midi))].sort((a, b) => a - b),
   );
   const patternNames = notes.filter((note) => note.inPattern).map(({ name }) => name);
+  const headLetters = [
+    ...markup.matchAll(/class="staff-pitch-letter"[^>]*>([A-G])<\/text>/g),
+  ];
+  assert.deepEqual(
+    headLetters.map(([, letter]) => letter),
+    patternNames.map((name) => name[0]),
+  );
   assert.ok(
     grandStaffMarkup(layout, 'es').includes(
       `Patrón ${pattern.number} · ${patternNames.join(' · ')}"`,
     ),
   );
   assert.equal(
-    (markup.match(/class="staff-selection-ring"/g) ?? []).length,
+    (markup.match(/class="staff-selection-marker"/g) ?? []).length,
     midis.length,
   );
   assert.match(markup, /class="staff-note is-muted is-outside" data-staff-midi=/);
   assert.match(markup, /<title>E2<\/title>/);
   assert.doesNotMatch(
     grandStaffMarkup(grandStaffLayout(boardModel({})), 'en'),
-    /is-muted|is-outside|is-in-pattern|staff-pattern-halo/,
+    /is-muted|is-outside|is-in-pattern|staff-pitch-letter/,
   );
 });
 
@@ -112,6 +119,30 @@ test('enharmonic notation respects the scale, written octave, and spelling contr
   );
 });
 
+test('the seven signature signs sit at their conventional written pitches in each clef', () => {
+  const reference = layoutFor(Array.from({ length: 60 }, (_, i) => 30 + i));
+  const heightOf = new Map(reference.notes.map(({ name, y }) => [name, y]));
+  for (const [root, tonic, treble, bass] of [
+    [1, 'C#', 'F5 C5 G5 D5 A4 E5 B4', 'F3 C3 G3 D3 A2 E3 B2'],
+    [11, 'Cb', 'B4 E5 A4 D5 G4 C5 F4', 'B2 E3 A2 D3 G2 C3 F2'],
+  ]) {
+    const layout = layoutFor([60], { root, tonic });
+    const markup = grandStaffMarkup(layout, 'en');
+    const signs = [
+      ...markup.matchAll(
+        /<path data-pitch="([A-G])[♭♯]"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"/g,
+      ),
+    ];
+    const positions = `${treble} ${bass}`.split(' ');
+    assert.equal(signs.length, positions.length);
+    signs.forEach(([, letter, x, y], i) => {
+      assert.equal(letter, positions[i][0]);
+      assert.equal(Number(y), heightOf.get(positions[i]));
+      assert.ok(Number(x) + 4 < layout.headerWidth);
+    });
+  }
+});
+
 test('quarter notes use filled tilted heads and change stem direction at each middle line', () => {
   const layout = layoutFor([48, 50, 52, 69, 71, 72]);
   // The middle lines are D3 in bass and B4 in treble.
@@ -135,8 +166,18 @@ test('quarter notes use filled tilted heads and change stem direction at each mi
     ).length,
     layout.notes.length,
   );
-  assert.equal((markup.match(/class="staff-stem" d="M4\.5 -1V-28"/g) ?? []).length, 2);
-  assert.equal((markup.match(/class="staff-stem" d="M-4\.5 1V28"/g) ?? []).length, 4);
+  const stems = [
+    ...markup.matchAll(
+      /class="staff-stem" x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/g,
+    ),
+  ];
+  assert.equal(stems.length, layout.notes.length);
+  stems.forEach(([, x, y, width, height], i) => {
+    const { stemEnd } = layout.notes[i];
+    assert.ok(stemEnd < 0 ? Number(x) > 0 : Number(x) + Number(width) < 0);
+    assert.equal(Number(y), Math.min(0, stemEnd));
+    assert.equal(Number(height), Math.abs(stemEnd));
+  });
 });
 
 test('custom tuning extremes and the highest fret fit within the SVG bounds', () => {

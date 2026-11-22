@@ -55,8 +55,12 @@ Tap a fretboard note or a note or degree in the reference row to hear it and
 highlight where it appears. The grand staff below the fretboard shows each
 displayed pitch as a quarter note, from low to high. Fingerings that sound the same
 pitch share a notehead. The staff is monochrome until you select a pattern.
-Its notes then take their fretboard colors, and the other pitches fade.
-Selecting a fret marks its exact octave.
+The pattern's noteheads then take their fretboard colors while the stems use
+the staff ink. Each colored head shows its written letter, and the other pitches
+fade. Selecting a fret places a small pointer below its exact pitch.
+Key signatures appear after both clefs. In D harmonic minor, for example, the
+signature supplies B♭ and the staff writes C♯ beside the raised seventh.
+See the [staff notation conventions](docs/references.md#grand-staff-notation).
 **Note names** controls how pitches are written.
 For example, the same fret can show C♯, D♭, or both. **By key** follows the
 scale’s written degrees. When a key has two common names, you can choose

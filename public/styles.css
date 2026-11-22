@@ -1254,25 +1254,23 @@ input[aria-invalid='true'] {
   z-index: 1;
   background: var(--paper);
 }
-.staff-notehead {
-  stroke: currentColor;
-  stroke-width: 0.9;
-  paint-order: stroke fill;
+.staff-lines {
+  opacity: 0.5;
+}
+.staff-pitch-letter {
+  font:
+    bold 7px system-ui,
+    sans-serif;
 }
 .staff-note.is-muted {
   color: var(--muted);
   opacity: 0.38;
 }
-.staff-selection-ring {
-  fill: none;
-  stroke-width: 1.5;
-  opacity: 0;
+.staff-selection-marker {
+  display: none;
 }
-.staff-note:is(.is-in-pattern, .is-muted) .staff-selection-ring {
-  stroke: var(--note-selected);
-}
-.is-selected .staff-selection-ring {
-  opacity: 1;
+.is-selected .staff-selection-marker {
+  display: inline;
 }
 .backing-tracks {
   background: var(--subtle);
