@@ -61,7 +61,7 @@ function neckMarkup(model, layout, top, small, t) {
 }
 
 export function boardMarkup(state, options = {}) {
-  const model = boardModel(state, options);
+  const model = options.model ?? boardModel(state, options);
   const small = options.small ?? false;
   const height =
     options.height ??

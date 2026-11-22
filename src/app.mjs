@@ -36,6 +36,7 @@ import { copy } from './i18n.mjs';
 import { routes, syncExplorerPage } from './site.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardMarkup, escape } from './board.mjs';
+import { grandStaffLayout, grandStaffMarkup, staffPitchName } from './grand-staff.mjs';
 import { enableBackingTracks } from './backing-track-finder.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { enableSlideSwitch } from './slide-switch.mjs';
@@ -63,7 +64,8 @@ let range = restoreRange(query, saved, {
 });
 let neckView = restoreNeckView(query, saved);
 let boardWidth,
-  boardRightOffset = 0;
+  boardRightOffset = 0,
+  boardNotes = [];
 
 let family = initialScaleFamily(state.scale),
   instrumentAudio,
@@ -238,6 +240,38 @@ function revealPattern() {
   board.scrollLeft +=
     (left + right - board.clientWidth) / 2 - board.getBoundingClientRect().left;
 }
+const staff = $('staff-notation');
+function updateStaffTabStop() {
+  staff.tabIndex = staff.scrollWidth > staff.clientWidth ? 0 : -1;
+}
+new ResizeObserver(updateStaffTabStop).observe(staff);
+
+function renderStaff(model) {
+  const layout = grandStaffLayout(model, currentPattern());
+  staff.innerHTML = grandStaffMarkup(layout, model.state.lang);
+  const low = layout.notes[0]?.name ?? '';
+  const high = layout.notes.at(-1)?.name ?? '';
+  $('staff-range').textContent = low === high ? low : `${low} – ${high}`;
+  updateStaffTabStop();
+}
+// Keep the note between the pinned clefs and the right edge of the staff.
+function revealStaffNote(note, align = 'nearest') {
+  if (!note || staff.scrollWidth <= staff.clientWidth) return;
+  const left = staff.querySelector('.staff-clef-column').getBoundingClientRect().right;
+  const right = staff.getBoundingClientRect().right;
+  const bounds = note.getBoundingClientRect();
+  if (align === 'start' || bounds.left < left + 4)
+    staff.scrollLeft += bounds.left - left - 4;
+  else if (bounds.right > right - 4) staff.scrollLeft += bounds.right - right + 4;
+}
+function selectStaffNote(midi) {
+  const note = staff.querySelector(`[data-staff-midi="${midi}"]`);
+  if (!note) return;
+  staff.querySelector('.is-selected')?.classList.remove('is-selected');
+  note.classList.add('is-selected');
+  $('staff-range').textContent = staffPitchName(midi, state);
+  revealStaffNote(note);
+}
 function renderBoard() {
   const board = $('board');
   const [lo, hi] = fretBounds(range);
@@ -264,9 +298,10 @@ function renderBoard() {
     ? document.activeElement.dataset
     : null;
   boardWidth = board.clientWidth;
+  const model = boardModel(state, { hi: displayHi });
+  boardNotes = model.points;
   board.innerHTML = boardMarkup(state, {
-    lo: 0,
-    hi: displayHi,
+    model,
     width,
     height,
     focusRange: currentPattern() ? undefined : { lo, hi },
@@ -274,6 +309,9 @@ function renderBoard() {
     patterns: patternInfo.patterns,
     selectedPattern: currentPattern()?.id,
   });
+  renderStaff(model);
+  if (reset || rangeChanged)
+    revealStaffNote(staff.querySelector('.is-in-pattern'), 'start');
   highlightSelection();
   if (soundingMidi !== null) highlightSoundingNote(soundingMidi);
   board.dataset.setup = setup;
@@ -602,12 +640,6 @@ async function audioPlayer() {
   await instrumentAudio.context.resume();
   return instrumentAudio;
 }
-function visibleNotes() {
-  return boardModel(state, { hi: neckView === 'full' ? state.frets : 12 }).points;
-}
-function positionNotes() {
-  return visibleNotes().filter(isHighlighted);
-}
 function renderNoteReadout() {
   const note = inspectedNote;
   $('note-readout').hidden = !note;
@@ -630,6 +662,7 @@ function renderNoteReadout() {
   $('note-readout-text').textContent = details.join(' · ');
 }
 function highlightSelection() {
+  if (inspectedNote) selectStaffNote(inspectedNote.midi);
   $('board')
     .querySelectorAll('[data-midi]')
     .forEach((note) =>
@@ -688,7 +721,7 @@ async function soundNote(midi) {
   }
 }
 function playNote(midi, element) {
-  const note = visibleNotes().find(
+  const note = boardNotes.find(
     (point) =>
       point.midi === midi &&
       (!element ||
@@ -706,21 +739,19 @@ $('notes-strip').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-pitch]');
   if (!button) return;
   const pitch = Number(button.dataset.pitch);
-  let note = positionNotes()
+  const candidates = boardNotes
     .filter((point) => point.pc === pitch)
-    .sort((a, b) => a.midi - b.midi)[0];
-  const visible = Boolean(note);
-  note ??= visibleNotes()
-    .filter((point) => point.pc === pitch)
-    .sort((a, b) => a.midi - b.midi)[0];
+    .sort((a, b) => a.midi - b.midi);
+  const highlighted = candidates.find(isHighlighted);
+  const note = highlighted ?? candidates[0];
   if (!note) return;
-  inspectNote({ ...note, visible });
+  inspectNote({ ...note, visible: Boolean(highlighted) });
   soundNote(note.midi);
 });
 $('board').addEventListener('focusin', (event) => {
   const note = event.target.closest('[data-midi]');
   if (!note) return;
-  const point = visibleNotes().find(
+  const point = boardNotes.find(
     (point) =>
       point.row === Number(note.dataset.row) && point.fret === Number(note.dataset.fret),
   );

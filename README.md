@@ -52,7 +52,12 @@ three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
 Tap a fretboard note or a note or degree in the reference row to hear it and
-highlight where it appears. **Note names** controls how pitches are written.
+highlight where it appears. The grand staff below the fretboard shows each
+displayed pitch as a quarter note, from low to high. Fingerings that sound the same
+pitch share a notehead. The staff is monochrome until you select a pattern.
+Its notes then take their fretboard colors, and the other pitches fade.
+Selecting a fret marks its exact octave.
+**Note names** controls how pitches are written.
 For example, the same fret can show C♯, D♭, or both. **By key** follows the
 scale’s written degrees. When a key has two common names, you can choose
 which to use, such as F♯ major or G♭ major. The Scale card always offers
