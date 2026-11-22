@@ -12,7 +12,7 @@ import {
   scaleName,
 } from '../src/workspace.mjs';
 
-test('instrument and string setups are recalled without changing the selected music', () => {
+test('switching instruments keeps the current orientation and recalls each setup', () => {
   let state = restoreWorkspace({
     instrument: 'guitar',
     strings: 7,
@@ -26,13 +26,13 @@ test('instrument and string setups are recalled without changing the selected mu
   state = changeSetup(state, { instrument: 'bass' }, saved);
   assert.equal(state.strings, 4);
   assert.equal(state.frets, 20);
-  assert.equal(state.hand, 'right');
+  assert.equal(state.hand, 'left');
   assert.equal(state.root, 9);
   assert.equal(state.scale, 'natural-minor');
-  state = changeSetup(state, { tuning: 'bass-4-drop-c' }, saved);
+  state = changeSetup(state, { tuning: 'bass-4-drop-c', hand: 'right' }, saved);
   saved = rememberWorkspace(saved, state);
   state = changeSetup(state, { instrument: 'guitar' }, saved);
-  assert.equal(state.hand, 'left');
+  assert.equal(state.hand, 'right');
   assert.equal(state.strings, 7);
   assert.equal(state.tuning, 'guitar-7-drop-a');
   assert.equal(state.frets, 24);
@@ -44,7 +44,7 @@ test('instrument and string setups are recalled without changing the selected mu
   assert.equal(state.tuning, 'bass-4-drop-c');
   assert.equal(state.hand, 'right');
 });
-test('a link selecting a string count recalls its tuning and the instrument’s latest orientation', () => {
+test('partial links recall the current orientation and the tuning for the selected strings', () => {
   const six = restoreWorkspace({
     tuning: 'guitar-eb-standard',
     hand: 'right',
@@ -61,7 +61,29 @@ test('a link selecting a string count recalls its tuning and the instrument’s 
   assert.equal(linked.tuning, 'guitar-eb-standard');
   assert.equal(linked.hand, 'left');
   assert.equal(linked.frets, 24);
+  assert.equal(restoreWorkspace({ instrument: 'bass' }, saved).hand, 'left');
   assert.equal(restoreWorkspace({ strings: '6', hand: 'right' }, saved).hand, 'right');
+});
+test('older setups use the last active instrument’s orientation on either instrument', () => {
+  const saved = readPreferences(
+    JSON.stringify({
+      version: 1,
+      instrument: 'bass',
+      setups: {
+        guitar: { strings: 6, tuning: 'guitar-drop-d', hand: 'right' },
+        bass: { strings: 4, tuning: 'bass-4-drop-c', hand: 'left' },
+      },
+    }),
+  );
+  assert.equal(restoreWorkspace({}, saved).hand, 'left');
+  const guitar = restoreWorkspace({ instrument: 'guitar' }, saved);
+  assert.equal(guitar.hand, 'left');
+  assert.equal(guitar.tuning, 'guitar-drop-d');
+  const next = rememberWorkspace(saved, changeSetup(guitar, { hand: 'right' }, saved));
+  const bass = restoreWorkspace({ instrument: 'bass' }, next);
+  assert.equal(bass.hand, 'right');
+  assert.equal(bass.tuning, 'bass-4-drop-c');
+  assert.equal(restoreWorkspace({ instrument: 'bass', hand: 'left' }, next).hand, 'left');
 });
 test('saved preferences survive reload, while shared links override remembered configuration', () => {
   const saved = rememberWorkspace(

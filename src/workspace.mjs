@@ -2,8 +2,8 @@ import { normalizeState, selection, SCALES } from './music.mjs';
 import { guidePlan } from './guide-layout.mjs';
 
 const tuningKeys = ['tuning', 'customTuning'];
-const setupKeys = ['instrument', 'strings', 'hand', 'frets', ...tuningKeys];
-const preferenceKeys = ['lang', 'spelling', 'labels', 'allNotes'];
+const setupKeys = ['instrument', 'strings', 'frets', ...tuningKeys];
+const preferenceKeys = ['hand', 'lang', 'spelling', 'labels', 'allNotes'];
 const musicKeys = ['root', 'tonic', 'scale', 'formula'];
 const ranges = ['full', 'lower', 'upper'];
 const validRange = (id) =>
@@ -32,8 +32,10 @@ export function restoreWorkspace(query = {}, saved = {}) {
   const strings = query.strings ?? remembered.strings;
   const tuning = saved.stringSetups?.[`${instrument}:${strings}`] ?? remembered;
   return normalizeState({
+    // Older saves kept handedness on each instrument. Carry forward the last one used.
+    hand: saved.setups?.[saved.instrument]?.hand ?? remembered.hand,
     ...pick(saved.preferences, preferenceKeys),
-    ...pick(remembered, ['hand', 'frets']),
+    ...pick(remembered, ['frets']),
     ...pick(tuning, tuningKeys),
     ...(!hasMusic(query) ? pick(saved.practice, musicKeys) : {}),
     instrument,

@@ -33,9 +33,9 @@ PDF customization stays inline below the playing surface, with contents, referen
 On phones, a sticky current-scale shortcut jumps directly to the fretboard while
 keeping every setting on the homepage.
 The instrument card has sliding switches for Guitar or Bass and Right-handed
-or Left-handed. Each instrument starts right-handed and remembers its own
-orientation. Changing instruments also recalls the string count and its last
-tuning, including custom pitches. The tuning picker shows the open strings
+or Left-handed. Right-handed is the first option and the default. Your orientation
+applies to both instruments and is saved for your next visit. Each instrument
+recalls its string count and last tuning, including custom pitches. The tuning picker shows the open strings
 from lowest to highest.
 The fretboard starts at frets 0–12. A sliding switch in the
 fretboard header reveals the full neck. Thin pattern brackets sit above the

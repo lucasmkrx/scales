@@ -110,10 +110,11 @@ takes priority over that saved preference.
 Explicit musical links take priority over that saved practice selection. Preferences are versioned and optional: unavailable storage does
 not prevent use of the app.
 
-Each instrument remembers its orientation, fret count, and last string count.
+Handedness is a shared preference and defaults to right-handed.
+Each instrument remembers its fret count and last string count.
 Each string count remembers its tuning and custom pitches for that instrument.
-Switching instruments keeps the musical selection. New guitar and bass setups
-start right-handed, with 21 frets for guitar and 20 for bass. Custom
+Switching instruments keeps the musical selection and current orientation. New
+setups start with 21 frets for guitar and 20 for bass. Custom
 tuning and formula edits commit only after validation. Display changes retain
 horizontal fretboard position; a new setup starts at its open-string end.
 

@@ -40,6 +40,9 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   const left = hand.getByRole('radio', { name: 'Left-handed' });
   await expect(right).toBeChecked();
   await expect(left).not.toBeChecked();
+  const rightBox = await right.boundingBox();
+  const leftBox = await left.boundingBox();
+  expect(rightBox.x + rightBox.width).toBeLessThanOrEqual(leftBox.x + 1);
 
   const selected = await points(page);
   expect(selected).toHaveLength(17);
@@ -78,7 +81,7 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   expect(await points(page)).toEqual(selected);
 });
 
-test('keyboard choices restore each instrument’s orientation, fret count, and tuning', async ({
+test('keyboard instrument changes keep the current orientation and restore each tuning', async ({
   page,
 }) => {
   await page.goto('/');
@@ -95,7 +98,7 @@ test('keyboard choices restore each instrument’s orientation, fret count, and 
   const tuning = page.locator('#tuning');
   await expect(guitar).toBeChecked();
   await expect(right).toBeChecked();
-  await right.press('ArrowLeft');
+  await right.press('ArrowRight');
   await expect(left).toBeFocused();
   await expect(left).toBeChecked();
   await tuning.click();
@@ -104,7 +107,8 @@ test('keyboard choices restore each instrument’s orientation, fret count, and 
   await guitar.press('ArrowRight');
   await expect(bass).toBeFocused();
   await expect(bass).toBeChecked();
-  await expect(right).toBeChecked();
+  await expect(left).toBeChecked();
+  await expect(page.locator('#neck-octave-label')).toHaveText('12–0');
   await expect(strings.getByRole('radio', { disabled: false })).toHaveCount(3);
   await expect(stringCount(4)).toBeChecked();
 
@@ -132,17 +136,23 @@ test('keyboard choices restore each instrument’s orientation, fret count, and 
   await expect(page.locator('#open-string-pitches > span')).toHaveCount(5);
   await expect(page.locator('#board .board-string')).toHaveCount(5);
 
+  await left.press('ArrowLeft');
+  await expect(right).toBeChecked();
   await bass.press('ArrowLeft');
   await expect(guitar).toBeChecked();
-  await expect(left).toBeChecked();
+  await expect(right).toBeChecked();
+  await expect(page.locator('#neck-octave-label')).toHaveText('0–12');
   await expect(stringCount(6)).toBeChecked();
   await expect(fretCount(21)).toBeChecked();
   await expect(page.locator('#tuning-name')).toHaveText('Drop D');
   await expect(page.locator('#open-string-pitches > span')).toHaveCount(6);
+  await right.press('ArrowRight');
   await guitar.press('ArrowRight');
   await page.reload();
+  await expect(left).toBeChecked();
+  await page.goto('/');
   await expect(bass).toBeChecked();
-  await expect(right).toBeChecked();
+  await expect(left).toBeChecked();
   await expect(stringCount(5)).toBeChecked();
   await expect(fretCount(24)).toBeChecked();
   await page.locator('#edit-pitches').click();

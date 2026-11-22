@@ -1,7 +1,7 @@
 # Documentation media
 
 These assets show the actual Tukany interface and generated output. The desktop and mobile
-workspace captures and walkthrough use local build `534f8810212d` with reduced
+workspace captures and walkthrough use local build `c4a0041d84eb` with reduced
 motion and all local fonts loaded.
 The browser requested a dark color scheme for every capture. Fresh sessions
 opened in Light, and the saved Dark choice restored the dark palette.

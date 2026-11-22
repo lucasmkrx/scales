@@ -83,7 +83,10 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   label in both themes and that keyboard focus is visible. Select the numeric string and fret
   counts, then confirm the tuning picker shows the matching open pitches. Changing handedness
   should mirror the board and range labels while keeping the same fingering points.
-  Verify the choice on reload and when reopening a shared link.
+  On a fresh visit, verify Right-handed is first and selected. Choose Left-handed,
+  switch to bass, and reload. Confirm the bass stays left-handed. Choose Right-handed
+  on bass and switch back to guitar. Confirm the guitar is right-handed. Open a
+  shared link with an explicit orientation and verify the diagram matches it.
 - Choose a root note, browse scale families in all three languages, and select a
   scale or arpeggio with the pointer or keyboard. Browsing retains the selection.
   Choosing a result updates the card title, checkmark, and formula degrees.
