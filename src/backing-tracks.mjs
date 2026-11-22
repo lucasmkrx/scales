@@ -30,7 +30,7 @@ function harmonyFor(scale, style) {
 
 export function backingTrackQuery(state, { style = 'any', tempo = 'any' } = {}) {
   const music = selection(state);
-  const root = rootName(music).split('/')[0].replaceAll('♯', '#').replaceAll('♭', 'b');
+  const root = rootName(music).replaceAll('♯', '#').replaceAll('♭', 'b');
   const genre = BACKING_STYLES.includes(style) && style !== 'any' ? style : '';
   const speed = BACKING_TEMPOS.includes(tempo) && tempo !== 'any' ? `${tempo} tempo` : '';
   const accompaniment =

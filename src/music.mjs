@@ -200,9 +200,7 @@ export function selection(input) {
   return { ...s, tuningData: tuning, scaleData: scale };
 }
 export function rootName(state) {
-  if (state.spelling === 'key')
-    return keySpellings(state.scaleData ? state : selection(state)).tonic;
-  return noteName(state.root, pitchPreference(state));
+  return keySpellings(state.scaleData ? state : selection(state)).tonic;
 }
 export function pitchPreference(input) {
   if (input.spelling === 'key') {

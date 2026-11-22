@@ -93,8 +93,9 @@ that share the same note letters. The app supports 6- and 7-string guitar and
 
 Notes can display both enharmonic names, only sharps/flats, or key-aware spelling.
 Key spelling derives each letter from the written degree formula, including E♯,
-C♭, and double accidentals. The root selector separates common enharmonic tonics;
-an optional validated `tonic` value preserves that choice in URLs and saved practice.
+C♭, and double accidentals. The Scale card always shows the same 12 pitches.
+In By key mode the fretboard controls offer alternative names for the selected
+tonic. An optional validated `tonic` value preserves that choice in URLs and saved practice.
 Without an explicit tonic, the model chooses the simpler spelling, favoring sharps
 on a tie. Contextual MIDI labels retain written octaves, such as B♯3 for sounding C4.
 These display choices preserve pitches, colors, geometry, and playback.

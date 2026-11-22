@@ -86,41 +86,27 @@ function numberKeys(name, counts) {
     )
     .join('');
 }
-function rootChoice(value, note, alternate = '') {
-  const name = alternate ? `${note} / ${alternate}` : note;
-  return `<label><input type="radio" name="root" value="${escape(value)}" aria-label="${escape(name)}"><span>${escape(note)}${alternate ? `<small>${escape(alternate)}</small>` : ''}</span></label>`;
-}
-function renderRootPicker(s) {
-  const grid = $('root-notes');
-  const keyMode = s.spelling === 'key';
-  const tonic = rootName(s);
-  const valueOf = (note) => note.replaceAll('♯', '#').replaceAll('♭', 'b');
-  // Shared links may carry a spelling such as C♭ beyond the usual 17 key choices.
-  const extra = keyMode && ![SHARPS[s.root], FLATS[s.root]].includes(tonic) ? tonic : '';
-  const rebuild = grid.dataset.spelling !== s.spelling || grid.dataset.extra !== extra;
-  const restoreFocus = rebuild && grid.contains(document.activeElement);
-  if (rebuild) {
-    grid.innerHTML = SHARPS.map((sharp, pitch) => {
-      const flat = FLATS[pitch];
-      if (keyMode) {
-        const names = new Set([sharp, flat]);
-        if (extra && pitch === s.root) names.add(extra);
-        return [...names].map((note) => rootChoice(valueOf(note), note)).join('');
-      }
-      return rootChoice(
-        pitch,
-        s.spelling === 'flat' ? flat : sharp,
-        s.spelling === 'both' && flat !== sharp ? flat : '',
-      );
-    }).join('');
-    grid.dataset.spelling = s.spelling;
-    grid.dataset.extra = extra;
+$('root-notes').innerHTML = SHARPS.map((sharp, pitch) => {
+  const flat = FLATS[pitch];
+  const name = sharp === flat ? sharp : `${sharp} / ${flat}`;
+  return `<label><input type="radio" name="root" value="${pitch}" aria-label="${name}"><span>${sharp}${sharp === flat ? '' : `<small>${flat}</small>`}</span></label>`;
+}).join('');
+
+function renderKeyTonic(s) {
+  const control = $('key-tonic-control');
+  const names = new Set([SHARPS[s.root], FLATS[s.root]]);
+  // Keep uncommon enharmonic spellings from shared links and saved practice.
+  if (s.tonic) names.add(prettyDegree(s.tonic));
+  const show = s.spelling === 'key' && names.size > 1;
+  if (!show && control.contains(document.activeElement))
+    $('spelling-trigger').focus({ preventScroll: true });
+  control.hidden = !show;
+  if (show) {
+    $('key-tonic').innerHTML = options(
+      [['', copy[s.lang].automaticTonic], ...Array.from(names, (name) => [name, name])],
+      s.tonic ? prettyDegree(s.tonic) : '',
+    );
   }
-  const checked = grid.querySelector(
-    `input[value="${keyMode ? valueOf(tonic) : s.root}"]`,
-  );
-  checked.checked = true;
-  if (restoreFocus) checked.focus({ preventScroll: true });
 }
 $('fret-counts').innerHTML = numberKeys('frets', FRET_COUNTS);
 const tuningName = (tuning) => localizedTuningName(tuning, state.lang);
@@ -302,24 +288,20 @@ function renderContent() {
   $('mobile-scale-title').textContent = $('scale-selection').textContent;
   $('setup-summary').textContent =
     `${t[s.instrument]} · ${s.strings} ${t.strings.toLowerCase()} · ${tuningName(s.tuningData)}`;
-  // Match the reference row to the chosen diagram labels.
-  const tables = [];
-  for (let start = 0; start < names.length; start += 7) {
-    const group = names.slice(start, start + 7);
-    const cells = [];
-    for (const [index, name] of group.entries()) {
-      const pitch = (s.root + s.scaleData.intervals[start + index]) % 12;
-      const degree = s.scaleData.formula[start + index];
+  const tones = $('notes-strip');
+  tones.setAttribute('aria-label', t[s.labels]);
+  tones.innerHTML = names
+    .map((name, index) => {
+      const pitch = (s.root + s.scaleData.intervals[index]) % 12;
+      const degree = s.scaleData.formula[index];
       const label = s.labels === 'degrees' ? prettyDegree(degree) : name;
-      cells.push(
-        `<td data-pitch="${pitch}"><button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(degree, s.lang)}`)}">${s.labels === 'notes' ? `<i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>` : ''}${escape(label).replace('/', '/<wbr>')}</button></td>`,
-      );
-    }
-    tables.push(
-      `<table class="tone-table" aria-label="${t[s.labels]}"><tbody><tr>${cells.join('')}</tr></tbody></table>`,
-    );
-  }
-  $('notes-strip').innerHTML = tables.join('');
+      const dot =
+        s.labels === 'notes'
+          ? `<i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>`
+          : '';
+      return `<button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(degree, s.lang)}`)}">${dot}${escape(label)}</button>`;
+    })
+    .join('');
   $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
   $('pattern-info').textContent = patternInfo.allCount
     ? `${t.patterns} · ${t.patternSystems[patternInfo.system]} · ${t.patternToggleHint}${patternInfo.patterns.length < patternInfo.allCount ? ` ${t.morePatterns}` : ''}`
@@ -335,7 +317,8 @@ function renderContent() {
   $('pattern-summary').innerHTML = summary
     ? `<strong>${escape(summary.title)}</strong><span>${escape(summary.detail)}</span>`
     : '';
-  $('key-spelling-hint').hidden = s.spelling !== 'key';
+  $('spelling-hint').textContent =
+    s.spelling === 'key' ? t.keySpellingHint : t.spellingHint;
   $('neck-octave-label').textContent = state.hand === 'left' ? '12–0' : '0–12';
   document
     .querySelectorAll('input[name="neck-view"]')
@@ -473,7 +456,7 @@ function render() {
     stringCounts.innerHTML = numberKeys('strings', STRING_COUNTS[state.instrument]);
     stringCounts.dataset.instrument = state.instrument;
   }
-  for (const name of ['instrument', 'hand', 'strings', 'frets', 'labels'])
+  for (const name of ['instrument', 'hand', 'strings', 'frets', 'labels', 'root'])
     document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
       input.checked = input.value === String(state[name]);
     });
@@ -485,7 +468,7 @@ function render() {
   $('open-string-pitches').innerHTML = s.tuningData.notes
     .map((midi) => `<span>${pitch(midi)}</span>`)
     .join(' ');
-  renderRootPicker(s);
+  renderKeyTonic(s);
   $('allNotes').checked = state.allNotes;
   $('custom-tuning').hidden = !tuningDraft;
   if (tuningDraft) renderTuningLabels();
@@ -630,11 +613,10 @@ function highlightSelection() {
       ),
     );
   $('notes-strip')
-    .querySelectorAll('[data-pitch]')
-    .forEach((el) => {
-      const selected = Number(el.dataset.pitch) === inspectedPitch;
-      el.classList.toggle('selected-pitch', selected);
-      if (el.matches('button')) el.setAttribute('aria-pressed', String(selected));
+    .querySelectorAll('button')
+    .forEach((button) => {
+      const selected = Number(button.dataset.pitch) === inspectedPitch;
+      button.setAttribute('aria-pressed', String(selected));
     });
 }
 function inspectNote(note) {
@@ -649,7 +631,7 @@ function highlightSoundingNote(midi) {
   if (midi === null) return;
   document
     .querySelectorAll(
-      `#board [data-midi="${midi}"], #notes-strip td[data-pitch="${midi % 12}"]`,
+      `#board [data-midi="${midi}"], #notes-strip button[data-pitch="${midi % 12}"]`,
     )
     .forEach((el) => el.classList.add('sounding'));
 }
@@ -747,14 +729,12 @@ $('frets').addEventListener('change', (event) => update({ frets: event.target.va
 $('spelling').addEventListener('change', (event) =>
   update({ spelling: event.target.value }),
 );
-$('root-picker').addEventListener('change', ({ target }) => {
-  const root = target.value;
-  update(
-    state.spelling === 'key'
-      ? { root: parseNote(`${root}4`) % 12, tonic: root }
-      : { root },
-  );
-});
+$('root-picker').addEventListener('change', ({ target }) =>
+  update({ root: target.value }),
+);
+$('key-tonic').addEventListener('change', ({ target }) =>
+  update({ tonic: target.value }),
+);
 $('labels').addEventListener('change', (event) => update({ labels: event.target.value }));
 function tuningChoices() {
   const choices = TUNINGS.filter(
@@ -915,7 +895,7 @@ $('export').addEventListener('click', async () => {
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })),
       link = document.createElement('a');
     link.href = url;
-    link.download = `scales-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${snapshot.scale}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat').replaceAll('/', '-')}-${snapshot.hand}-${snapshot.lang}.pdf`;
+    link.download = `scales-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${snapshot.scale}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat')}-${snapshot.hand}-${snapshot.lang}.pdf`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 30000);
     $('export-status').textContent = t.ready;

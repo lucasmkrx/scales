@@ -95,8 +95,11 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   it, and test invalid custom input.
   Switch language during a draft and confirm pitch values survive while string
   labels and active validation messages translate.
-- Use the inline notes/degrees, spelling, and outside-note controls. Confirm that
-  settings remain available and horizontal fretboard scroll is retained.
+- Switch Note names between sharps, flats, both, and By key. Check that the same
+  12 circles remain in the Scale card and the selected root keeps its position.
+  In By key, compare F♯ major (seventh degree E♯) with G♭ major (fourth degree C♭).
+  Switch between notes and degrees and check that the reference buttons fit their
+  labels and the fretboard retains its horizontal scroll position.
 - On a device set to dark mode, open a fresh session and confirm the page starts
   in Light. Switch to Dark, reload, and open a shared musical link to check the
   saved choice. Changing the OS appearance should preserve the selected theme.

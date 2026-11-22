@@ -67,7 +67,7 @@ test('dropdown corners stay capped on multiline options and other buttons stay p
     expect(hitAreas).toEqual({ cornersExposePage: true, centerHitsOption: true });
   }
   const faces = page.locator(
-    'button:not(#tuning, [role="option"]):visible, .number-keys label > span:visible, .segmented label > span:visible, .switch-option:visible',
+    'button:not(#tuning, [role="option"]):visible, .root-notes label > span:visible, .number-keys label > span:visible, .segmented label > span:visible, .switch-option:visible',
   );
   const undersizedCorners = await faces.evaluateAll((elements) =>
     elements.flatMap((element) => {
@@ -106,7 +106,7 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
     ['language', 'Language'],
     ['scale-family', 'Scale family'],
     ['tuning', 'Tuning'],
-    ['spelling', 'Spelling'],
+    ['spelling', 'Note names'],
     ['backing-style', 'Style'],
     ['backing-tempo', 'Tempo'],
     ['scope', 'PDF contents'],
@@ -390,5 +390,64 @@ test('reduced motion disables control and fretboard animations during interactio
   for (const style of styles) {
     expect(style.animation).toBe('none');
     expect(style.transitions.every((duration) => duration === 0)).toBe(true);
+  }
+});
+
+test('root notes are circles, scale choices share a height, and paired note names fit in pills', async ({
+  page,
+}) => {
+  const sizes = (buttons) =>
+    buttons.evaluateAll((elements) =>
+      elements.map((element) => {
+        const { width, height } = element.getBoundingClientRect();
+        return {
+          label: element.textContent.trim(),
+          width,
+          height,
+          fits:
+            element.scrollWidth <= element.clientWidth + 1 &&
+            element.scrollHeight <= element.clientHeight + 1,
+        };
+      }),
+    );
+  for (const [width, lang] of [
+    [1360, 'en'],
+    [320, 'es'],
+  ]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(url({ lang, scale: 'chromatic' }));
+    const roots = page.locator('#root-notes label > span');
+    await expect(roots).toHaveCount(12);
+    await page.evaluate(() => document.fonts.ready);
+    for (const root of await sizes(roots)) {
+      expect(root.width, root.label).toBeCloseTo(root.height, 0);
+      expect(root.height, root.label).toBeGreaterThanOrEqual(44);
+      expect(root.fits, root.label).toBe(true);
+    }
+    const choices = await sizes(page.locator('#scale-results button'));
+    expect(choices.length).toBeGreaterThan(1);
+    for (const choice of choices) {
+      expect(choice.height, choice.label).toBeCloseTo(choices[0].height, 0);
+      expect(choice.fits, choice.label).toBe(true);
+    }
+    const tones = page.locator('#notes-strip button');
+    await expect(tones).toHaveCount(12);
+    for (const tone of await sizes(tones)) {
+      if (tone.label.includes('/'))
+        expect(tone.width, tone.label).toBeGreaterThan(tone.height);
+      else expect(tone.width, tone.label).toBeCloseTo(tone.height, 0);
+      expect(tone.fits, tone.label).toBe(true);
+    }
+    await page
+      .locator('#labels label')
+      .filter({ has: page.locator('[value="degrees"]') })
+      .click();
+    for (const degree of await sizes(tones)) {
+      expect(degree.width, degree.label).toBeCloseTo(degree.height, 0);
+      expect(degree.fits, degree.label).toBe(true);
+    }
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    ).toBe(true);
   }
 });

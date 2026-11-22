@@ -49,9 +49,12 @@ string. Diminished scales use four notes per string. Seven-string guitar uses
 three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
-Note labels and spelling sit below the diagram. Tap a fretboard note
-or a note or degree in the reference row to hear it and highlight where it appears.
-Key spelling follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
+Tap a fretboard note or a note or degree in the reference row to hear it and
+highlight where it appears. **Note names** controls how pitches are written.
+For example, the same fret can show C♯, D♭, or both. **By key** follows the
+scale’s written degrees. When a key has two common names, you can choose
+which to use, such as F♯ major or G♭ major. The Scale card always offers
+the same 12 root notes.
 Scales opens in Light on first visit, even on a device set to dark mode. Use the
 sun-and-moon button in the header to switch themes. Scales remembers your choice
 on this device. Selection and note animations respect the device's

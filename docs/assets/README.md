@@ -1,7 +1,7 @@
 # Documentation media
 
 These assets show the actual Scales interface and generated output. UI captures
-use local build `a3e0094b94ee` with reduced motion and all local fonts loaded.
+use local build `3fba7e0d712c` with reduced motion and all local fonts loaded.
 The browser requested a dark color scheme for every capture. Fresh sessions
 opened in Light, and the saved Dark choice restored the dark palette.
 
@@ -15,8 +15,8 @@ opened in Light, and the saved Dark choice restored the dark palette.
   Vertical guides connect both ends to the neck behind the notes, with stronger guides for the selection. Only complete patterns that
   fit the visible neck are offered; the full-neck cue explains missing numbers.
   Scale and instrument settings share a row above the panel titled “Fretboard”. PDF customization follows the panel.
-  The Scale card shows C major, its root note and its degrees. The root notes
-  are directly selectable. The scale family menu opens on Common scales, with
+  The Scale card shows C major, its root note and its degrees. Twelve circles
+  show all available roots. The scale family menu opens on Common scales, with
   Major (Ionian) selected. The instrument card’s Guitar and Bass labels have matching headstock icons, with
   Guitar and Right-handed selected. The numeric controls
   show six strings and 21 frets. The tuning picker includes the E standard pitches.

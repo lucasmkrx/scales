@@ -49,9 +49,11 @@ selection, and give export work a quieter inline section below the board. Use al
 and consistent type sizes before adding more cards or decorative elements.
 
 The Scale card shows the current root and scale name above the controls. Players
-can transpose the diagram directly from the row of root notes. Common scales are
+can transpose the diagram using 12 circular root buttons. Accidentals show both
+names in one circle, such as F♯ and G♭. Common scales are
 available on a fresh visit. A family menu brings related choices such as blues
-scales or arpeggios into view. A check marks the active scale.
+scales or arpeggios into view. The scale buttons share a height, including
+when a translated name wraps. A check marks the active scale.
 The formula shows one degree per chip, in playing order.
 Edit opens a text field for entering a custom formula.
 
@@ -63,10 +65,10 @@ On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 while leaving the settings visible in normal page order. Activating it focuses
 the fretboard heading below the shortcut. A single inline caption explains the selected
 pattern and its lowest note and degree. The bracket already supplies its fret span.
-Key spelling offers separate root choices for enharmonic names such as F♯ and G♭,
-so each scale can display its written degrees. Routine help is kept in
-accessible descriptions; validation and meaningful status remain visible. A
-single reference row follows the current note/degree mode. Repeated setup cards,
+The fretboard’s Note names menu controls how pitches are written. By key
+follows the scale formula and offers a choice of tonic spelling when a pitch
+has alternative names. The reference buttons follow the current note or degree
+mode. Short labels fit in a circle. Longer labels expand to a pill. Repeated setup cards,
 practice prose, and the PDF configuration summary are removed.
 
 The instrument and orientation switches each show two labeled positions. The
@@ -221,8 +223,8 @@ playing, compact Position 1, and frets 0–12. After local fonts loaded:
 
 | Viewport width | Fretboard card top | Pattern-and-neck surface top | Settings layout               |
 | -------------- | ------------------ | ---------------------------- | ----------------------------- |
-| 1360px         | 600px              | 714px                        | Side by side, each 499px high |
-| 390px          | 1259px             | 1428px                       | Stacked                       |
+| 1360px         | 618px              | 732px                        | Side by side, each 517px high |
+| 390px          | 1270px             | 1439px                       | Stacked                       |
 
 Both captures contain the page width without horizontal page overflow. The phone
 scrolls the fixed-size diagram inside its own surface. The light and dark captures

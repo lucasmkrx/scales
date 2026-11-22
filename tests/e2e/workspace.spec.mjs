@@ -280,26 +280,70 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(page.locator('#scale-family option[value="custom"]')).toHaveCount(0);
 });
 
-test('key spelling preserves distinct sharp and flat tonic names across reloads', async ({
+test('note names change the diagram and keep all twelve root choices stable', async ({
   page,
 }) => {
-  await page.goto(url());
-  await page.locator('#spelling').selectOption('key');
+  await page.goto(url({ root: '6', tonic: 'Gb', spelling: 'key' }));
   const roots = page.getByRole('group', { name: 'Root note', exact: true });
-  await expect(roots.getByRole('radio')).toHaveCount(17);
-  await roots.getByRole('radio', { name: 'F♯', exact: true }).check();
-  await expect(page.locator('#notes-strip')).toContainText('E♯');
-  await roots.getByRole('radio', { name: 'G♭', exact: true }).check();
-  await expect(page.locator('#notes-strip')).toContainText('C♭');
+  const names = roots.getByRole('radio');
+  await expect(names).toHaveCount(12);
+  const rootLabels = page.locator('#root-notes label');
+  const rootNames = [
+    'C',
+    'C♯D♭',
+    'D',
+    'D♯E♭',
+    'E',
+    'F',
+    'F♯G♭',
+    'G',
+    'G♯A♭',
+    'A',
+    'A♯B♭',
+    'B',
+  ];
+  const chosen = roots.getByRole('radio', { name: 'F♯ / G♭', exact: true });
+  const tones = page.locator('#notes-strip');
+  const keyMenu = page.locator('#key-tonic-trigger');
+  const before = await points(page);
+  for (const [mode, first, fourth] of [
+    ['flat', 'G♭', 'B'],
+    ['sharp', 'F♯', 'B'],
+    ['both', 'F♯/G♭', 'B'],
+    ['key', 'G♭', 'C♭'],
+  ]) {
+    await page.locator('#spelling').selectOption(mode);
+    await expect(rootLabels).toHaveText(rootNames);
+    await expect(chosen).toBeChecked();
+    await expect(page.locator('#scale-selection')).toHaveText('G♭ Major');
+    await expect(tones.locator('button[data-pitch="6"]')).toHaveText(first);
+    await expect(tones.locator('button[data-pitch="11"]')).toHaveText(fourth);
+    expect(await keyMenu.isVisible()).toBe(mode === 'key');
+    expect(await points(page)).toEqual(before);
+  }
+  await keyMenu.click();
+  await page.getByRole('option', { name: 'F♯', exact: true }).click();
+  await expect(keyMenu).toBeFocused();
+  await expect(page.locator('#scale-selection')).toHaveText('F♯ Major');
+  await expect(tones).toContainText('E♯');
   await page.reload();
-  await expect(page.locator('#spelling')).toHaveValue('key');
-  await expect(roots.getByRole('radio', { name: 'G♭', exact: true })).toBeChecked();
-  await expect(page.locator('#notes-strip')).toContainText('C♭');
+  await expect(chosen).toBeChecked();
+  await expect(keyMenu).toHaveText('F♯');
+  await roots.getByRole('radio', { name: 'C♯ / D♭', exact: true }).check();
+  await expect(keyMenu).toHaveText('Automatic');
+  await expect(page.locator('#scale-selection')).toHaveText('D♭ Major');
+  expect(new URL(page.url()).searchParams.has('tonic')).toBe(false);
+
   await page.goto(url({ root: '11', tonic: 'Cb', spelling: 'key' }));
-  const unusual = roots.getByRole('radio', { name: 'C♭', exact: true });
-  await expect(unusual).toBeChecked();
-  await unusual.press('ArrowLeft');
-  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeFocused();
+  await expect(names).toHaveCount(12);
+  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeChecked();
+  await expect(page.locator('#scale-selection')).toHaveText('C♭ Major');
+  await expect(keyMenu).toHaveText('C♭');
+  await keyMenu.click();
+  await page.getByRole('option', { name: 'Automatic', exact: true }).click();
+  await expect(keyMenu).toBeHidden();
+  await expect(page.locator('#spelling-trigger')).toBeFocused();
+  await expect(page.locator('#scale-selection')).toHaveText('B Major');
 });
 
 test('auditioning a note highlights its pitch on the fretboard and in the reference row', async ({
@@ -307,7 +351,7 @@ test('auditioning a note highlights its pitch on the fretboard and in the refere
 }) => {
   await page.goto(url());
   const referenceNote = page.locator('#notes-strip button[data-pitch="0"]');
-  const soundingTone = page.locator('#notes-strip td.sounding');
+  const soundingTone = page.locator('#notes-strip button.sounding');
   await referenceNote.click();
   await expect(soundingTone).toHaveAttribute('data-pitch', '0');
   await expect(page.locator('#board .note.sounding').first()).toBeVisible();
