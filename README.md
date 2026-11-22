@@ -14,8 +14,8 @@
 Tukany helps players who learned songs from TAB connect familiar fret positions
 with notes, scale degrees, and improvisation. Change the instrument, tuning, or
 handedness and every diagram is recalculated from the sounding pitches. Note playback
-and PDF generation run locally. The optional backing-track finder searches YouTube
-on request and plays a selected video alongside the diagram.
+and PDF generation run locally. To play along, [search for backing tracks](docs/backing-tracks.md)
+on YouTube in a new tab and return to the fretboard while the track plays.
 
 ## See it work
 
@@ -133,9 +133,6 @@ node scripts/serve.mjs
 
 Open **http://127.0.0.1:4173**. The build goes into `dist/` and uses relative paths,
 so it also works under GitHub Pages' `/tukany/` project path.
-
-To enable backing-track search, set a website-restricted YouTube Data API key
-in `.env` before building. [Local and GitHub Pages setup](docs/backing-tracks.md)
 
 To install the pinned formatting tool:
 

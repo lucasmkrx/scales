@@ -59,10 +59,8 @@ script. This keeps the deployed product compatible with GitHub Pages and avoids
 requiring a server for state, playback, or export. The build copies maintained
 source and local public assets rather than running a framework compiler.
 
-The optional backing-track finder queries YouTube Data API v3 from the browser
-after an explicit search. The build writes the website-restricted browser key
-to `dist/youtube-config.json`. The player loads when a result is selected.
-[Search configuration and query behavior](backing-tracks.md)
+The backing-track link builds a YouTube search URL from the current musical
+settings. Following it opens the results in a new tab. [How the query is built](backing-tracks.md)
 
 The tradeoff is manual coordination of DOM state and rendering. As the interface
 grows, browser-flow tests and careful controller boundaries become more valuable.
@@ -297,8 +295,8 @@ exports.
 
 Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples
-are bundled. Backing-track searches send the musical query to YouTube.
-YouTube serves thumbnails and the selected video under its own policies.
+are bundled. Opening a backing-track search sends the musical query to YouTube,
+where the player can choose a video.
 
 ## Extending the system
 

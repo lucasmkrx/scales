@@ -5,14 +5,8 @@ import { referencePage, referenceMarkdown } from './reference-pages.mjs';
 import { sitemap } from './sitemap.mjs';
 import { cp, mkdir, rm, writeFile, readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { loadEnvFile } from 'node:process';
 const root = new URL('../', import.meta.url),
   dist = new URL('dist/', root);
-try {
-  loadEnvFile(new URL('.env', root));
-} catch (error) {
-  if (error.code !== 'ENOENT') throw error;
-}
 const modules = await Promise.all(
   (await readdir(new URL('src/', root)))
     .filter((name) => name.endsWith('.mjs'))
@@ -47,11 +41,6 @@ function versionVisualAssets(source) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(new URL('public/', root), dist, { recursive: true });
-// Only the website-restricted, publishable YouTube browser key belongs in this file.
-await writeFile(
-  new URL('youtube-config.json', dist),
-  JSON.stringify({ apiKey: process.env.YOUTUBE_API_KEY?.trim() || '' }),
-);
 await mkdir(new URL('src/', dist), { recursive: true });
 // Version the whole module graph, so an updated entry point cannot load stale dependencies.
 for (const [name, source] of modules) {

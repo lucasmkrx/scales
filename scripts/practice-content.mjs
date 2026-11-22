@@ -35,7 +35,7 @@ export const practiceContent = {
       {
         ...aDorian,
         title: 'Hear the major sixth in A Dorian',
-        body: 'A Dorian contains A, B, C, D, E, F♯, and G. On the high E string, alternate F at fret 1 and F♯ at fret 2 over an A minor chord. F belongs to A natural minor. F♯ is the major sixth that gives A Dorian its color. To hear it in context, choose Funk under Backing tracks and search for an A Dorian groove.',
+        body: 'A Dorian contains A, B, C, D, E, F♯, and G. On the high E string, alternate F at fret 1 and F♯ at fret 2 over an A minor chord. F belongs to A natural minor. F♯ is the major sixth that gives A Dorian its color. Choose Funk under Backing tracks and select Search YouTube. Start an A Dorian groove in the new tab and play the phrase again.',
         action: 'Open A Dorian on guitar',
       },
     ],
@@ -86,7 +86,7 @@ export const practiceContent = {
       {
         ...aDorian,
         title: 'Ouça a sexta maior no modo dórico de lá',
-        body: 'As notas do modo dórico de lá são lá, si, dó, ré, mi, fá♯ e sol. Na corda mi aguda, alterne entre o fá da casa 1 e o fá♯ da casa 2 sobre um acorde de lá menor. O fá faz parte da escala menor natural de lá. O fá♯ é a sexta maior que dá ao modo dórico seu som característico. Em Faixas de acompanhamento, escolha Funk e busque uma base em lá dórico para tocar junto.',
+        body: 'As notas do modo dórico de lá são lá, si, dó, ré, mi, fá♯ e sol. Na corda mi aguda, alterne entre o fá da casa 1 e o fá♯ da casa 2 sobre um acorde de lá menor. O fá faz parte da escala menor natural de lá. O fá♯ é a sexta maior que dá ao modo dórico seu som característico. Em Faixas de acompanhamento, escolha Funk e selecione Buscar no YouTube. Na nova aba, coloque uma base em lá dórico para tocar e repita a frase na guitarra.',
         action: 'Abrir lá dórico na guitarra',
       },
     ],
@@ -137,7 +137,7 @@ export const practiceContent = {
       {
         ...aDorian,
         title: 'Escucha la sexta mayor en el modo dórico de la',
-        body: 'Las notas del modo dórico de la son la, si, do, re, mi, fa♯ y sol. Sobre un acorde de la menor, alterna entre fa en el traste 1 de la cuerda mi aguda y fa♯ en el traste 2. El fa pertenece a la escala menor natural de la. El fa♯ es la sexta mayor que le da al modo dórico su sonido característico. En Pistas de acompañamiento, elige Funk y busca una pista en el modo dórico de la para tocar con ella.',
+        body: 'Las notas del modo dórico de la son la, si, do, re, mi, fa♯ y sol. Sobre un acorde de la menor, alterna entre fa en el traste 1 de la cuerda mi aguda y fa♯ en el traste 2. El fa pertenece a la escala menor natural de la. El fa♯ es la sexta mayor que le da al modo dórico su sonido característico. En Pistas de acompañamiento, elige Funk y selecciona Buscar en YouTube. Reproduce una pista en la dórico en la nueva pestaña y vuelve a tocar la frase en la guitarra.',
         action: 'Abrir el modo dórico de la en guitarra',
       },
     ],

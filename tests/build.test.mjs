@@ -5,11 +5,6 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 test('published assets use one revision across the entry point, module graph, and styles', async () => {
   await import('../scripts/build.mjs');
-  const youtubeConfig = JSON.parse(
-    await readFile(new URL('../dist/youtube-config.json', import.meta.url), 'utf8'),
-  );
-  assert.deepEqual(Object.keys(youtubeConfig), ['apiKey']);
-  assert.ok(youtubeConfig.apiKey === (process.env.YOUTUBE_API_KEY?.trim() || ''));
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
   const version = html.match(/src\/app\.mjs\?v=([a-f0-9]{12})/)[1];
   assert.ok(html.includes(`styles.css?v=${version}`));

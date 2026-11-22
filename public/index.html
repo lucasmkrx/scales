@@ -368,69 +368,55 @@
             id="backing-tracks"
             aria-labelledby="backing-heading"
           >
-            <div id="backing-player" hidden>
-              <div id="backing-embed"></div>
-              <strong id="backing-current"></strong>
-              <p id="backing-player-status" class="hint" role="status"></p>
-              <div class="backing-player-actions">
-                <a id="backing-watch" target="_blank" rel="noopener noreferrer"
-                  ><span data-i18n="backingWatch">Watch on YouTube</span>
-                  <i
-                    class="icon fa-solid fa-arrow-up-right-from-square"
-                    aria-hidden="true"
-                  ></i
-                ></a>
-                <button
-                  type="button"
-                  id="backing-close"
-                  class="text-button"
-                  data-i18n="closePlayer"
-                >
-                  Close player
-                </button>
+            <header class="backing-heading">
+              <h3 id="backing-heading">
+                <i class="icon fa-solid fa-headphones" aria-hidden="true"></i
+                ><span data-i18n="backingTracks">Backing tracks</span>
+              </h3>
+              <p id="backing-context"></p>
+            </header>
+            <form
+              id="backing-form"
+              action="https://www.youtube.com/results"
+              method="get"
+              target="_blank"
+              rel="noopener noreferrer"
+              autocomplete="off"
+            >
+              <input id="backing-query" type="hidden" name="search_query" />
+              <div class="select-control">
+                <label for="backing-style" data-i18n="backingStyle">Style</label
+                ><span class="select-field">
+                  <select id="backing-style">
+                    <option value="any" data-i18n="anyStyle">Any style</option>
+                    <option value="blues">Blues</option>
+                    <option value="rock">Rock</option>
+                    <option value="funk">Funk</option>
+                    <option value="jazz">Jazz</option>
+                    <option value="metal">Metal</option></select
+                  ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
+                ></span>
               </div>
-            </div>
-            <div class="backing-finder">
-              <header class="backing-heading">
-                <h3 id="backing-heading">
-                  <i class="icon fa-solid fa-headphones" aria-hidden="true"></i
-                  ><span data-i18n="backingTracks">Backing tracks</span>
-                </h3>
-                <p id="backing-context"></p>
-              </header>
-              <form id="backing-form" autocomplete="off">
-                <div class="select-control">
-                  <label for="backing-style" data-i18n="backingStyle">Style</label
-                  ><span class="select-field">
-                    <select id="backing-style">
-                      <option value="any" data-i18n="anyStyle">Any style</option>
-                      <option value="blues">Blues</option>
-                      <option value="rock">Rock</option>
-                      <option value="funk">Funk</option>
-                      <option value="jazz">Jazz</option>
-                      <option value="metal">Metal</option></select
-                    ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-                  ></span>
-                </div>
-                <div class="select-control">
-                  <label for="backing-tempo" data-i18n="backingTempo">Tempo</label
-                  ><span class="select-field">
-                    <select id="backing-tempo">
-                      <option value="any" data-i18n="anyTempo">Any tempo</option>
-                      <option value="slow" data-i18n="slowTempo">Slow</option>
-                      <option value="medium" data-i18n="mediumTempo">Medium</option>
-                      <option value="fast" data-i18n="fastTempo">Fast</option></select
-                    ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-                  ></span>
-                </div>
-                <button class="primary" id="backing-find" type="submit">
-                  <i class="icon fa-solid fa-magnifying-glass" aria-hidden="true"></i
-                  ><span data-i18n="findBacking">Find backing tracks</span>
-                </button>
-              </form>
-              <p id="backing-status" class="hint" role="status"></p>
-              <ul id="backing-results" aria-labelledby="backing-heading"></ul>
-            </div>
+              <div class="select-control">
+                <label for="backing-tempo" data-i18n="backingTempo">Tempo</label
+                ><span class="select-field">
+                  <select id="backing-tempo">
+                    <option value="any" data-i18n="anyTempo">Any tempo</option>
+                    <option value="slow" data-i18n="slowTempo">Slow</option>
+                    <option value="medium" data-i18n="mediumTempo">Medium</option>
+                    <option value="fast" data-i18n="fastTempo">Fast</option></select
+                  ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
+                ></span>
+              </div>
+              <button class="primary" id="backing-find" type="submit">
+                <span data-i18n="findBacking">Search YouTube</span>
+                <i
+                  class="icon fa-solid fa-arrow-up-right-from-square"
+                  aria-hidden="true"
+                ></i>
+                <span class="sr-only" data-i18n="opensNewTab">(opens in a new tab)</span>
+              </button>
+            </form>
           </section>
           <span class="sr-only" id="keyboard-notes" data-i18n="keyboardNotes"></span>
           <p id="status" class="status" role="status" aria-live="polite"></p>

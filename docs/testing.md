@@ -195,8 +195,8 @@ pages and generated PDFs; the layout measurement approach is recorded in
   of export settings. Four original lesson PDFs are included as repository assets.
 - **State and privacy:** preferences are stored on the device when storage is
   available. URLs intentionally expose the musical configuration for sharing;
-  the app has no application backend or analytics. The backing-track finder sends
-  a musical query to YouTube on request. YouTube, hosting, and repository services
-  have their own policies.
+  the app has no application backend or analytics. Following the backing-track
+  link opens the musical query in a new YouTube tab. YouTube, hosting, and
+  repository services have their own policies.
 - **Outcomes:** there are no published adoption, usability-study, learning-gain,
   or performance benchmark results.

@@ -5,7 +5,6 @@ node_modules/
 *.log
 __pycache__/
 .env*
-!.env.example
 
 output/pdf/
 playwright-report/

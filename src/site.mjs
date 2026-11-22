@@ -85,7 +85,7 @@ export function pageDetails(lang, kind, title, description) {
   };
 }
 
-// Language can change without a navigation while a player or a custom edit is open.
+// Language can change without a navigation while a custom edit is open.
 export function syncExplorerPage(lang) {
   const t = copy[lang];
   const details = pageDetails(lang, 'home', t.pageTitle, t.metaDescription);
