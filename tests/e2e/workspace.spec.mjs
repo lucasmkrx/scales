@@ -166,51 +166,53 @@ test('mobile navigation reaches and focuses the fretboard without hiding setting
   await expect(page.locator('#instrument-settings')).toBeVisible();
 });
 
-test('search and collections update the selected scale, formula, and fretboard', async ({
+test('browse a family, choose a scale, and restore the selected family from a shared URL', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto(url());
   const selected = page.locator('#scale-selection');
   const degrees = page.locator('#formula-degrees > span');
-  const search = page.locator('#search');
   const results = page.locator('#scale-results');
+  const family = page.locator('#scale-family-trigger');
+  const popup = page.getByRole('listbox');
   await expect(selected).toHaveText('C Major');
+  await expect(family).toHaveAccessibleName('Scale family Common scales');
   const common = results.getByRole('button');
   await expect(common).toHaveCount(8);
-  expect(await results.evaluate((list) => list.scrollHeight <= list.clientHeight)).toBe(
-    true,
-  );
   expect(
     await common.evaluateAll((choices) =>
       choices.every((choice) => choice.getBoundingClientRect().height >= 44),
     ),
   ).toBe(true);
-  await page.locator('#root').selectOption('9');
+  await page.getByRole('radio', { name: 'A', exact: true }).check();
 
-  await page.locator('[data-view="arpeggios"]').click();
+  await family.click();
+  await popup.getByRole('option', { name: 'Chord arpeggios' }).click();
+  await expect(common).toHaveCount(12);
+  await expect(selected).toHaveText('A Major');
   await results.locator('[data-scale="minor-triad"]').click();
   await expect(selected).toHaveText('A Minor triad');
   await expect(degrees).toHaveText(['1', '♭3', '5']);
   await expect(page.locator('#fretboard-heading')).toHaveText('Fretboard');
 
-  await search.fill('aeolian');
-  const minor = results.locator('[data-scale="natural-minor"]');
-  await search.press('ArrowDown');
-  await expect(minor).toBeFocused();
-  await minor.press('Enter');
-  await expect(minor).toHaveAttribute('aria-pressed', 'true');
-  await expect(selected).toHaveText('A Natural minor');
-  await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '♭6', '♭7']);
-  await expect(page).toHaveURL(/scale=natural-minor/);
-
-  await search.fill('unmatched search');
-  await expect(results.getByRole('button')).toHaveCount(0);
-  await expect(results).toContainText('No scales match');
-  await page.locator('#clear-search').click();
-  await expect(search).toBeFocused();
-  await expect(page.locator('#scale-tabs')).toBeVisible();
-  await expect(selected).toHaveText('A Natural minor');
+  await family.click();
+  await popup.getByRole('option', { name: 'Major & modes', exact: true }).click();
+  await expect(selected).toHaveText('A Minor triad');
+  await family.press('Tab');
+  await expect(results.locator('[data-scale="major"]')).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const dorian = results.locator('[data-scale="dorian"]');
+  await expect(dorian).toBeFocused();
+  await dorian.press('Enter');
+  await expect(dorian).toBeFocused();
+  await expect(dorian).toHaveAttribute('aria-pressed', 'true');
+  await expect(selected).toHaveText('A Dorian');
+  await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '6', '♭7']);
+  await expect(page).toHaveURL(/scale=dorian/);
+  await page.reload();
+  await expect(family).toHaveAccessibleName('Scale family Major & modes');
+  await expect(dorian).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('custom formula drafts survive other settings and saved setups restore on a fresh visit', async ({
@@ -232,9 +234,16 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(input).toHaveValue('1 2 b3 4 5 6 b7');
   await apply.click();
   await expect(page).toHaveURL(/scale=custom/);
+  await expect(page.locator('#scale-family-trigger')).toHaveAccessibleName(
+    'Scale family Custom',
+  );
+  await expect(page.locator('[data-scale="custom"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(edit).toBeFocused();
   await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '6', '♭7']);
-  await page.locator('#root').selectOption('9');
+  await page.getByRole('radio', { name: 'A', exact: true }).check();
   await edit.click();
   await input.fill('1 2 2');
   await input.press('Enter');
@@ -260,8 +269,15 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(edit).toBeFocused();
   await page.goto('/');
   await expect(page.getByRole('radio', { name: 'Left-handed' })).toBeChecked();
-  await expect(page.locator('#root')).toHaveValue('9');
+  await expect(page.getByRole('radio', { name: 'A', exact: true })).toBeChecked();
   await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '6', '♭7']);
+  await expect(page.locator('#scale-family')).toHaveValue('custom');
+  await page.locator('#scale-family-trigger').click();
+  await page.getByRole('option', { name: 'Pentatonic', exact: true }).click();
+  await expect(page.locator('#scale-selection')).toHaveText('A Custom scale');
+  await page.locator('[data-scale="minor-pentatonic"]').click();
+  await expect(page).toHaveURL(/scale=minor-pentatonic/);
+  await expect(page.locator('#scale-family option[value="custom"]')).toHaveCount(0);
 });
 
 test('key spelling preserves distinct sharp and flat tonic names across reloads', async ({
@@ -269,14 +285,21 @@ test('key spelling preserves distinct sharp and flat tonic names across reloads'
 }) => {
   await page.goto(url());
   await page.locator('#spelling').selectOption('key');
-  await page.locator('#root').selectOption('F#');
+  const roots = page.getByRole('group', { name: 'Root note', exact: true });
+  await expect(roots.getByRole('radio')).toHaveCount(17);
+  await roots.getByRole('radio', { name: 'F♯', exact: true }).check();
   await expect(page.locator('#notes-strip')).toContainText('E♯');
-  await page.locator('#root').selectOption('Gb');
+  await roots.getByRole('radio', { name: 'G♭', exact: true }).check();
   await expect(page.locator('#notes-strip')).toContainText('C♭');
   await page.reload();
   await expect(page.locator('#spelling')).toHaveValue('key');
-  await expect(page.locator('#root')).toHaveValue('Gb');
+  await expect(roots.getByRole('radio', { name: 'G♭', exact: true })).toBeChecked();
   await expect(page.locator('#notes-strip')).toContainText('C♭');
+  await page.goto(url({ root: '11', tonic: 'Cb', spelling: 'key' }));
+  const unusual = roots.getByRole('radio', { name: 'C♭', exact: true });
+  await expect(unusual).toBeChecked();
+  await unusual.press('ArrowLeft');
+  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeFocused();
 });
 
 test('auditioning a note highlights its pitch on the fretboard and in the reference row', async ({

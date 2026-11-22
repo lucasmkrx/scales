@@ -67,10 +67,6 @@ export const copy = {
     spellingHint:
       'Both shows names such as C♯/D♭ on one marker. In the equal-tempered tuning used here, these names represent the same pitch.',
     exportStyle: 'Full fretboard and available patterns · A4 landscape.',
-    searchPlaceholder: 'Search scales and arpeggios',
-    clearSearch: 'Clear',
-    entireCatalog: 'All collections',
-    retrySearch: 'Try a shorter name in English, Portuguese, or Spanish.',
     editScale: 'Edit custom scale',
     edit: 'Edit',
     editFormula: 'Edit formula',
@@ -78,17 +74,12 @@ export const copy = {
     customScaleTitle: 'Custom scale',
     backToScales: 'Back to scales',
     editPitches: 'Edit pitches',
-    common: 'Common',
-    allScales: 'All scales',
-    arpeggios: 'Arpeggios',
-    collections: 'Scale collections',
+    scaleFamily: 'Scale family',
     commonScales: 'Common scales',
     results: 'results',
     noteCount: 'notes',
     currentScale: 'Selected',
     createScale: 'Create custom scale',
-    searchHint:
-      'Search all scales and arpeggios by name in English, Portuguese, or Spanish. Use the arrow keys to move between results and Enter to select.',
     customize: 'Customize instrument & scale',
     scrollHint: 'Scroll sideways to see more frets.',
     language: 'Language',
@@ -121,7 +112,6 @@ export const copy = {
     scale: 'Scale or arpeggio',
     family: 'Family',
     allFamilies: 'All families',
-    search: 'Find a scale',
     labels: 'Diagram labels',
     notes: 'Notes',
     degrees: 'Degrees',
@@ -175,7 +165,6 @@ export const copy = {
     iconCredits: 'Icon credits',
     license: 'Code: MIT · Educational content: CC BY 4.0 · Logo rights reserved',
     customKey: 'Custom scales can be transposed to any of the 12 reference notes.',
-    noResults: 'No scales match this search.',
     catalog: 'named scales and arpeggios',
     tunings: 'tuning presets',
     playHint: 'Click or focus a note and press Enter to hear it.',
@@ -198,8 +187,7 @@ export const copy = {
     fretboard: 'Fretboard',
     done: 'Done',
     close: 'Close',
-    rootHint:
-      'The root is the reference note of the selected scale. In tonal music, the tonic is the key’s home note.',
+    rootHint: 'The note your scale is built on.',
     degreesHint:
       '1 is the reference note. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
     tuningFieldsHint:
@@ -270,7 +258,7 @@ export const copy = {
     fret: 'Fret',
     chordRoot: 'Chord root',
     chordRootMarker: 'R',
-    chordRootHint: 'The root names the chord. Choose it together with an arpeggio.',
+    chordRootHint: 'The note your arpeggio is built on.',
     chordDegreesHint:
       '1 is the chord root. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
     noteNotation:
@@ -344,10 +332,6 @@ export const copy = {
     spellingHint:
       'A opção Ambos mostra nomes como C♯/D♭ no mesmo marcador. No temperamento igual usado aqui, esses nomes representam a mesma altura.',
     exportStyle: 'Braço completo e desenhos disponíveis · A4 paisagem.',
-    searchPlaceholder: 'Buscar escalas e arpejos',
-    clearSearch: 'Limpar',
-    entireCatalog: 'Todos os grupos',
-    retrySearch: 'Tente uma parte do nome em português, inglês ou espanhol.',
     editScale: 'Editar escala personalizada',
     edit: 'Editar',
     editFormula: 'Editar fórmula',
@@ -356,17 +340,12 @@ export const copy = {
     customScaleTitle: 'Escala personalizada',
     backToScales: 'Voltar às escalas',
     editPitches: 'Editar notas',
-    common: 'Comuns',
-    allScales: 'Todas as escalas',
-    arpeggios: 'Arpejos',
-    collections: 'Grupos de escalas',
+    scaleFamily: 'Família de escalas',
     commonScales: 'Escalas comuns',
     results: 'resultados',
     noteCount: 'notas',
     currentScale: 'Selecionada',
     createScale: 'Criar escala personalizada',
-    searchHint:
-      'Busque todas as escalas e arpejos pelo nome em português, inglês ou espanhol. Use as setas para navegar pelos resultados e Enter para selecionar.',
     customize: 'Escolha instrumento e escala',
     scrollHint: 'Deslize para os lados para ver mais casas.',
     language: 'Idioma',
@@ -400,7 +379,6 @@ export const copy = {
     scale: 'Escala ou arpejo',
     family: 'Família',
     allFamilies: 'Todas as famílias',
-    search: 'Encontre uma escala',
     labels: 'Rótulos dos diagramas',
     notes: 'Notas',
     degrees: 'Graus',
@@ -456,7 +434,6 @@ export const copy = {
     license: 'Código: MIT · Conteúdo: CC BY 4.0 · Direitos do logo reservados',
     customKey:
       'Escalas personalizadas podem ser transpostas para qualquer uma das 12 notas de referência.',
-    noResults: 'Nenhuma escala corresponde à busca.',
     catalog: 'escalas e arpejos no catálogo',
     tunings: 'afinações predefinidas',
     playHint: 'Clique em uma nota ou selecione-a e pressione Enter para ouvi-la.',
@@ -479,8 +456,7 @@ export const copy = {
     fretboard: 'Braço',
     done: 'Concluir',
     close: 'Fechar',
-    rootHint:
-      'A tônica é o centro de referência de uma escala tonal. Aqui, a nota escolhida é a referência para calcular os intervalos de qualquer escala.',
+    rootHint: 'A nota que serve de base para a escala.',
     degreesHint:
       '1 é a nota de referência. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
     tuningFieldsHint:
@@ -554,7 +530,7 @@ export const copy = {
     fret: 'Casa',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',
-    chordRootHint: 'A fundamental dá nome ao acorde. Escolha-a junto com um arpejo.',
+    chordRootHint: 'A nota que serve de base para o arpejo.',
     chordDegreesHint:
       '1 é a fundamental do acorde. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
     noteNotation:
@@ -629,10 +605,6 @@ export const copy = {
     spellingHint:
       'La opción Ambas muestra nombres como C♯/D♭ en un mismo marcador. En el temperamento igual que se usa aquí, esos nombres representan la misma altura.',
     exportStyle: 'Diapasón completo y patrones disponibles · A4 horizontal.',
-    searchPlaceholder: 'Buscar escalas y arpegios',
-    clearSearch: 'Borrar',
-    entireCatalog: 'Todas las colecciones',
-    retrySearch: 'Prueba con una parte del nombre en español, inglés o portugués.',
     editScale: 'Editar escala personalizada',
     edit: 'Editar',
     editFormula: 'Editar fórmula',
@@ -641,17 +613,12 @@ export const copy = {
     customScaleTitle: 'Escala personalizada',
     backToScales: 'Volver a las escalas',
     editPitches: 'Editar notas',
-    common: 'Comunes',
-    allScales: 'Todas las escalas',
-    arpeggios: 'Arpegios',
-    collections: 'Colecciones de escalas',
+    scaleFamily: 'Familia de escalas',
     commonScales: 'Escalas comunes',
     results: 'resultados',
     noteCount: 'notas',
     currentScale: 'Seleccionada',
     createScale: 'Crear escala personalizada',
-    searchHint:
-      'Busca todas las escalas y arpegios por su nombre en español, inglés o portugués. Usa las flechas para recorrer los resultados y Enter para seleccionar.',
     customize: 'Elige el instrumento y la escala',
     scrollHint: 'Desliza hacia los lados para ver más trastes.',
     language: 'Idioma',
@@ -684,7 +651,6 @@ export const copy = {
     scale: 'Escala o arpegio',
     family: 'Familia',
     allFamilies: 'Todas las familias',
-    search: 'Encuentra una escala',
     labels: 'Etiquetas del diagrama',
     notes: 'Notas',
     degrees: 'Grados',
@@ -742,7 +708,6 @@ export const copy = {
       'Código MIT · Contenido educativo CC BY 4.0 · Derechos del logotipo reservados',
     customKey:
       'Las escalas personalizadas se pueden transportar a las 12 notas de referencia.',
-    noResults: 'Ninguna escala coincide con la búsqueda.',
     catalog: 'escalas y arpegios del catálogo',
     tunings: 'afinaciones predefinidas',
     playHint: 'Haz clic en una nota o selecciónala y presiona Enter para escucharla.',
@@ -765,8 +730,7 @@ export const copy = {
     fretboard: 'Diapasón',
     done: 'Listo',
     close: 'Cerrar',
-    rootHint:
-      'La tónica es el centro de referencia de una escala tonal. Aquí, la nota elegida sirve para calcular los intervalos de cualquier escala.',
+    rootHint: 'La nota que sirve de base a la escala.',
     degreesHint:
       '1 es la nota de referencia. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
     tuningFieldsHint:
@@ -840,7 +804,7 @@ export const copy = {
     fret: 'Traste',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',
-    chordRootHint: 'La fundamental da nombre al acorde. Elígela junto con un arpegio.',
+    chordRootHint: 'La nota que sirve de base al arpegio.',
     chordDegreesHint:
       '1 es la fundamental del acorde. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
     noteNotation:

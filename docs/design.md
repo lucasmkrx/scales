@@ -48,9 +48,11 @@ tuning pitches, and formulas. Keep instrument controls grouped next to music
 selection, and give export work a quieter inline section below the board. Use alignment, spacing,
 and consistent type sizes before adding more cards or decorative elements.
 
-The Scale card shows the current root and scale name above the catalog. Players
-can browse a collection or search by name, then choose a result. A check marks
-the selected result. The formula shows one degree per chip, in playing order.
+The Scale card shows the current root and scale name above the controls. Players
+can transpose the diagram directly from the row of root notes. Common scales are
+available on a fresh visit. A family menu brings related choices such as blues
+scales or arpeggios into view. A check marks the active scale.
+The formula shows one degree per chip, in playing order.
 Edit opens a text field for entering a custom formula.
 
 Pill-shaped buttons appear in the scale catalog, playback controls, and PDF
@@ -61,9 +63,8 @@ On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 while leaving the settings visible in normal page order. Activating it focuses
 the fretboard heading below the shortcut. A single inline caption explains the selected
 pattern and its lowest note and degree. The bracket already supplies its fret span.
-Key spelling adds
-one display choice and enharmonic entries to the existing root selector, keeping the control surface
-small while making written scale degrees available. Routine help is kept in
+Key spelling offers separate root choices for enharmonic names such as F♯ and G♭,
+so each scale can display its written degrees. Routine help is kept in
 accessible descriptions; validation and meaningful status remain visible. A
 single reference row follows the current note/degree mode. Repeated setup cards,
 practice prose, and the PDF configuration summary are removed.
@@ -218,11 +219,11 @@ These measurements describe layout, not task completion time or comprehension.
 The documentation captures use C major, six strings in E standard, right-handed
 playing, compact Position 1, and frets 0–12. After local fonts loaded:
 
-| Viewport width | Scale panel top | Pattern-and-neck surface top | Settings layout               |
-| -------------- | --------------- | ---------------------------- | ----------------------------- |
-| 1360px         | 540px           | 654px                        | Side by side, each 439px high |
-| 390px          | 1133px          | 1302px                       | Stacked                       |
+| Viewport width | Fretboard card top | Pattern-and-neck surface top | Settings layout               |
+| -------------- | ------------------ | ---------------------------- | ----------------------------- |
+| 1360px         | 600px              | 714px                        | Side by side, each 499px high |
+| 390px          | 1259px             | 1428px                       | Stacked                       |
 
 Both captures contain the page width without horizontal page overflow. The phone
 scrolls the fixed-size diagram inside its own surface. The light and dark captures
-have matching settings, scale-panel, and fretboard positions.
+have matching settings, fretboard card, and neck positions.

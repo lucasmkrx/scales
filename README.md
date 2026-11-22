@@ -23,9 +23,10 @@ Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrumen
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
-Choose a root, then pick a scale or arpeggio. Searching the catalog keeps the
-current scale selected until you choose a result. The formula shows its degrees
-in order. Select Edit to enter a custom formula.
+Choose a root note directly on the card, then pick a scale. Common scales appear
+first on a fresh visit. To find Dorian, for example, open **Scale family**, choose
+**Major & modes**, then select **Dorian**. Browsing families keeps the current
+scale on the fretboard. Select **Edit** beside the formula to enter your own degrees.
 PDF customization stays inline below the playing surface, with contents, reference-note options, a page estimate, and Download PDF. Repeated setup summaries and instructional sections are omitted.
 On phones, a sticky current-scale shortcut jumps directly to the fretboard while
 keeping every setting on the homepage.
@@ -72,7 +73,7 @@ also depends on its chords.
 
 <p>
 <img src="docs/assets/mobile.png" alt="Scales on a phone, with the scale browser, fretboard, and playing controls" width="320">
-<img src="docs/assets/mobile-picker.png" alt="The inline scale catalog searching for pentatonic scales on a phone" width="320">
+<img src="docs/assets/mobile-picker.png" alt="The Pentatonic family and its scale choices on a phone" width="320">
 </p>
 
 ![A generated major-scale A4 reference page with the full neck and five compact scale positions](docs/assets/pdf-reference.png)

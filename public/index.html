@@ -67,65 +67,24 @@
             aria-labelledby="scale-heading"
           >
             <header class="scale-card-header">
-              <div class="scale-identity">
-                <h2 id="scale-heading">
-                  <i class="icon fa-solid fa-music" aria-hidden="true"></i>
-                  <span data-i18n="scaleSettings">Scale</span>
-                </h2>
-                <p id="scale-selection"></p>
-              </div>
-              <div class="root-control select-control">
-                <label for="root" data-i18n="root">Root note</label>
+              <h2 id="scale-heading">
+                <i class="icon fa-solid fa-music" aria-hidden="true"></i>
+                <span data-i18n="scaleSettings">Scale</span>
+              </h2>
+              <p id="scale-selection"></p>
+            </header>
+            <fieldset id="root-picker" aria-describedby="root-hint">
+              <legend id="root-caption" data-i18n="root">Root note</legend>
+              <p id="root-hint" data-i18n="rootHint">The note your scale is built on.</p>
+              <div class="root-notes" id="root-notes"></div>
+            </fieldset>
+            <div id="scale-catalog">
+              <div class="family-control select-control">
+                <label for="scale-family" data-i18n="scaleFamily">Scale family</label>
                 <span class="select-field">
-                  <select id="root" aria-describedby="root-hint"></select>
+                  <select id="scale-family" aria-controls="scale-results"></select>
                   <i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i>
                 </span>
-              </div>
-              <p id="root-hint" class="sr-only" data-i18n="rootHint"></p>
-            </header>
-            <div id="scale-catalog">
-              <div class="picker-search-row">
-                <label class="sr-only" for="search" data-i18n="search"
-                  >Find a scale</label
-                >
-                <i class="icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <input
-                  id="search"
-                  type="search"
-                  autocomplete="off"
-                  aria-describedby="search-hint"
-                  aria-controls="scale-results"
-                />
-                <button
-                  type="button"
-                  id="clear-search"
-                  class="text-button"
-                  data-i18n-aria="clearSearch"
-                  aria-label="Clear"
-                  hidden
-                >
-                  <i class="icon fa-solid fa-xmark" aria-hidden="true"></i>
-                </button>
-              </div>
-              <p id="search-hint" class="sr-only" data-i18n="searchHint"></p>
-              <div class="catalog-navigation">
-                <div
-                  class="scale-tabs"
-                  id="scale-tabs"
-                  role="group"
-                  aria-label="Scale collections"
-                >
-                  <button type="button" data-view="common" data-i18n="common">
-                    Common
-                  </button>
-                  <button type="button" data-view="all" data-i18n="allScales">
-                    All scales
-                  </button>
-                  <button type="button" data-view="arpeggios" data-i18n="arpeggios">
-                    Arpeggios
-                  </button>
-                </div>
-                <p id="scale-results-count" role="status" aria-live="polite"></p>
               </div>
               <div
                 id="scale-results"

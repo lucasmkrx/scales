@@ -35,7 +35,7 @@ the selected root; the displayed label is separate from the sounding pitch.
 | [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets for supported setups                                                    |
 | [intervals.mjs](../src/intervals.mjs)           | Name written intervals in all supported languages                                                                 |
 | [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
-| [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and search the multilingual catalog without changing the active scale                       |
+| [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and group the catalog by musical family                                                     |
 | [board.mjs](../src/board.mjs)                   | Place frets, strings, note controls, and pattern markers on a keyboard-accessible HTML fretboard                  |
 | [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
 | [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
@@ -126,11 +126,10 @@ change updates CSS variables while preserving the fretboard and playback state.
 
 ### Inline settings and focused interaction
 
-A compact searchable scale browser sits beside instrument setup above the
-fretboard on wider screens. The groups stack on narrow screens, with scale
-selection first. The browser keeps root, search, collections, results, and the
-custom formula editor together. Search and
-collection browsing retain the current musical selection until a result is chosen.
+A scale browser sits beside instrument setup above the fretboard on wider screens.
+The groups stack on narrow screens, with scale selection first. Root-note radios
+transpose the current music. Selecting a family changes the visible scale choices.
+Choosing one of those scales updates the diagram and formula.
 The diagram header contains the Fretboard heading and the neck-view switch. The Scale card identifies the active root and scale. The page
 begins directly with settings, with the main heading available to screen readers.
 
@@ -141,7 +140,7 @@ Native radio groups expose the available string and fret counts directly.
 The full-width tuning picker includes the open pitches from lowest to highest.
 Choosing a custom tuning reveals its pitch fields in place. PDF settings occupy
 their own full-width section below the playing surface.
-One shared listbox serves tuning, language, root, note spelling, backing-track filters,
+One shared listbox serves tuning, language, scale family, note spelling, backing-track filters,
 and PDF scope. Native selects supply option labels, values, and disabled states.
 Keyboard, pointer, and touch selections use the same change handlers.
 On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses

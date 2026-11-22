@@ -36,7 +36,7 @@ HTML report.
 | Enharmonic labels             | Both names refer to the same pitch, and label choices preserve pitch, colors, and geometry                                                                    | [music.test.mjs](../tests/music.test.mjs), [scale-picker.test.mjs](../tests/scale-picker.test.mjs) |
 | Key spelling                  | Written-degree spellings, explicit enharmonic tonics, double accidentals, and correct notated octaves across the catalog                                      | [spelling.test.mjs](../tests/spelling.test.mjs)                                                    |
 | Pattern explanations          | Compact captions identify the lowest note and follow key spelling and language settings                                                                       | [pattern-summary.test.mjs](../tests/pattern-summary.test.mjs)                                      |
-| Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works                                           | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
+| Scale selector                | Common scales open on a fresh visit and every named scale and arpeggio is reachable through its family                                                        | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
 | Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                                                         | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
 | Handedness interaction        | Radio selection by pointer and keyboard, mirrored geometry, unchanged fingering points, and saved preferences                                                 | [handedness.spec.mjs](../tests/e2e/handedness.spec.mjs)                                            |
 | Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                                                  | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
@@ -84,8 +84,8 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   counts, then confirm the tuning picker shows the matching open pitches. Changing handedness
   should mirror the board and range labels while keeping the same fingering points.
   Verify the choice on reload and when reopening a shared link.
-- Search all three languages in the inline catalog, browse scales and arpeggios,
-  and choose results with the pointer or keyboard. Browsing retains the selection.
+- Choose a root note, browse scale families in all three languages, and select a
+  scale or arpeggio with the pointer or keyboard. Browsing retains the selection.
   Choosing a result updates the card title, checkmark, and formula degrees.
   After selection, check that keyboard focus stays on the chosen result. Arrow
   keys should follow the visible rows and columns after the catalog reflows.

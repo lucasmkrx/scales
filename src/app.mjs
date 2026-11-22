@@ -19,7 +19,7 @@ import {
   pitchPreference,
 } from './music.mjs';
 import { PluckedStringPlayer } from './string-audio.mjs';
-import { scaleGroups, initialScaleView } from './scale-picker.mjs';
+import { scalesInFamily, initialScaleFamily } from './scale-picker.mjs';
 import { chooseNextIndex } from './choice-navigation.mjs';
 import {
   readPreferences,
@@ -59,8 +59,7 @@ let neckView = restoreNeckView(Object.fromEntries(query), saved);
 let boardWidth,
   boardRightOffset = 0;
 
-let view = initialScaleView(state.scale),
-  search = '',
+let family = initialScaleFamily(state.scale),
   instrumentAudio,
   inspectedNote = null,
   inspectedPitch = null,
@@ -86,6 +85,42 @@ function numberKeys(name, counts) {
         `<label><input type="radio" name="${name}" value="${count}"><span>${count}</span></label>`,
     )
     .join('');
+}
+function rootChoice(value, note, alternate = '') {
+  const name = alternate ? `${note} / ${alternate}` : note;
+  return `<label><input type="radio" name="root" value="${escape(value)}" aria-label="${escape(name)}"><span>${escape(note)}${alternate ? `<small>${escape(alternate)}</small>` : ''}</span></label>`;
+}
+function renderRootPicker(s) {
+  const grid = $('root-notes');
+  const keyMode = s.spelling === 'key';
+  const tonic = rootName(s);
+  const valueOf = (note) => note.replaceAll('♯', '#').replaceAll('♭', 'b');
+  // Shared links may carry a spelling such as C♭ beyond the usual 17 key choices.
+  const extra = keyMode && ![SHARPS[s.root], FLATS[s.root]].includes(tonic) ? tonic : '';
+  const rebuild = grid.dataset.spelling !== s.spelling || grid.dataset.extra !== extra;
+  const restoreFocus = rebuild && grid.contains(document.activeElement);
+  if (rebuild) {
+    grid.innerHTML = SHARPS.map((sharp, pitch) => {
+      const flat = FLATS[pitch];
+      if (keyMode) {
+        const names = new Set([sharp, flat]);
+        if (extra && pitch === s.root) names.add(extra);
+        return [...names].map((note) => rootChoice(valueOf(note), note)).join('');
+      }
+      return rootChoice(
+        pitch,
+        s.spelling === 'flat' ? flat : sharp,
+        s.spelling === 'both' && flat !== sharp ? flat : '',
+      );
+    }).join('');
+    grid.dataset.spelling = s.spelling;
+    grid.dataset.extra = extra;
+  }
+  const checked = grid.querySelector(
+    `input[value="${keyMode ? valueOf(tonic) : s.root}"]`,
+  );
+  checked.checked = true;
+  if (restoreFocus) checked.focus({ preventScroll: true });
 }
 $('fret-counts').innerHTML = numberKeys('frets', FRET_COUNTS);
 const tuningName = (tuning) => localizedTuningName(tuning, state.lang);
@@ -126,44 +161,21 @@ function scaleChoiceMarkup(scale) {
   return `<button type="button" class="scale-choice" data-scale="${scale.id}" aria-pressed="${selected}">${escape(scale.name[state.lang])}${check}</button>`;
 }
 
-function scaleGroupMarkup(group) {
-  const heading = group.id === 'common' ? copy[state.lang].commonScales : group.label;
-  return `<div class="scale-group"><h3>${escape(heading)}</h3>${group.scales.map(scaleChoiceMarkup).join('')}</div>`;
-}
-
 function renderScalePicker() {
   const results = $('scale-results');
-  const scroll = results.scrollTop;
-  const focused = results.contains(document.activeElement)
-    ? document.activeElement.dataset.scale
-    : null;
-  const t = copy[state.lang],
-    groups = scaleGroups({ view, search, lang: state.lang });
-  const searching = Boolean(search.trim());
-  results.dataset.collection = searching ? 'search' : view;
-  $('scale-tabs').hidden = searching;
-  $('clear-search').hidden = !search.length;
-  $('scale-tabs').setAttribute('aria-label', t.collections);
-  $('scale-results').setAttribute('aria-label', t.scale);
-  document
-    .querySelectorAll('[data-view]')
-    .forEach((button) =>
-      button.setAttribute('aria-pressed', String(button.dataset.view === view)),
-    );
-  const count = groups.reduce((n, g) => n + g.scales.length, 0);
-  $('scale-results-count').textContent =
-    `${count} ${count === 1 ? t.result : t.results}${searching ? ` · ${t.entireCatalog}` : ''}`;
-  $('scale-results').innerHTML = groups.length
-    ? groups.map(scaleGroupMarkup).join('')
-    : `<div class="empty-results"><strong>${t.noResults}</strong><p>${t.retrySearch}</p></div>`;
-  const buttons = [...$('scale-results').querySelectorAll('[data-scale]')],
-    entry =
-      buttons.find((button) => button.dataset.scale === focused) ||
-      (!searching && buttons.find((button) => button.dataset.scale === state.scale)) ||
-      buttons[0];
+  const focused =
+    results.contains(document.activeElement) && document.activeElement.dataset.scale;
+  const choices =
+    family === 'custom' ? [selection(state).scaleData] : scalesInFamily(family);
+  results.setAttribute('aria-label', copy[state.lang].scale);
+  results.innerHTML = choices.map(scaleChoiceMarkup).join('');
+  const buttons = [...results.querySelectorAll('[data-scale]')];
+  const entry =
+    buttons.find((button) => button.dataset.scale === focused) ??
+    buttons.find((button) => button.dataset.scale === state.scale) ??
+    buttons[0];
   buttons.forEach((button) => (button.tabIndex = button === entry ? 0 : -1));
   if (focused) entry?.focus({ preventScroll: true });
-  results.scrollTop = scroll;
 }
 function currentPattern(id = range) {
   return patternInfo.patterns.find((pattern) => pattern.id === id);
@@ -450,7 +462,12 @@ function render() {
   $('root-hint').textContent = arpeggio ? t.chordRootHint : t.rootHint;
   $('degrees-hint').textContent = arpeggio ? t.chordDegreesHint : t.degreesHint;
   $('language').value = state.lang;
-  $('search').placeholder = t.searchPlaceholder;
+  const families = [
+    ['common', t.commonScales],
+    ...Object.entries(FAMILIES).map(([id, names]) => [id, names[state.lang]]),
+  ];
+  if (state.scale === 'custom') families.push(['custom', t.custom]);
+  $('scale-family').innerHTML = options(families, family);
   const stringCounts = $('string-counts');
   if (stringCounts.dataset.instrument !== state.instrument) {
     stringCounts.innerHTML = numberKeys('strings', STRING_COUNTS[state.instrument]);
@@ -468,40 +485,7 @@ function render() {
   $('open-string-pitches').innerHTML = s.tuningData.notes
     .map((midi) => `<span>${pitch(midi)}</span>`)
     .join(' ');
-  $('root').innerHTML =
-    state.spelling === 'key'
-      ? options(
-          [
-            ...new Set([
-              'C',
-              'C#',
-              'Db',
-              'D',
-              'D#',
-              'Eb',
-              'E',
-              'F',
-              'F#',
-              'Gb',
-              'G',
-              'G#',
-              'Ab',
-              'A',
-              'A#',
-              'Bb',
-              'B',
-              rootName(s).replaceAll('♯', '#').replaceAll('♭', 'b'),
-            ]),
-          ].map((tonic) => [tonic, prettyDegree(tonic)]),
-          rootName(s).replaceAll('♯', '#').replaceAll('♭', 'b'),
-        )
-      : options(
-          Array.from({ length: 12 }, (_, i) => [
-            i,
-            SHARPS[i] === FLATS[i] ? SHARPS[i] : `${SHARPS[i]} / ${FLATS[i]}`,
-          ]),
-          state.root,
-        );
+  renderRootPicker(s);
   $('allNotes').checked = state.allNotes;
   $('custom-tuning').hidden = !tuningDraft;
   if (tuningDraft) renderTuningLabels();
@@ -591,6 +575,7 @@ function applyScale() {
   try {
     parseFormula($('formula-input').value);
     setFormulaEditing(false);
+    family = 'custom';
     update({ scale: 'custom', formula: $('formula-input').value });
     $('edit-formula').focus({ preventScroll: true });
   } catch {
@@ -762,8 +747,8 @@ $('frets').addEventListener('change', (event) => update({ frets: event.target.va
 $('spelling').addEventListener('change', (event) =>
   update({ spelling: event.target.value }),
 );
-$('root').addEventListener('change', () => {
-  const root = $('root').value;
+$('root-picker').addEventListener('change', ({ target }) => {
+  const root = target.value;
   update(
     state.spelling === 'key'
       ? { root: parseNote(`${root}4`) % 12, tonic: root }
@@ -849,31 +834,9 @@ $('scale-results').addEventListener('keydown', (event) => {
     buttons[next].focus();
   }
 });
-$('search').addEventListener('keydown', (event) => {
-  if (event.isComposing) return;
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    $('clear-search').click();
-  }
-  if (event.key === 'ArrowDown' || (event.key === 'Enter' && search.trim())) {
-    event.preventDefault();
-    const buttons = $('scale-results').querySelectorAll('[data-scale]');
-    if (event.key === 'Enter' && buttons.length === 1) buttons[0].click();
-    else if (buttons.length) {
-      buttons.forEach((button, index) => (button.tabIndex = index === 0 ? 0 : -1));
-      buttons[0].focus();
-    }
-  }
-});
-$('scale-tabs').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-view]');
-  if (button) {
-    view = button.dataset.view;
-    search = '';
-    $('search').value = '';
-    renderScalePicker();
-    $('scale-results').scrollTop = 0;
-  }
+$('scale-family').addEventListener('change', (event) => {
+  family = event.target.value;
+  renderScalePicker();
 });
 $('apply-tuning').addEventListener('click', applyTuning);
 $('cancel-tuning').addEventListener('click', cancelTuning);
@@ -882,19 +845,7 @@ $('formula-input').addEventListener('input', ({ target }) => {
   validationMessage('formula-error');
   $('formula-input').removeAttribute('aria-invalid');
 });
-$('clear-search').addEventListener('click', () => {
-  search = '';
-  $('search').value = '';
-  renderScalePicker();
-  $('scale-results').scrollTop = 0;
-  $('search').focus();
-});
 $('instrument-form').addEventListener('submit', (event) => event.preventDefault());
-$('search').addEventListener('input', () => {
-  search = $('search').value;
-  renderScalePicker();
-  $('scale-results').scrollTop = 0;
-});
 $('language').addEventListener('change', () => update({ lang: $('language').value }));
 $('allNotes').addEventListener('change', () =>
   update({ allNotes: $('allNotes').checked }),

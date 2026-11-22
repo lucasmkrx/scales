@@ -104,7 +104,7 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   const list = page.getByRole('listbox');
   for (const [id, label] of [
     ['language', 'Language'],
-    ['root', 'Root note'],
+    ['scale-family', 'Scale family'],
     ['tuning', 'Tuning'],
     ['spelling', 'Spelling'],
     ['backing-style', 'Style'],
@@ -125,11 +125,12 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   await page.locator('#language-trigger').click();
   await list.getByRole('option', { name: 'Português' }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
-  await page.locator('#root-trigger').press('ArrowDown');
-  await page.keyboard.press('End');
-  await page.keyboard.press('Enter');
-  await expect(page.locator('#root')).toHaveValue('11');
-  await expect(page.locator('#root-trigger')).toContainText('B');
+  const roots = page.getByRole('group', { name: 'Tônica', exact: true });
+  await expect(roots.getByRole('radio')).toHaveCount(12);
+  await roots.getByRole('radio', { name: 'C', exact: true }).press('ArrowRight');
+  const nextRoot = roots.getByRole('radio', { name: 'C♯ / D♭', exact: true });
+  await expect(nextRoot).toBeChecked();
+  await expect(nextRoot).toBeFocused();
   await page.locator('#scope-trigger').click();
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
@@ -249,7 +250,7 @@ test('an explicit theme survives music and language changes with localized contr
     names.push(name);
   }
   expect(new Set(names).size).toBe(3);
-  await page.locator('#root').selectOption('9');
+  await page.getByRole('radio', { name: 'A', exact: true }).check();
   await page
     .locator('#instrument label')
     .filter({ has: page.locator('[value="bass"]') })
@@ -257,7 +258,7 @@ test('an explicit theme survives music and language changes with localized contr
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('#root')).toHaveValue('9');
+  await expect(page.getByRole('radio', { name: 'A', exact: true })).toBeChecked();
 });
 
 test('blocked storage starts in light mode and allows an in-memory toggle', async ({

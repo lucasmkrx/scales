@@ -55,7 +55,8 @@ test('search uses current music and filters on demand and persists only the styl
   expect(queries[0]).toContain('slow');
   await page.locator('#backing-style-trigger').click();
   await page.getByRole('option', { name: 'Funk', exact: true }).click();
-  await page.locator('#search').fill('dorian');
+  await page.locator('#scale-family-trigger').click();
+  await page.getByRole('option', { name: 'Major & modes', exact: true }).click();
   await page.locator('[data-scale="dorian"]').click();
   await page.getByRole('radio', { name: 'Bass', exact: true }).check();
   await expect(page.locator('#backing-context')).toHaveText('A Dorian · Bass');

@@ -1,42 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scaleGroups, COMMON_SCALES, initialScaleView } from '../src/scale-picker.mjs';
+import { scalesInFamily, initialScaleFamily } from '../src/scale-picker.mjs';
 import { SCALES, FAMILIES } from '../src/catalog.mjs';
 import { boardMarkup } from '../src/board.mjs';
-const ids = (options) => scaleGroups(options).flatMap((g) => g.scales.map((s) => s.id));
-test('common scales are a focused starting set, and the full catalog has no duplicates or omissions', () => {
-  assert.deepEqual(ids({}), COMMON_SCALES);
-  assert.ok(COMMON_SCALES.includes('major-pentatonic'));
-  const all = ids({ view: 'all' });
-  assert.equal(all.length, SCALES.length);
-  assert.equal(new Set(all).size, all.length);
-  assert.ok(
-    ids({ view: 'arpeggios' }).every(
-      (id) => SCALES.find((s) => s.id === id).family === 'arpeggio',
-    ),
-  );
-  assert.equal(ids({ view: 'arpeggios' }).length, 12);
-  assert.equal(initialScaleView('dorian'), 'all');
-  assert.equal(initialScaleView('minor-triad'), 'arpeggios');
-  assert.equal(initialScaleView('custom'), 'all');
-});
-test('search spans all collections, matches all three languages and aliases, and ignores accents and word order', () => {
-  assert.ok(ids({ search: 'dórico', view: 'common' }).includes('dorian'));
-  assert.ok(ids({ search: 'pentatonica menor' }).includes('minor-pentatonic'));
-  assert.deepEqual(ids({ search: 'aeolian' }), ['natural-minor']);
-  assert.deepEqual(ids({ search: 'semidisminuido', lang: 'en' }), ['half-diminished']);
-  assert.deepEqual(ids({ search: 'aumentada triada', lang: 'pt' }), ['augmented-triad']);
-  assert.deepEqual(ids({ search: 'jonico', lang: 'es' }), ['major', 'ionian-augmented']);
-  assert.deepEqual(ids({ search: 'something missing' }), []);
-  assert.deepEqual(ids({ view: 'common', search: '  ' }), COMMON_SCALES);
-  const settings = Object.freeze({
-    view: 'common',
-    search: 'minor',
-    lang: 'pt',
-    scale: 'major',
+test('common scales are available immediately and every named scale belongs to a browsable family', () => {
+  const common = scalesInFamily('common');
+  assert.equal(common.length, 8);
+  assert.equal(common[0].id, 'major');
+  assert.ok(common.some((scale) => scale.id === 'minor-pentatonic'));
+  const catalog = Object.keys(FAMILIES).flatMap((family) => {
+    const choices = scalesInFamily(family);
+    assert.ok(choices.length, family);
+    assert.ok(choices.every((scale) => scale.family === family));
+    return choices;
   });
-  scaleGroups(settings);
-  assert.equal(settings.scale, 'major');
+  assert.equal(catalog.length, SCALES.length);
+  assert.deepEqual(new Set(catalog), new Set(SCALES));
+  assert.ok(scalesInFamily('major').includes(common[0]));
+});
+test('named and custom shared choices open in the matching collection', () => {
+  for (const scale of SCALES) {
+    assert.ok(scalesInFamily(initialScaleFamily(scale.id)).includes(scale));
+  }
+  assert.equal(initialScaleFamily('major'), 'common');
+  assert.equal(initialScaleFamily('dorian'), 'major');
+  assert.equal(initialScaleFamily('minor-triad'), 'arpeggio');
+  assert.equal(initialScaleFamily('custom'), 'custom');
 });
 test('seven-string note circles retain separation in full and position maps', () => {
   for (const hand of ['left', 'right'])
@@ -105,9 +94,6 @@ test('every scale and collection is named in each supported language', () => {
     }
     for (const [id, names] of Object.entries(FAMILIES)) {
       assert.ok(names[lang]?.trim(), id);
-    }
-    for (const group of scaleGroups({ view: 'all', lang })) {
-      if (group.id !== 'common') assert.ok(group.label);
     }
   }
 });
