@@ -5,7 +5,9 @@
 [![Tests, formatting, and deployment](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml)
 [![Code license: MIT](https://img.shields.io/badge/code-MIT-20343f)](LICENSE)
 
-[**Try the live app**](https://tukany.com/) · [Português](https://tukany.com/?lang=pt) · [Español](https://tukany.com/?lang=es) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
+[**Try the live app**](https://tukany.com/) · [Português](https://tukany.com/pt/) · [Español](https://tukany.com/es/) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
+
+[Browse the scale formulas and notes](https://tukany.com/scales/) or [try three guided fretboard exercises](https://tukany.com/practice/).
 
 ![Tukany showing a right-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
 
@@ -185,6 +187,7 @@ to one selected scale. The CLI shares the browser's PDF generator.
 - [Case study: from learning PDFs to an interactive explorer](docs/case-study.md)
 - [Architecture, data flow, and tradeoffs](docs/architecture.md)
 - [Testing, release checks, and limitations](docs/testing.md)
+- [Search discovery and sitemap submission](docs/discovery.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 - [Musical and implementation references](docs/references.md)

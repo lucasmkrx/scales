@@ -33,6 +33,7 @@ import {
 } from './workspace.mjs';
 import { FAMILIES } from './catalog.mjs';
 import { copy } from './i18n.mjs';
+import { routes, syncExplorerPage } from './site.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardMarkup, escape } from './board.mjs';
 import { enableBackingTracks } from './backing-track-finder.mjs';
@@ -48,14 +49,19 @@ let saved = {};
 try {
   saved = readPreferences(localStorage.getItem(STORAGE_KEY));
 } catch {}
-const query = new URLSearchParams(location.search);
-let state = restoreWorkspace(Object.fromEntries(query), saved);
+const projectRoot = new URL('../', import.meta.url);
+const entryParams = new URLSearchParams(location.search);
+const query = Object.fromEntries(entryParams);
+const pageLanguage = document.documentElement.dataset.pageLanguage;
+const lang =
+  query.lang ?? (pageLanguage === 'en' ? saved.preferences?.lang : pageLanguage);
+let state = restoreWorkspace({ ...query, lang: lang ?? 'en' }, saved);
 let patternInfo = { system: null, patterns: [] },
   patternKey;
-let range = restoreRange(Object.fromEntries(query), saved, {
+let range = restoreRange(query, saved, {
   mobile: matchMedia('(max-width: 560px)').matches,
 });
-let neckView = restoreNeckView(Object.fromEntries(query), saved);
+let neckView = restoreNeckView(query, saved);
 let boardWidth,
   boardRightOffset = 0;
 
@@ -133,11 +139,28 @@ function renderAppearance() {
   const icon = theme.preference === 'dark' ? 'moon' : 'sun';
   $('theme-icon').className = `icon fa-solid fa-${icon}`;
 }
+function replaceExplorerURL(params) {
+  const url = new URL(`.${routes[state.lang].home}`, projectRoot);
+  url.search = params.toString();
+  url.hash = location.hash;
+  if (url.pathname !== location.pathname) {
+    // The same document stays mounted when switching languages. Pin its relative
+    // resources before the new path becomes the base for resolving URLs.
+    for (const attr of ['href', 'src']) {
+      const relative = document.querySelectorAll(
+        `:is([${attr}^="./"], [${attr}^="../"]):not([data-guide-link], [data-reference-link])`,
+      );
+      for (const el of relative)
+        el.setAttribute(attr, new URL(el.getAttribute(attr), document.baseURI).href);
+    }
+  }
+  if (url.href !== location.href) history.replaceState(null, '', url);
+}
 function saveURL() {
   const params = new URLSearchParams(sharedState(state));
   params.set('range', range);
   params.set('neck', neckView);
-  history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
+  replaceExplorerURL(params);
 }
 function scaleChoiceMarkup(scale) {
   const selected = state.scale === scale.id;
@@ -325,7 +348,6 @@ function renderContent() {
     .forEach((input) => (input.checked = input.value === neckView));
   renderBoard();
   $('degrees-hint').hidden = s.labels !== 'degrees';
-  saveURL();
 }
 function changeRange(id) {
   range = id;
@@ -335,6 +357,7 @@ function changeRange(id) {
   status('');
   $('share-fallback').hidden = true;
   renderContent();
+  saveURL();
 }
 function togglePattern(id) {
   if (!currentPattern(id)) return;
@@ -428,6 +451,8 @@ function renderExport({ resetStatus = true } = {}) {
 function render() {
   const t = copy[state.lang],
     s = selection(state);
+  if (document.documentElement.dataset.pageLanguage !== state.lang)
+    syncExplorerPage(state.lang);
   document.documentElement.lang = LANGUAGES[state.lang].tag;
   document.title = t.pageTitle;
   document.querySelector('meta[name=description]').content = t.metaDescription;
@@ -494,6 +519,7 @@ function update(values, { setup = false } = {}) {
   $('share-fallback').hidden = true;
   $('setup-status').textContent = '';
   render();
+  saveURL();
   if (setup) {
     $('setup-status').textContent =
       previous.tuning !== state.tuning ? copy[state.lang].tuningReset : '';
@@ -851,7 +877,7 @@ $('all-keys').addEventListener('change', renderExport);
 function loadScript(path) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = path;
+    script.src = new URL(path, projectRoot).href;
     script.onload = resolve;
     script.onerror = reject;
     document.head.append(script);
@@ -920,3 +946,5 @@ window.addEventListener('themechange', renderAppearance);
 document.querySelectorAll('.setup-switch').forEach(enableSlideSwitch);
 persist();
 render();
+if (entryParams.size === 1 && entryParams.has('lang')) entryParams.delete('lang');
+replaceExplorerURL(entryParams);

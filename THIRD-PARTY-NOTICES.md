@@ -28,9 +28,9 @@ licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 Tukany crops the artwork to the headstocks and uses transparent PNG masks to
 match the switch labels in both themes.
 
-## Explorer header image
+## Explorer header and sharing image
 
-The [guitar header image](public/assets/guitar-banner.webp) was generated for Tukany using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE).
+The [guitar header image](public/assets/guitar-banner.webp) was generated for Tukany using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE). The [sharing image](public/assets/tukany-social.jpg) pairs the same artwork with the Tukany name in Literata.
 
 <details>
 <summary>Image prompt</summary>

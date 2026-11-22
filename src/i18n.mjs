@@ -254,9 +254,17 @@ export const copy = {
     result: 'result',
     exportFailed: 'The PDF could not be created. Please try again.',
     es: 'Español',
-    pageTitle: 'Tukany · Guitar and bass fretboard explorer',
+    pageTitle: 'Tukany · Guitar and bass scale finder',
+    explorerTitle: 'Interactive scale diagrams for guitar and bass',
     metaDescription:
-      'Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, interactive note sounds, and printable PDFs in American English, Brazilian Portuguese, and Latin American Spanish.',
+      'Explore guitar and bass scales on an interactive fretboard. Hear each note, try alternate tunings, find a backing track, or print your own scale diagrams.',
+    practiceIntro:
+      'Tukany maps scales and arpeggios on your guitar or bass. Pick a root and tuning, then tap a note on the fretboard to hear it.',
+    practiceLink: 'Try three fretboard exercises',
+    referenceLink: 'Browse scale formulas and notes',
+    socialImageAlt: 'Tukany wordmark beside an electric guitar',
+    noScript:
+      'Enable JavaScript to play notes and customize your fretboard. The practice guide and printable lessons also work without it.',
     fret: 'Fret',
     chordRoot: 'Chord root',
     chordRootMarker: 'R',
@@ -528,9 +536,17 @@ export const copy = {
     result: 'resultado',
     exportFailed: 'Não foi possível gerar o PDF. Tente novamente.',
     es: 'Español',
-    pageTitle: 'Tukany · Explore escalas na guitarra e no baixo',
+    pageTitle: 'Tukany · Escalas para guitarra e baixo',
+    explorerTitle: 'Diagramas interativos de escalas para guitarra e baixo',
     metaDescription:
-      'Explore escalas para guitarra e baixo em várias afinações. Diagramas para destros e canhotos, notas interativas com som e PDFs em inglês americano, português brasileiro e espanhol latino-americano.',
+      'Explore escalas no braço da guitarra ou do baixo. Ouça as notas, experimente outras afinações, encontre uma faixa de acompanhamento e imprima seus diagramas.',
+    practiceIntro:
+      'O Tukany mostra escalas e arpejos no braço da guitarra ou do baixo. Escolha a tônica e a afinação e toque em uma nota do diagrama para ouvi-la.',
+    practiceLink: 'Pratique com três exercícios',
+    referenceLink: 'Consulte as fórmulas e notas das escalas',
+    socialImageAlt: 'Nome Tukany ao lado de uma guitarra elétrica',
+    noScript:
+      'Ative o JavaScript para ouvir as notas e personalizar o diagrama. O guia de prática e os PDFs também funcionam sem ele.',
     fret: 'Casa',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',
@@ -804,9 +820,17 @@ export const copy = {
       'Ordena las notas de la más grave a la más aguda, sin repetir alturas. Revisa los números de octava.',
     result: 'resultado',
     exportFailed: 'No se pudo crear el PDF. Inténtalo de nuevo.',
-    pageTitle: 'Tukany · Explora escalas de guitarra y bajo',
+    pageTitle: 'Tukany · Escalas para guitarra y bajo',
+    explorerTitle: 'Diagramas interactivos de escalas para guitarra y bajo',
     metaDescription:
-      'Explora escalas de guitarra y bajo en distintas afinaciones. Diagramas para diestros y zurdos, notas interactivas con sonido y PDF en inglés de Estados Unidos, portugués de Brasil y español latinoamericano.',
+      'Explora escalas en el diapasón de guitarra o bajo. Escucha las notas, prueba otras afinaciones, busca una pista de acompañamiento e imprime tus diagramas.',
+    practiceIntro:
+      'Tukany muestra escalas y arpegios en el diapasón de tu guitarra o bajo. Elige la tónica y la afinación y toca una nota del diagrama para escucharla.',
+    practiceLink: 'Practica con tres ejercicios',
+    referenceLink: 'Consulta las fórmulas y notas de las escalas',
+    socialImageAlt: 'Nombre de Tukany junto a una guitarra eléctrica',
+    noScript:
+      'Activa JavaScript para escuchar las notas y personalizar el diapasón. La guía de práctica y las lecciones en PDF también funcionan sin él.',
     fret: 'Traste',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',

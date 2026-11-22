@@ -1,4 +1,6 @@
 import test from 'node:test';
+import { routes, siteOrigin } from '../src/site.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 test('published assets use one revision across the entry point, module graph, and styles', async () => {
@@ -41,4 +43,47 @@ test('published assets use one revision across the entry point, module graph, an
   const published = await import(`../dist/src/music.mjs?v=${version}`);
   assert.equal(published.normalizeState().frets, 21);
   assert.equal(published.normalizeState({ instrument: 'bass' }).frets, 20);
+});
+
+test('the published HTML identifies each localized page before JavaScript runs', async () => {
+  await import('../scripts/build.mjs');
+  const dist = new URL('../dist/', import.meta.url);
+  for (const [lang, route] of Object.entries(routes)) {
+    for (const kind of ['home', 'guide', 'reference']) {
+      const path = route[kind];
+      const directory = new URL('.' + path, dist);
+      const html = await readFile(new URL('index.html', directory), 'utf8');
+      const url = siteOrigin + path;
+      assert.ok(html.includes(`lang="${LANGUAGES[lang].tag}"`), path);
+      assert.deepEqual(
+        [...html.matchAll(/<link rel="canonical" href="([^"]+)"/g)].map(
+          (match) => match[1],
+        ),
+        [url],
+      );
+      assert.ok(html.includes(`property="og:url" content="${url}"`));
+      assert.ok(html.includes('name="twitter:card" content="summary_large_image"'));
+      assert.ok(html.includes(siteOrigin + '/assets/tukany-social.jpg'));
+      assert.ok(
+        !html.includes('>undefined<') && !html.includes('<!-- page-metadata -->'),
+      );
+      for (const other of Object.values(routes))
+        assert.ok(
+          html.includes(
+            `hreflang="${other.hreflang}" href="${siteOrigin}${other[kind]}"`,
+          ),
+        );
+      assert.ok(
+        html.includes(`hreflang="x-default" href="${siteOrigin}${routes.en[kind]}"`),
+      );
+      const schema = JSON.parse(html.match(/id="page-schema">([^<]+)<\/script>/)[1]);
+      const page = schema['@graph'].find((entity) => entity['@type'] === 'WebPage');
+      assert.equal(page.url, url);
+      assert.equal(page.inLanguage, LANGUAGES[lang].tag);
+      if (kind !== 'home') {
+        assert.ok(html.includes(`type="text/markdown" href="${url}index.md"`));
+        assert.match(await readFile(new URL('index.md', directory), 'utf8'), /^# /);
+      }
+    }
+  }
 });

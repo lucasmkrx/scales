@@ -2197,3 +2197,20 @@ button:not(:disabled):active,
     flex-wrap: wrap;
   }
 }
+
+.practice-invitation {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.5rem;
+  margin: 1.5rem 0;
+  color: var(--muted);
+}
+.practice-invitation p {
+  flex: 1 1 34rem;
+  margin: 0;
+  max-width: 78ch;
+}
+.practice-invitation a {
+  font-weight: 650;
+}

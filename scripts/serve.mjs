@@ -5,9 +5,13 @@ const root = resolve(process.argv[2] ?? 'dist');
 const port = Number(process.env.PORT ?? 4173);
 const types = {
   '.html': 'text/html; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8',
   '.css': 'text/css',
   '.mjs': 'text/javascript',
   '.js': 'text/javascript',
+  '.jpg': 'image/jpeg',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
   '.woff2': 'font/woff2',
@@ -18,16 +22,23 @@ const types = {
 };
 createServer(async (req, res) => {
   try {
-    let path = resolve(
-      root,
-      '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname),
-    );
+    const url = new URL(req.url, 'http://localhost');
+    let path = resolve(root, '.' + decodeURIComponent(url.pathname));
     if (path !== root && !path.startsWith(root + sep)) throw new Error();
-    if ((await stat(path)).isDirectory()) path = resolve(path, 'index.html');
+    if ((await stat(path)).isDirectory()) {
+      if (!url.pathname.endsWith('/')) {
+        res.writeHead(301, {
+          Location: url.pathname.replace(/^\/+/, '/') + '/' + url.search,
+        });
+        return res.end();
+      }
+      path = resolve(path, 'index.html');
+    }
+    const content = await readFile(path);
     res.writeHead(200, {
       'Content-Type': types[extname(path)] ?? 'application/octet-stream',
     });
-    res.end(await readFile(path));
+    res.end(content);
   } catch {
     res.writeHead(404);
     res.end('Not found');

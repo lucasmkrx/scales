@@ -1,0 +1,35 @@
+# Tukany
+
+> Tukany is a free guitar and bass scale explorer by Lucas Marques. Players can map notes and scale degrees on a fretboard, hear individual notes, practice fingering patterns, and print a PDF for their own instrument and tuning.
+
+The explorer supports six- and seven-string guitars and four-, five-, and six-string basses, with left- and right-handed diagrams. Shared explorer links carry the selected setup in the URL. The practice guides below can be read without running the app.
+
+## Explorer
+
+- [Guitar and bass scale explorer in English](https://tukany.com/)
+- [Explorador de escalas para guitarra e baixo em português](https://tukany.com/pt/)
+- [Explorador de escalas para guitarra y bajo en español](https://tukany.com/es/)
+
+## Scale formulas, notes, and arpeggios in Markdown
+
+- [Guitar and bass scale formulas](https://tukany.com/scales/index.md)
+- [Fórmulas de escalas para guitarra e baixo](https://tukany.com/pt/escalas/index.md)
+- [Fórmulas de escalas para guitarra y bajo](https://tukany.com/es/escalas/index.md)
+
+## Practice guides in Markdown
+
+- [How to practice scales on guitar and bass](https://tukany.com/practice/index.md)
+- [Como praticar escalas na guitarra e no baixo](https://tukany.com/pt/pratica/index.md)
+- [Cómo practicar escalas en guitarra y bajo](https://tukany.com/es/practica/index.md)
+
+## Printable lessons
+
+- [Left-handed guitar, standard tuning — English PDF](https://tukany.com/guides/guitar-standard-left-en.pdf)
+- [Left-handed bass, standard tuning — English PDF](https://tukany.com/guides/bass-standard-left-en.pdf)
+- [Guitarra destra em dó sustenido padrão — PDF em português](https://tukany.com/guides/guitar-c-sharp-right-pt.pdf)
+- [Baixo destro em Drop C — PDF em português](https://tukany.com/guides/bass-drop-c-right-pt.pdf)
+
+## Optional
+
+- [Project overview and usage examples](https://raw.githubusercontent.com/lucasmkrx/tukany/main/README.md)
+- [Educational content license and attribution](https://raw.githubusercontent.com/lucasmkrx/tukany/main/CONTENT-LICENSE.md)

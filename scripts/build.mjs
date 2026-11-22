@@ -1,3 +1,8 @@
+import { routes } from '../src/site.mjs';
+import { metadata, explorerPage } from './search-pages.mjs';
+import { guidePage, guideMarkdown } from './practice-pages.mjs';
+import { referencePage, referenceMarkdown } from './reference-pages.mjs';
+import { sitemap } from './sitemap.mjs';
 import { cp, mkdir, rm, writeFile, readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { loadEnvFile } from 'node:process';
@@ -27,6 +32,8 @@ const visualAssets = [
 const revisionHash = createHash('sha256')
   .update(JSON.stringify(modules))
   .update(css)
+  .update(await readFile(new URL('public/practice.css', root)))
+  .update(await readFile(new URL('public/reference.css', root)))
   .update(theme);
 for (const path of visualAssets) {
   revisionHash.update(await readFile(new URL(`public/${path}`, root)));
@@ -60,7 +67,26 @@ const html = versionVisualAssets(
   .replace('./src/app.mjs', `./src/app.mjs?v=${revision}`)
   .replace('theme.js"', `theme.js?v=${revision}"`)
   .replace('./styles.css', `./styles.css?v=${revision}`);
-await writeFile(new URL('index.html', dist), html);
+for (const [lang, route] of Object.entries(routes)) {
+  const home = new URL('.' + route.home, dist);
+  await mkdir(home, { recursive: true });
+  const base = route.home === '/' ? './' : '../';
+  await writeFile(new URL('index.html', home), explorerPage(html, lang, base));
+  for (const [kind, renderPage, renderMarkdown] of [
+    ['guide', guidePage, guideMarkdown],
+    ['reference', referencePage, referenceMarkdown],
+  ]) {
+    const directory = new URL('.' + route[kind], dist);
+    await mkdir(directory, { recursive: true });
+    const assetBase = '../'.repeat(route[kind].split('/').filter(Boolean).length);
+    await writeFile(
+      new URL('index.html', directory),
+      renderPage(lang, metadata(lang, kind), assetBase, revision),
+    );
+    await writeFile(new URL('index.md', directory), renderMarkdown(lang));
+  }
+}
+await writeFile(new URL('sitemap.xml', dist), sitemap());
 await writeFile(new URL('styles.css', dist), versionVisualAssets(css));
 await writeFile(new URL('.nojekyll', dist), '');
 console.log(

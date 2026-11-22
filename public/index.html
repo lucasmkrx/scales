@@ -1,18 +1,31 @@
 <!doctype html>
 <html lang="en-US">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#214b3d" />
-    <meta
-      name="description"
-      content="Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, interactive note sounds, and printable PDFs in American English, Brazilian Portuguese, and Latin American Spanish."
-    />
-    <title>Tukany · Guitar and bass fretboard explorer</title>
+    <!-- page-metadata -->
     <link rel="icon" href="./assets/icon.png" type="image/png" sizes="64x64" />
     <script src="./theme.js"></script>
     <link rel="stylesheet" href="./vendor/fontawesome.min.css" />
     <link rel="stylesheet" href="./styles.css" />
+    <noscript
+      ><style>
+        .skip,
+        main .workspace,
+        main .mobile-shortcut,
+        .masthead .select-control,
+        #theme-toggle {
+          display: none;
+        }
+        h1#page-title {
+          position: static;
+          width: auto;
+          height: auto;
+          clip-path: none;
+          clip: auto;
+          margin: 1em 0;
+          white-space: normal;
+        }
+      </style></noscript
+    >
   </head>
   <body id="top">
     <a class="skip" href="#board" data-i18n="skip">Skip to fretboard</a>
@@ -48,7 +61,9 @@
       </div>
     </header>
     <main>
-      <h1 class="sr-only" id="page-title" data-i18n="title">Fretboard explorer</h1>
+      <h1 class="sr-only" id="page-title" data-i18n="explorerTitle">
+        Interactive scale diagrams for guitar and bass
+      </h1>
       <nav
         class="mobile-shortcut"
         data-i18n-aria="quickNavigation"
@@ -531,6 +546,18 @@
           </div>
         </section>
       </div>
+      <aside class="practice-invitation">
+        <p data-i18n="practiceIntro">
+          Tukany maps scales and arpeggios on your guitar or bass. Pick a root and tuning,
+          then tap a note on the fretboard to hear it.
+        </p>
+        <a href="./scales/" data-reference-link data-i18n="referenceLink"
+          >Browse scale formulas and notes</a
+        >
+        <a href="./practice/" data-guide-link data-i18n="practiceLink"
+          >Try three fretboard exercises</a
+        >
+      </aside>
     </main>
     <footer class="site-footer">
       <img
@@ -545,11 +572,13 @@
         >Source &amp; contributions</a
       >
     </footer>
-    <noscript
-      ><p>
-        Enable JavaScript to explore the fretboard and create customized PDFs.
-      </p></noscript
-    >
+    <noscript>
+      <p data-i18n="noScript">
+        Enable JavaScript to play notes and customize your fretboard. The practice guide
+        and printable lessons also work without it.
+      </p>
+      <!-- language-links -->
+    </noscript>
 
     <script type="module" src="./src/app.mjs"></script>
   </body>
