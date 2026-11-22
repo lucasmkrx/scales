@@ -2,11 +2,17 @@ import {
   boardModel,
   layoutBoard,
   noteName,
+  PALETTE,
   fretFill,
   pitchPreference,
 } from './music.mjs';
 import { copy } from './i18n.mjs';
 import { patternRanges } from './pattern-ranges.mjs';
+
+export const pitchColor = (pc, fallback = PALETTE[pc] ?? '#ffffff') =>
+  `var(--pitch-${PALETTE[pc] ? pc : 'accidental'}, ${fallback})`;
+export const pitchLabelColor = (pc, lightText) =>
+  `var(--pitch-label-ink, ${lightText || !PALETTE[pc] ? 'white' : 'var(--note-ink)'})`;
 
 const screenFretColors = {
   open: 'var(--board-open)',
@@ -143,7 +149,7 @@ export function boardMarkup(state, options = {}) {
       radius * 2,
       radius * 2,
     );
-    const style = `${bounds};--pitch-fill:${n.fill};--pitch-ink:${n.lightText ? 'white' : 'var(--note-ink)'};font-size:${size}px`;
+    const style = `${bounds};--pitch-fill:${pitchColor(n.pc, n.fill)};--pitch-ink:${pitchLabelColor(n.pc, n.lightText)};font-size:${size}px`;
     const attributes = `class="${classes.join(' ')}" style="${style}"`;
     const content = label ? labelLines(label) : '';
     if (small) return `<span ${attributes}>${content}</span>`;

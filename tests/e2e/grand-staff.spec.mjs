@@ -128,6 +128,8 @@ test('selected patterns color borderless noteheads and keep stems neutral in eit
   const bracket = page.locator('#board [data-pattern="caged-major-1"]');
   const sharpNote = page.locator('#staff-notation [data-staff-midi="42"]');
   const sharp = sharpNote.locator('.staff-notehead');
+  const sharpFret = page.locator('#board [data-midi="42"]:not(.muted)').first();
+  const sharpDot = page.locator('#notes-strip [data-pitch="6"] .color-dot');
   for (const theme of ['light', 'dark']) {
     if (theme === 'dark') await page.locator('#theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -140,7 +142,17 @@ test('selected patterns color borderless noteheads and keep stems neutral in eit
             .evaluate((lines) => getComputedStyle(lines).stroke);
     await expectStaffColors(page, ink);
     await bracket.click();
-    await expect(sharp).toHaveCSS('fill', 'rgb(255, 255, 255)');
+    const sharpColor = theme === 'light' ? black : 'rgb(170, 184, 175)';
+    await expect(sharp).toHaveCSS('fill', sharpColor);
+    await expect(sharpFret).toHaveCSS('background-color', sharpColor);
+    await expect(sharpDot).toHaveCSS('background-color', sharpColor);
+    if (theme === 'light') {
+      await expect(sharpFret).toHaveCSS('color', 'rgb(255, 255, 255)');
+      await expect(sharpNote.locator('.staff-pitch-letter')).toHaveCSS(
+        'fill',
+        'rgb(255, 255, 255)',
+      );
+    }
     await expect(sharpNote.locator('.staff-pitch-letter')).toHaveText('F');
     await expect(sharpNote.locator('.staff-accidental')).toBeVisible();
     await expect(

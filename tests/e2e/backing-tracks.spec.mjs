@@ -52,7 +52,9 @@ test('opens YouTube on demand with the current music, style and tempo', async ({
   const diagram = await notes.allTextContents();
   expect(diagram.length).toBeGreaterThan(0);
   const first = await searchInNewTab(context, () => find.press('Enter'));
-  expect(first.searchParams.get('search_query')).toMatch(/A minor blues.*guitar.*slow/i);
+  expect(first.searchParams.get('search_query')).toBe(
+    'slow blues guitar backing track in A minor',
+  );
   expect(requests).toEqual([{ url: first.href, type: 'document' }]);
   expect(page.url()).toBe(originalURL);
   expect(await notes.allTextContents()).toEqual(diagram);
@@ -67,8 +69,8 @@ test('opens YouTube on demand with the current music, style and tempo', async ({
   await expect(page.locator('#backing-context')).toHaveText('D Dorian · Bass');
   expect(requests).toHaveLength(1);
   const second = await searchInNewTab(context, () => find.click());
-  expect(second.searchParams.get('search_query')).toMatch(
-    /D dorian funk.*bassless.*slow/i,
+  expect(second.searchParams.get('search_query')).toBe(
+    'slow funk backing track in D Dorian no bass',
   );
   expect(requests).toEqual([
     { url: first.href, type: 'document' },
@@ -102,7 +104,9 @@ test.describe('touch practice', () => {
 
     const originalURL = page.url();
     const search = await searchInNewTab(context, () => find.tap());
-    expect(search.searchParams.get('search_query')).toMatch(/A minor.*medium/i);
+    expect(search.searchParams.get('search_query')).toBe(
+      'mid tempo guitar backing track in A minor',
+    );
     expect(requests).toEqual([{ url: search.href, type: 'document' }]);
     expect(page.url()).toBe(originalURL);
     await page.getByRole('radio', { name: 'E', exact: true }).check();

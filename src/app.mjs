@@ -8,7 +8,6 @@ import {
   prettyDegree,
   midiName,
   spelledMidiName,
-  PALETTE,
   SHARPS,
   FLATS,
   parseNote,
@@ -35,7 +34,7 @@ import { FAMILIES } from './catalog.mjs';
 import { copy } from './i18n.mjs';
 import { routes, syncExplorerPage } from './site.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
-import { boardMarkup, escape } from './board.mjs';
+import { boardMarkup, escape, pitchColor } from './board.mjs';
 import { grandStaffLayout, grandStaffMarkup, staffPitchName } from './grand-staff.mjs';
 import { enableBackingTracks } from './backing-track-finder.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
@@ -358,7 +357,7 @@ function renderContent() {
       const label = s.labels === 'degrees' ? prettyDegree(degree) : name;
       const dot =
         s.labels === 'notes'
-          ? `<i aria-hidden="true" class="color-dot" style="background:${PALETTE[pitch] ?? '#fff'}"></i>`
+          ? `<i aria-hidden="true" class="color-dot" style="background:${pitchColor(pitch)}"></i>`
           : '';
       return `<button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(`${name} · ${intervalName(degree, s.lang)}`)}">${dot}${escape(label)}</button>`;
     })

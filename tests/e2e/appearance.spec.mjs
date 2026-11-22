@@ -25,10 +25,11 @@ test.beforeEach(({ page }) => {
 });
 test.afterEach(({ page }) => expect(errors.get(page)).toEqual([]));
 
-test('dropdown corners stay capped on multiline options and other buttons stay pill shaped', async ({
+test('dropdown corners stay capped, count buttons are circular, and the other buttons stay pill shaped', async ({
   page,
 }) => {
   await page.goto(url());
+  await expectCircularCounts(page);
   await page.locator('#edit-formula').click();
   const trigger = page.locator('#tuning');
   const popup = page.locator('.choice-popup');
@@ -96,11 +97,23 @@ test('dropdown corners stay capped on multiline options and other buttons stay p
   expect(new URL(page.url()).searchParams.get('tuning')).toBe(choice);
 });
 
+async function expectCircularCounts(page) {
+  const counts = page.locator('.number-keys label > span');
+  await expect(counts.first()).toBeVisible();
+  for (const face of await counts.all()) {
+    const { width, height } = await face.boundingBox();
+    expect(width).toBeCloseTo(44, 2);
+    expect(height).toBeCloseTo(width, 2);
+    await expect(face).toHaveCSS('border-radius', '50%');
+  }
+}
+
 test('settings open the same listbox and apply localized keyboard and pointer choices', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto(url());
+  await expectCircularCounts(page);
   const list = page.getByRole('listbox');
   for (const [id, label] of [
     ['language', 'Language'],
@@ -184,12 +197,23 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(url());
   await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
+  const noteColors = () =>
+    page.locator('#board .note:not(.muted)').evaluateAll((notes) =>
+      notes.map((note) => {
+        const pitch = Number(note.dataset.midi) % 12;
+        const dot = document.querySelector(
+          `#notes-strip [data-pitch="${pitch}"] .color-dot`,
+        );
+        return {
+          fill: getComputedStyle(note).backgroundColor,
+          dot: getComputedStyle(dot).backgroundColor,
+        };
+      }),
+    );
+  const lightColors = await noteColors();
   await page.evaluate(() => {
     window.appearanceBoard = document.querySelector('#board .fretboard-map');
     window.appearancePattern = document.querySelector('[data-pattern="caged-major-1"]');
-    window.appearanceNoteColors = [...document.querySelectorAll('.note:not(.muted)')].map(
-      (note) => getComputedStyle(note).backgroundColor,
-    );
   });
   const toggle = page.locator('#theme-toggle');
   await toggle.focus();
@@ -202,23 +226,24 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
       () =>
         window.appearanceBoard === document.querySelector('#board .fretboard-map') &&
         window.appearancePattern ===
-          document.querySelector('[data-pattern="caged-major-1"]') &&
-        JSON.stringify(window.appearanceNoteColors) ===
-          JSON.stringify(
-            [...document.querySelectorAll('.note:not(.muted)')].map(
-              (note) => getComputedStyle(note).backgroundColor,
-            ),
-          ),
+          document.querySelector('[data-pattern="caged-major-1"]'),
     ),
   ).toBe(true);
+  const darkColors = await noteColors();
+  for (const [index, { fill, dot }] of darkColors.entries()) {
+    expect(fill).not.toBe(lightColors[index].fill);
+    expect(fill).toBe(dot);
+  }
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect(await noteColors()).toEqual(darkColors);
   await expect(page.locator('[data-pattern="caged-major-1"]')).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await toggle.press('Space');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  expect(await noteColors()).toEqual(lightColors);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(toggle).toHaveAccessibleName('Theme: Light. Switch to Dark.');
