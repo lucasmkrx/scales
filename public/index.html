@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#214b3d" />
     <meta
       name="description"
-      content="Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, playback, and printable PDFs in American English, Brazilian Portuguese, and Latin American Spanish."
+      content="Explore guitar and bass scales in different tunings. Left- and right-handed fretboards, interactive note sounds, and printable PDFs in American English, Brazilian Portuguese, and Latin American Spanish."
     />
     <title>Scales · Notes, scales, and improvisation</title>
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
@@ -292,35 +292,21 @@
                 ><span id="note-count"></span>
               </p>
             </div>
-            <div class="playback-controls">
-              <fieldset class="neck-view-switch" id="neck-view">
-                <legend class="sr-only" data-i18n="neckView">Fretboard view</legend>
-                <label
-                  ><input type="radio" name="neck-view" value="octave" checked /><span
-                    id="neck-octave-label"
-                    >0–12</span
-                  ></label
-                >
-                <label
-                  ><input type="radio" name="neck-view" value="full" /><span
-                    data-i18n="fullNeck"
-                    >Full neck</span
-                  ></label
-                >
-              </fieldset>
-              <button
-                type="button"
-                class="primary play-button"
-                id="play"
-                aria-describedby="playback-hint"
+            <fieldset class="neck-view-switch" id="neck-view">
+              <legend class="sr-only" data-i18n="neckView">Fretboard view</legend>
+              <label
+                ><input type="radio" name="neck-view" value="octave" checked /><span
+                  id="neck-octave-label"
+                  >0–12</span
+                ></label
               >
-                <svg aria-hidden="true" class="icon play-icon">
-                  <use href="./assets/controls.svg#play"></use></svg
-                ><svg aria-hidden="true" class="icon stop-icon">
-                  <use href="./assets/controls.svg#stop"></use></svg
-                ><span id="play-label" data-i18n="play">Play scale</span>
-              </button>
-            </div>
+              <label
+                ><input type="radio" name="neck-view" value="full" /><span
+                  data-i18n="fullNeck"
+                  >Full neck</span
+                ></label
+              >
+            </fieldset>
           </header>
           <div class="diagram">
             <div class="board-toolbar">
@@ -341,7 +327,7 @@
                 ><i aria-hidden="true"></i><span data-i18n="root">Root note</span></span
               >
               <span id="orientation" class="sr-only"></span>
-              <p class="play-hint note-readout" id="play-hint" hidden>
+              <p class="note-readout" id="note-readout" hidden>
                 <svg aria-hidden="true" class="icon">
                   <use href="./assets/controls.svg#sound"></use></svg
                 ><span id="note-readout-text"></span>
@@ -362,7 +348,7 @@
             ><span data-i18n="manualCopy">Copy this link</span
             ><input type="url" id="share-url" readonly
           /></label>
-          <div class="playing-options">
+          <div class="fretboard-options">
             <div class="display-controls">
               <fieldset class="segmented" id="labels" aria-describedby="degrees-hint">
                 <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
@@ -394,38 +380,22 @@
                 ></label
               >
             </div>
-            <div class="playback-options">
-              <button
-                type="button"
-                class="drone-button"
-                id="drone"
-                aria-pressed="false"
-                aria-describedby="drone-hint"
-              >
-                <svg class="icon" aria-hidden="true">
-                  <use href="./assets/controls.svg#sound"></use>
-                </svg>
-                <span id="drone-label">Hear tonic</span>
-              </button>
-              <span class="sr-only" id="drone-hint" data-i18n="droneHint"
-                >A steady root note to practice against. Stops when you change key or
-                instrument.</span
-              >
-              <div class="tempo-control">
-                <div class="tempo-row">
-                  <label for="tempo" data-i18n="tempo">Tempo</label
-                  ><output id="tempo-value" for="tempo">100 BPM</output>
-                </div>
-                <input id="tempo" type="range" min="40" max="200" step="5" value="100" />
-              </div>
-              <label class="check"
-                ><input id="repeat" type="checkbox" /><span
-                  ><svg class="icon" aria-hidden="true">
-                    <use href="./assets/controls.svg#repeat"></use></svg
-                  ><span data-i18n="repeatPosition">Repeat</span></span
-                ></label
-              >
-            </div>
+            <button
+              type="button"
+              class="drone-button"
+              id="drone"
+              aria-pressed="false"
+              aria-describedby="drone-hint"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="./assets/controls.svg#sound"></use>
+              </svg>
+              <span id="drone-label">Hear tonic</span>
+            </button>
+            <span class="sr-only" id="drone-hint" data-i18n="droneHint"
+              >A steady root note to practice against. Stops when you change key or
+              instrument.</span
+            >
           </div>
           <p
             id="key-spelling-hint"
@@ -435,7 +405,6 @@
           ></p>
           <p id="degrees-hint" class="sr-only" hidden data-i18n="degreesHint"></p>
           <div class="scale-reference">
-            <p class="sr-only" id="playback-hint" data-i18n="playbackHint"></p>
             <div class="notes-strip" id="notes-strip"></div>
           </div>
         </section>

@@ -29,8 +29,8 @@ keeping every setting on the homepage.
 Click the illustrated handedness control to flip between right- and left-handed
 playing. Its full label stays readable beside the guitar or bass artwork while
 the instrument and fretboard update together.
-The fretboard starts at frets 0–12. A sliding switch beside playback in the
-fretboard header reveals the full neck. Thin pattern brackets sit above the
+The fretboard starts at frets 0–12. A sliding switch in the fretboard header
+reveals the full neck. Thin pattern brackets sit above the
 frets they cover, labeled with the pattern number, shape, and fret range.
 Vertical boundary guides connect each bracket to the neck. Click one to highlight its exact string-and-fret shape;
 click it again to return the visible scale notes to color.
@@ -43,12 +43,13 @@ string. Diminished scales use four notes per string. Seven-string guitar uses
 three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
-Playback tempo, repeat, note labels, and spelling sit below the diagram. A single interactive reference row follows the chosen note or degree labels; tapping one highlights its locations.
-Hear tonic adds a quiet sustained root independently of scale playback. Key spelling
+Note labels, spelling, and Hear tonic sit below the diagram. Tap a fretboard note
+or a note or degree in the reference row to hear it and highlight where it appears.
+Hear tonic adds a quiet sustained root. Key spelling
 follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
 The appearance button follows the device theme by default and cycles through
 system, light, and dark choices. Icons reinforce the labeled controls, and short
-selection and playback animations respect the device's reduced-motion setting.
+selection and note animations respect the device's reduced-motion setting.
 See the [dark desktop](docs/assets/desktop-dark.png) and
 [dark mobile](docs/assets/mobile-dark.png) previews.
 Only complete patterns that fit the selected view are offered. A whole pattern
@@ -82,10 +83,10 @@ also depends on its chords.
   and shared sharp/flat names on a single pitch marker.
 - American English (`en-US`), Brazilian Portuguese (`pt-BR`), and Latin American Spanish (`es-419`), remembered instrument setups,
   keyboard controls, and shareable URLs.
-- Scale-derived fingering patterns with playback tied to the exact highlighted
-  notes, plus a note-map fallback for unsupported shapes.
-- Locally synthesized guitar and bass playback, plus vector PDF atlases for a
-  scale, a family, or the named catalog.
+- Scale-derived fingering patterns that highlight exact string and fret positions,
+  plus a note-map fallback for unsupported shapes.
+- Individual guitar and bass note sounds and a sustained tonic, synthesized
+  locally.
 - Inline PDF customization with a Download PDF action beneath the fretboard.
   Choose the current scale, its family, or the full catalog, with all 12 reference
   notes available for a selected scale.

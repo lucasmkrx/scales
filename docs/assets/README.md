@@ -1,7 +1,7 @@
 # Documentation media
 
 These assets show the actual Scales interface and generated output. UI captures
-use local build `2536f8f25890`; static captures honor reduced motion.
+use local build `05fee10b9cc0` with reduced motion enabled.
 
 - `desktop.png` shows a left-handed, six-string guitar in E standard at a
   1360 × 1447 CSS-pixel viewport. C major uses compact CAGED Position 1 (E shape)
@@ -9,17 +9,15 @@ use local build `2536f8f25890`; static captures honor reduced motion.
   stay in color, including high-E fret 8; fret 12 and other scale notes turn gray.
   The limited-view switch label counts down as 12–0 for left-handed playing.
   Thin bracket caps have centered pattern numbers, shape names, and fret ranges,
-  with one pattern per row. The view switch sits beside playback in the header.
+  with one pattern per row. The view switch sits in the fretboard header.
   Vertical guides connect both ends to the neck behind the notes, with stronger guides for the selection. Only complete patterns that
   fit the visible neck are offered; the full-neck cue explains missing numbers.
   Scale and instrument settings share a row, with PDF customization below. The
   orientation button has its own full-width row below the string and fret
   controls. Its transparent six-string guitar artwork is mirrored beside the explicit
   Left-handed label and flip cue.
-  A compact inline caption identifies the pattern and its lowest note B (7); it
-  does not repeat the bracket range or note count. Hear tonic sits beside tempo
-  and repeat. The formula action appears after editing, and repeated setup,
-  practice, and PDF-summary cards are absent.
+  A compact inline caption identifies the pattern and its lowest note B (7).
+  Hear tonic sits beside the display controls.
 - `desktop-dark.png` shows the same 1360 × 1447 layout with a saved Dark choice.
   The moon control in the header identifies that preference. Dedicated dark
   fretboard surfaces keep the note colors, root rings, bracket guides, and labels
@@ -28,12 +26,12 @@ use local build `2536f8f25890`; static captures honor reduced motion.
   through the stacked settings and playing controls. The fixed-size 0–12 diagram
   and its pattern brackets scroll horizontally together to the selected pattern.
   The root legend and Copy link share a footer; note feedback appears after
-  inspection. Display, tempo, repeat, and one note/degree reference row follow it.
+  inspection. Display controls, Hear tonic, and one note or degree reference row follow it.
   A sticky current-scale shortcut provides a direct route from settings to the
   fretboard; the selected pattern remains visible when the viewport changes.
 - `mobile-dark.png` shows the same 390 × 1758 phone layout in Dark, including
-  the appearance control, instrument icons, fixed-size neck, and compact playback
-  controls. Switching appearance does not change the measured page positions.
+  the appearance control, instrument icons, fixed-size neck, and tonic control.
+  Switching appearance preserves the layout.
 - `mobile-picker.png` shows the inline scale catalog at 390 × 860 CSS pixels,
   searching for pentatonic scales while C major remains selected, with the sticky
   shortcut above the scale settings.

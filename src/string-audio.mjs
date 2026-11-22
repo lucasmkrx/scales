@@ -1,7 +1,7 @@
 // Original extended Karplus–Strong string model. A shaped pluck supplies stable
 // low harmonics, while a little filtered pick noise gives the attack texture.
 // Background: Julius O. Smith, Physical Audio Signal Processing, String Excitation.
-export const STRING_SOUNDS = Object.freeze({
+const STRING_SOUNDS = Object.freeze({
   guitar: {
     seconds: 3,
     decay: 4,
@@ -161,13 +161,12 @@ export class PluckedStringPlayer {
     if (this.cache.size > 48) this.cache.delete(this.cache.keys().next().value);
     return buffer;
   }
-  play(midi, { instrument = 'guitar', when = this.context.currentTime, duration } = {}) {
+  play(midi, { instrument = 'guitar', onEnded } = {}) {
     const source = this.context.createBufferSource(),
       gain = this.context.createGain();
     source.buffer = this.buffer(midi, instrument);
-    const start = Math.max(when, this.context.currentTime),
-      seconds = Math.min(duration ?? source.buffer.duration, source.buffer.duration),
-      end = start + seconds;
+    const start = this.context.currentTime,
+      end = start + source.buffer.duration;
     gain.gain.setValueAtTime(1, start);
     gain.gain.setValueAtTime(1, Math.max(start, end - 0.06));
     gain.gain.linearRampToValueAtTime(0, end);
@@ -179,10 +178,10 @@ export class PluckedStringPlayer {
       source.disconnect();
       gain.disconnect();
       this.voices.delete(voice);
+      onEnded?.();
     };
     source.start(start);
     source.stop(end + 0.01);
-    return end;
   }
   startDrone(midi, { instrument = 'guitar' } = {}) {
     if (!Number.isFinite(midi) || midi < 0 || midi > 151)

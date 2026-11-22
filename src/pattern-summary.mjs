@@ -1,7 +1,6 @@
 import { selection, prettyDegree } from './music.mjs';
 import { copy } from './i18n.mjs';
 
-// The lowest note can precede the tonic where sequence playback begins.
 export function patternSummary(input, pattern) {
   if (!pattern?.points.length) return null;
   const state = selection(input),

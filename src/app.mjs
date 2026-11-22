@@ -16,7 +16,7 @@ import {
   boardModel,
   pitchPreference,
 } from './music.mjs';
-import { PluckedStringPlayer, STRING_SOUNDS } from './string-audio.mjs';
+import { PluckedStringPlayer } from './string-audio.mjs';
 import { scaleGroups, initialScaleView } from './scale-picker.mjs';
 import { chooseNextIndex } from './choice-navigation.mjs';
 import {
@@ -35,7 +35,7 @@ import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardSvg, escape } from './board.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { createAtlas } from './pdf.mjs';
-import { positionSequence, intervalName } from './practice.mjs';
+import { intervalName } from './intervals.mjs';
 import { scalePatterns } from './patterns.mjs';
 import { patternSummary } from './pattern-summary.mjs';
 const STORAGE_KEY = 'scales.preferences.v1';
@@ -57,15 +57,10 @@ let boardWidth,
 let view = initialScaleView(state.scale),
   search = '',
   instrumentAudio,
-  playing = false,
-  playbackMode = null,
   inspectedNote = null,
   inspectedPitch = null,
-  tempo = 100,
-  playbackVersion = 0,
+  noteAudioVersion = 0,
   soundingMidi = null,
-  soundingPoint = null,
-  playTimer,
   exporting,
   pdfLibraries,
   tuningDraft = false,
@@ -225,11 +220,6 @@ function isHighlighted(point) {
   const [lo, hi] = fretBounds(range);
   return point.fret >= lo && point.fret <= hi;
 }
-function practiceFocus() {
-  const pattern = currentPattern();
-  const [lo, hi] = fretBounds(range);
-  return pattern ? { points: pattern.points } : { lo, hi };
-}
 function revealPattern() {
   const board = $('board');
   const notes = [...board.querySelectorAll('.note:not(.muted)')].map((note) =>
@@ -278,7 +268,7 @@ function renderBoard() {
     selectedPattern: currentPattern()?.id,
   });
   highlightSelection();
-  if (soundingMidi !== null) highlightPitch(soundingMidi, soundingPoint);
+  if (soundingMidi !== null) highlightSoundingNote(soundingMidi);
   board.dataset.setup = setup;
   board.scrollLeft = reset
     ? state.hand === 'left'
@@ -333,9 +323,6 @@ function renderContent() {
     );
   }
   $('notes-strip').innerHTML = tables.join('');
-  $('playback-hint').textContent = positionSequence(s, practiceFocus()).complete
-    ? t.playbackHint
-    : t.partialPosition;
   $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
   $('pattern-info').textContent = patternInfo.allCount
     ? `${t.patterns} · ${t.patternSystems[patternInfo.system]} · ${t.patternToggleHint}${patternInfo.patterns.length < patternInfo.allCount ? ` ${t.morePatterns}` : ''}`
@@ -364,7 +351,7 @@ function renderContent() {
 function changeRange(id) {
   range = id;
   inspectedNote = inspectedPitch = null;
-  stopAudio();
+  stopNoteAudio();
   persist();
   status('');
   $('share-fallback').hidden = true;
@@ -473,13 +460,11 @@ function render() {
   renderAppearance();
   renderOrientation();
   const arpeggio = s.scaleData.family === 'arpeggio';
-  $('play-label').textContent = playing ? t.stop : arpeggio ? t.playArpeggio : t.play;
   document.querySelectorAll('[data-i18n="root"]').forEach((el) => {
     el.textContent = arpeggio ? t.chordRoot : t.root;
   });
   $('root-hint').textContent = arpeggio ? t.chordRootHint : t.rootHint;
   $('degrees-hint').textContent = arpeggio ? t.chordDegreesHint : t.degreesHint;
-  $('play').title = $('play-label').textContent;
   $('language').value = state.lang;
   $('search').placeholder = t.searchPlaceholder;
   for (const name of ['instrument', 'labels'])
@@ -549,7 +534,7 @@ function render() {
 }
 function update(values, { setup = false } = {}) {
   inspectedNote = inspectedPitch = null;
-  stopAudio();
+  stopNoteAudio();
   const previous = state;
   state = changeSetup(state, values, saved);
   if (
@@ -637,15 +622,14 @@ function visibleNotes() {
 function positionNotes() {
   return visibleNotes().filter(isHighlighted);
 }
-function renderNoteReadout(note = inspectedNote, location = true) {
-  const t = copy[state.lang];
+function renderNoteReadout() {
+  const note = inspectedNote;
+  $('note-readout').hidden = !note;
   if (!note) {
-    const empty = !positionNotes().some((point) => point.active);
-    $('play-hint').hidden = !empty;
-    $('note-readout-text').textContent = empty ? t.emptyRange : '';
+    $('note-readout-text').textContent = '';
     return;
   }
-  $('play-hint').hidden = false;
+  const t = copy[state.lang];
   const details = [
     spelledMidiName(note.midi, state),
     note.degree
@@ -653,14 +637,10 @@ function renderNoteReadout(note = inspectedNote, location = true) {
       : selection(state).scaleData.family === 'arpeggio'
         ? t.outsideChord
         : t.outsideScale,
+    `${t.string.toLowerCase()} ${note.string}`,
+    `${t.fret.toLowerCase()} ${note.fret}`,
   ];
-  if (location) {
-    details.push(
-      `${t.string.toLowerCase()} ${note.string}`,
-      `${t.fret.toLowerCase()} ${note.fret}`,
-    );
-    if (!note.visible) details.push(t.noteOutsideRange);
-  }
+  if (!note.visible) details.push(t.noteOutsideRange);
   $('note-readout-text').textContent = details.join(' · ');
 }
 function highlightSelection() {
@@ -686,37 +666,20 @@ function inspectNote(note) {
   highlightSelection();
   renderNoteReadout();
 }
-function highlightPitch(midi, point = null) {
+function highlightSoundingNote(midi) {
   soundingMidi = midi;
-  soundingPoint = point;
   document.querySelectorAll('.sounding').forEach((el) => el.classList.remove('sounding'));
-  if (midi === null) {
-    renderNoteReadout();
-    return;
-  }
-  const boardSelector = point
-    ? `#board [data-row="${point.row}"][data-fret="${point.fret}"]`
-    : `#board [data-midi="${midi}"]`;
+  if (midi === null) return;
   document
-    .querySelectorAll(`${boardSelector}, #notes-strip td[data-pitch="${midi % 12}"]`)
+    .querySelectorAll(
+      `#board [data-midi="${midi}"], #notes-strip td[data-pitch="${midi % 12}"]`,
+    )
     .forEach((el) => el.classList.add('sounding'));
-  if (playbackMode === 'sequence') {
-    const note = point ?? positionNotes().find((note) => note.midi === midi);
-    if (note) renderNoteReadout({ ...note, visible: true }, Boolean(point));
-  }
 }
-function stopAudio() {
-  playbackVersion++;
-  playing = false;
-  playbackMode = null;
+function stopNoteAudio() {
+  noteAudioVersion++;
   instrumentAudio?.stop();
-  clearTimeout(playTimer);
-  highlightPitch(null);
-  const t = copy[state.lang];
-  $('play-label').textContent =
-    selection(state).scaleData.family === 'arpeggio' ? t.playArpeggio : t.play;
-  $('play').title = $('play-label').textContent;
-  $('play').classList.remove('playing');
+  highlightSoundingNote(null);
 }
 function renderDrone() {
   const t = copy[state.lang];
@@ -761,69 +724,23 @@ async function toggleDrone() {
     status(copy[state.lang].audioUnavailable, true);
   }
 }
-async function startPlayback(midi) {
-  stopAudio();
-  const version = playbackVersion,
-    snapshot = { ...state };
-  const route = midi === undefined ? currentPattern()?.sequence : null;
-  const notes = route
-    ? route.map((point) => point.midi)
-    : midi === undefined
-      ? positionSequence(snapshot, practiceFocus()).notes
-      : [midi];
-  if (!notes.length) {
-    status(copy[state.lang].emptyRange);
-    return;
-  }
+async function soundNote(midi) {
+  stopNoteAudio();
+  const version = noteAudioVersion;
   status('');
-  playing = true;
-  playbackMode = midi === undefined ? 'sequence' : 'note';
-  $('play-label').textContent = copy[state.lang].stop;
-  $('play').title = copy[state.lang].stop;
-  $('play').classList.add('playing');
   try {
     const player = await audioPlayer();
-    if (version !== playbackVersion) return;
-    for (const note of new Set(notes)) player.buffer(note, snapshot.instrument);
-    const step = 60 / tempo;
-    const duration =
-      midi === undefined
-        ? Math.min(step * 0.9, snapshot.instrument === 'bass' ? 0.95 : 0.78)
-        : STRING_SOUNDS[snapshot.instrument].seconds;
-    let start, end;
-    function schedulePass() {
-      start = player.context.currentTime + 0.025;
-      notes.forEach((note, index) => {
-        end = player.play(note, {
-          instrument: snapshot.instrument,
-          when: start + index * step,
-          duration,
-        });
-      });
-    }
-    function followAudio() {
-      if (version !== playbackVersion) return;
-      const now = player.context.currentTime;
-      if (now >= end) {
-        if (soundingMidi !== null) highlightPitch(null);
-        if (midi !== undefined || !$('repeat').checked) {
-          stopAudio();
-          return;
-        }
-        if (now >= end + step) schedulePass();
-      }
-      const index = Math.floor((now - start) / step);
-      const stepIndex = Math.max(0, Math.min(notes.length - 1, index));
-      const pitch = now < end ? (notes[stepIndex] ?? null) : null;
-      const point = pitch === null ? null : (route?.[stepIndex] ?? null);
-      if (pitch !== soundingMidi || point !== soundingPoint) highlightPitch(pitch, point);
-      playTimer = setTimeout(followAudio, 25);
-    }
-    schedulePass();
-    followAudio();
+    if (version !== noteAudioVersion || document.hidden) return;
+    player.play(midi, {
+      instrument: state.instrument,
+      onEnded: () => {
+        if (version === noteAudioVersion) highlightSoundingNote(null);
+      },
+    });
+    highlightSoundingNote(midi);
   } catch {
-    if (version === playbackVersion) {
-      stopAudio();
+    if (version === noteAudioVersion) {
+      stopNoteAudio();
       status(copy[state.lang].audioUnavailable, true);
     }
   }
@@ -841,7 +758,7 @@ function playNote(midi, element) {
       ...note,
       visible: isHighlighted(note),
     });
-  startPlayback(midi);
+  soundNote(midi);
 }
 $('notes-strip').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-pitch]');
@@ -856,7 +773,7 @@ $('notes-strip').addEventListener('click', (event) => {
     .sort((a, b) => a.midi - b.midi)[0];
   if (!note) return;
   inspectNote({ ...note, visible });
-  startPlayback(note.midi);
+  soundNote(note.midi);
 });
 $('board').addEventListener('focusin', (event) => {
   const note = event.target.closest('[data-midi]');
@@ -871,19 +788,9 @@ $('board').addEventListener('focusin', (event) => {
       visible: isHighlighted(point),
     });
 });
-$('tempo').addEventListener('input', () => {
-  tempo = Number($('tempo').value);
-  $('tempo-value').value = `${tempo} BPM`;
-  $('tempo').setAttribute('aria-valuetext', `${tempo} BPM`);
-  if (playing && playbackMode === 'sequence') startPlayback();
-});
-$('play').addEventListener('click', () => {
-  if (playing) stopAudio();
-  else startPlayback();
-});
 $('drone').addEventListener('click', toggleDrone);
 const stopAllAudio = () => {
-  stopAudio();
+  stopNoteAudio();
   stopTonic();
 };
 window.addEventListener('pagehide', stopAllAudio);
