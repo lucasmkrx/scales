@@ -7,13 +7,13 @@
 
 [**Try the live app**](https://lucasmkrx.github.io/scales/) · [Português](https://lucasmkrx.github.io/scales/?lang=pt) · [Español](https://lucasmkrx.github.io/scales/?lang=es) · [Case study](docs/case-study.md) · [Architecture](docs/architecture.md)
 
-![Scales showing a left-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
+![Scales showing a right-handed guitar fretboard, scale controls, and note colors](docs/assets/desktop.png)
 
 Scales helps players who learned songs from TAB connect familiar fret positions
 with notes, scale degrees, and improvisation. Change the instrument, tuning, or
-handedness and every diagram is recalculated from the sounding pitches. Playback
-and PDF generation happen in the browser; the deployed app needs no account,
-backend, analytics, or external API.
+handedness and every diagram is recalculated from the sounding pitches. Note playback
+and PDF generation run locally. The optional backing-track finder searches YouTube
+on request and plays a selected video alongside the diagram.
 
 ## See it work
 
@@ -23,18 +23,23 @@ Try [A minor pentatonic on guitar](https://lucasmkrx.github.io/scales/?instrumen
 or [D natural minor on Drop C bass](https://lucasmkrx.github.io/scales/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
+Choose a root, then pick a scale or arpeggio. Searching the catalog keeps the
+current scale selected until you choose a result. The formula shows its degrees
+in order. Select Edit to enter a custom formula.
 PDF customization stays inline below the playing surface, with contents, reference-note options, a page estimate, and Download PDF. Repeated setup summaries and instructional sections are omitted.
 On phones, a sticky current-scale shortcut jumps directly to the fretboard while
 keeping every setting on the homepage.
-Click the illustrated handedness control to flip between right- and left-handed
-playing. Its full label stays readable beside the guitar or bass artwork while
-the instrument and fretboard update together.
-The fretboard starts at frets 0–12. A sliding switch in the fretboard header
-reveals the full neck. Thin pattern brackets sit above the
-frets they cover, labeled with the pattern number, shape, and fret range.
+The instrument card has sliding switches for Guitar or Bass and Right-handed
+or Left-handed. Each instrument starts right-handed and remembers its own
+orientation. Changing instruments also recalls the string count and its last
+tuning, including custom pitches. The tuning picker shows the open strings
+from lowest to highest.
+The fretboard starts at frets 0–12. A sliding switch in the
+fretboard header reveals the full neck. Thin pattern brackets sit above the
+frets they cover, labeled Pattern 1, Pattern 2, and so on.
 Vertical boundary guides connect each bracket to the neck. Click one to highlight its exact string-and-fret shape;
 click it again to return the visible scale notes to color.
-A compact caption names the selected pattern and its lowest note; fret ranges stay on the brackets.
+A compact caption identifies the selected pattern and its lowest note. Each bracket’s tooltip and accessible description include its fret range and shape or starting string.
 Six-string guitar offers five compact CAGED positions for major and natural
 minor, five two-notes-per-string shapes for major/minor pentatonic, and five
 blues patterns with the extra blue notes. The other major-scale modes, harmonic
@@ -43,13 +48,13 @@ string. Diminished scales use four notes per string. Seven-string guitar uses
 three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
-Note labels, spelling, and Hear tonic sit below the diagram. Tap a fretboard note
+Note labels and spelling sit below the diagram. Tap a fretboard note
 or a note or degree in the reference row to hear it and highlight where it appears.
-Hear tonic adds a quiet sustained root. Key spelling
-follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
-The appearance button follows the device theme by default and cycles through
-system, light, and dark choices. Icons reinforce the labeled controls, and short
-selection and note animations respect the device's reduced-motion setting.
+Key spelling follows the written degrees, with separate enharmonic root choices such as F♯ and G♭.
+Scales opens in Light on first visit, even on a device set to dark mode. Use the
+sun-and-moon button in the header to switch themes. Scales remembers your choice
+on this device. Selection and note animations respect the device's
+reduced-motion setting.
 See the [dark desktop](docs/assets/desktop-dark.png) and
 [dark mobile](docs/assets/mobile-dark.png) previews.
 Only complete patterns that fit the selected view are offered. A whole pattern
@@ -85,8 +90,7 @@ also depends on its chords.
   keyboard controls, and shareable URLs.
 - Scale-derived fingering patterns that highlight exact string and fret positions,
   plus a note-map fallback for unsupported shapes.
-- Individual guitar and bass note sounds and a sustained tonic, synthesized
-  locally.
+- Individual guitar and bass notes synthesized locally.
 - Inline PDF customization with a Download PDF action beneath the fretboard.
   Choose the current scale, its family, or the full catalog, with all 12 reference
   notes available for a selected scale.
@@ -98,13 +102,14 @@ The [design notes](docs/design.md) explain the research and layout decisions.
 | Decision                       | Purpose                                                                | Where to look                                                      |
 | ------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Shared pitch model             | Keep web and PDF notes consistent across tunings and handedness        | [Music engine](src/music.mjs)                                      |
-| Separate drawing geometry      | Mirror coordinates while keeping text and string order readable        | [SVG rendering](src/board.mjs), [PDF layout](src/guide-layout.mjs) |
+| Separate drawing geometry      | Mirror coordinates while keeping text and string order readable        | [Web fretboard](src/board.mjs), [PDF layout](src/guide-layout.mjs) |
 | Procedural plucked strings     | Provide instrument-specific playback without recorded sample downloads | [Audio engine](src/string-audio.mjs)                               |
 | Validated URL and device state | Make links reproducible while remembering local setups                 | [Workspace state](src/workspace.mjs)                               |
 | Lazy PDF dependencies          | Load PDF tooling when a download is requested                          | [App controller](src/app.mjs), [PDF generator](src/pdf.mjs)        |
 | Revisioned module graph        | Prevent a new entry point from loading stale JavaScript dependencies   | [Static build](scripts/build.mjs)                                  |
 
-The app uses native browser modules, SVG, Web Audio, and local font assets.
+The app draws the fretboard with HTML and CSS, plays notes with Web Audio,
+and serves Font Awesome Free icons locally.
 Node.js provides the test runner, static build, preview server, and PDF CLI.
 pdf-lib and fontkit are vendored with their license notices. Prettier and Playwright
 are development dependencies. See the [design tradeoffs](docs/architecture.md#decisions-and-tradeoffs)
@@ -122,6 +127,9 @@ node scripts/serve.mjs
 
 Open **http://127.0.0.1:4173**. The build goes into `dist/` and uses relative paths,
 so it also works under GitHub Pages' `/scales/` project path.
+
+To enable backing-track search, set a website-restricted YouTube Data API key
+in `.env` before building. [Local and GitHub Pages setup](docs/backing-tracks.md)
 
 To install the pinned formatting tool:
 
@@ -187,4 +195,4 @@ iterative development and AI assistance.
 - Code: [MIT](LICENSE).
 - Original educational content and guides: [CC BY 4.0](CONTENT-LICENSE.md).
 - Marques & Co. logo: [separate branding terms](BRANDING.md).
-- Fonts and vendored libraries: [third-party notices](THIRD-PARTY-NOTICES.md).
+- Icons, fonts, and vendored libraries have their own [third-party notices](THIRD-PARTY-NOTICES.md).

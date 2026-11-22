@@ -1,7 +1,8 @@
-import { normalizeState, selection, SCALES, DEFAULT_FRETS } from './music.mjs';
+import { normalizeState, selection, SCALES } from './music.mjs';
 import { guidePlan } from './guide-layout.mjs';
 
-const setupKeys = ['instrument', 'strings', 'tuning', 'customTuning', 'hand', 'frets'];
+const tuningKeys = ['tuning', 'customTuning'];
+const setupKeys = ['instrument', 'strings', 'hand', 'frets', ...tuningKeys];
 const preferenceKeys = ['lang', 'spelling', 'labels', 'allNotes'];
 const musicKeys = ['root', 'tonic', 'scale', 'formula'];
 const ranges = ['full', 'lower', 'upper'];
@@ -29,12 +30,14 @@ export function restoreWorkspace(query = {}, saved = {}) {
     (query.instrument ?? saved.instrument) === 'bass' ? 'bass' : 'guitar';
   const remembered = saved.setups?.[instrument] ?? {};
   const strings = query.strings ?? remembered.strings;
-  const setup = saved.stringSetups?.[`${instrument}:${strings}`] ?? remembered;
+  const tuning = saved.stringSetups?.[`${instrument}:${strings}`] ?? remembered;
   return normalizeState({
     ...pick(saved.preferences, preferenceKeys),
-    ...pick(setup, setupKeys),
+    ...pick(remembered, ['hand', 'frets']),
+    ...pick(tuning, tuningKeys),
     ...(!hasMusic(query) ? pick(saved.practice, musicKeys) : {}),
     instrument,
+    strings,
     ...query,
   });
 }
@@ -72,26 +75,21 @@ export function rememberWorkspace(saved, state) {
 export function changeSetup(state, changes, saved = {}) {
   const instrument = changes.instrument ?? state.instrument;
   if (instrument !== state.instrument) {
-    const fallback = {
-      instrument,
-      strings: instrument === 'guitar' ? 6 : 4,
-      tuning: '',
-      hand: state.hand,
-      frets: DEFAULT_FRETS[instrument],
-    };
-    return normalizeState({
-      ...state,
-      ...fallback,
-      ...pick(saved.setups?.[instrument], setupKeys),
-      ...changes,
-    });
+    return restoreWorkspace(
+      {
+        ...pick(state, preferenceKeys),
+        ...pick(state, musicKeys),
+        ...changes,
+      },
+      saved,
+    );
   }
   if (changes.strings !== undefined && Number(changes.strings) !== state.strings) {
     const recalled = saved.stringSetups?.[`${instrument}:${changes.strings}`];
     return normalizeState({
       ...state,
       tuning: '',
-      ...pick(recalled, ['tuning', 'customTuning']),
+      ...pick(recalled, tuningKeys),
       ...changes,
     });
   }

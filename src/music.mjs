@@ -58,6 +58,8 @@ function keySpellings(state) {
     })
     .reduce((best, candidate) => (candidate.cost < best.cost ? candidate : best));
 }
+export const STRING_COUNTS = { guitar: [6, 7], bass: [4, 5, 6] };
+export const FRET_COUNTS = [20, 21, 22, 24];
 export const DEFAULT_FRETS = { guitar: 21, bass: 20 };
 export const DEFAULTS = {
   instrument: 'guitar',
@@ -134,7 +136,7 @@ export function parseFormula(value) {
 export function normalizeState(input = {}) {
   const s = { ...DEFAULTS, ...input };
   s.instrument = s.instrument === 'bass' ? 'bass' : 'guitar';
-  const counts = s.instrument === 'guitar' ? [6, 7] : [4, 5, 6];
+  const counts = STRING_COUNTS[s.instrument];
   s.strings = counts.includes(Number(input.strings)) ? Number(input.strings) : counts[0];
   s.lang = normalizeLanguage(s.lang);
   s.hand = s.hand === 'left' ? 'left' : 'right';
@@ -148,7 +150,7 @@ export function normalizeState(input = {}) {
   if (tonic && mod(NATURALS[tonic.letter] + tonic.accidental) === s.root)
     s.tonic = tonic.tonic;
   else delete s.tonic;
-  s.frets = [20, 21, 22, 24].includes(Number(input.frets))
+  s.frets = FRET_COUNTS.includes(Number(input.frets))
     ? Number(input.frets)
     : DEFAULT_FRETS[s.instrument];
   s.allNotes = s.allNotes === true || s.allNotes === 'true';

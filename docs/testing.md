@@ -38,20 +38,23 @@ HTML report.
 | Pattern explanations          | Compact captions identify the lowest note and follow key spelling and language settings                                                                       | [pattern-summary.test.mjs](../tests/pattern-summary.test.mjs)                                      |
 | Search                        | Common choices are curated; every catalog entry remains reachable; multilingual and accent-insensitive search works                                           | [scale-picker.test.mjs](../tests/scale-picker.test.mjs)                                            |
 | Regional localization         | Matching translation keys, catalog coverage, regional tags, saved preferences, and custom shared URLs                                                         | [locales.test.mjs](../tests/locales.test.mjs)                                                      |
-| Handedness interaction        | Illustrated click/keyboard control, mirrored geometry, unchanged fingering points, preferences, and reduced motion                                            | [handedness.spec.mjs](../tests/e2e/handedness.spec.mjs)                                            |
+| Handedness interaction        | Radio selection by pointer and keyboard, mirrored geometry, unchanged fingering points, and saved preferences                                                 | [handedness.spec.mjs](../tests/e2e/handedness.spec.mjs)                                            |
 | Fretboard keyboard navigation | One tab stop, directional movement for both hands, and localized note labels                                                                                  | [board-navigation.test.mjs](../tests/board-navigation.test.mjs)                                    |
 | Scale patterns                | Exact string/fret membership, reference fixtures, main-scale coverage, complete routes, tuning restrictions, and honest map fallback                          | [patterns.test.mjs](../tests/patterns.test.mjs)                                                    |
-| Pattern range markers         | Fret-aligned brackets, distinct pattern rows, mirrored geometry, localized labels, and bounded hit areas                                                      | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                        |
+| Pattern range markers         | Shared bracket rows, overlap handling, mirrored fret alignment, localized labels, and bounded hit areas                                                       | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                        |
 | Interval names                | Written intervals have localized names in all three languages                                                                                                 | [intervals.test.mjs](../tests/intervals.test.mjs)                                                  |
 | Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                                                            | [workspace.test.mjs](../tests/workspace.test.mjs)                                                  |
 | Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents                                          | [guides.test.mjs](../tests/guides.test.mjs)                                                        |
 | PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                                                      | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)     |
-| Audio                         | Tune seven pitches at 44.1 and 48 kHz within 3 cents; check harmonic balance, decay, caching, pluck stopping, and independent drone lifecycle                 | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
+| Audio                         | Tune seven pitches at 44.1 and 48 kHz within 3 cents and check harmonic balance, decay, caching, and pluck stopping                                           | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                            |
 | Browser flows                 | Chromium, Firefox, and WebKit checks cover exact patterns, mobile layouts, jump focus, drafts/preferences, key spelling, audio, and PDF cancellation/download | [workspace.spec.mjs](../tests/e2e/workspace.spec.mjs)                                              |
-| Appearance preferences        | Device theme, saved overrides, system changes, unavailable storage, keyboard switching, dark mobile layouts, and reduced motion                               | [appearance.spec.mjs](../tests/e2e/appearance.spec.mjs)                                            |
-| Published assets              | Check that entry point, appearance bootstrap, icon sprite, stylesheet, and module imports use one revision                                                    | [build.test.mjs](../tests/build.test.mjs)                                                          |
+| Appearance preferences        | Light on first visit, saved themes, independence from OS appearance, unavailable storage, keyboard switching, dark mobile layouts, and reduced motion         | [appearance.spec.mjs](../tests/e2e/appearance.spec.mjs)                                            |
+| Published assets              | Check that the entry point, appearance bootstrap, icon font, stylesheet, and module imports use one revision                                                  | [build.test.mjs](../tests/build.test.mjs)                                                          |
 
 Some checks enumerate the full finite catalog; others use representative cases.
+The bracket tests cover every named scale and arpeggio on all five supported guitar
+and bass string counts. They check the fret endpoints, minimum row count, and matching
+row assignments in both orientations across the octave and full-neck views.
 The tests do not independently certify the cultural naming of every scale,
 perceptual realism of synthesized audio, or every possible custom tuning.
 
@@ -60,35 +63,46 @@ perceptual realism of synthesized audio, or every possible custom tuning.
 Serve a fresh build with `node scripts/serve.mjs` and check the following:
 
 - Confirm scale selection and clickable pattern ranges lead into the fretboard, with note
-  details, display options, and the tonic control below it. Scale selection and instrument
+  details and display options below it. Scale selection and instrument
   setup should be side by side on wider screens and stacked on phones, with scale
   selection first. The two panels should have equal height when side by side. PDF settings remain inline below the playing surface, without
   application dialogs or popovers. Repeated intro, setup-summary, exercise, and PDF-configuration cards should not appear.
 - Switch guitar/bass and every supported string count; confirm available tunings
   and fret defaults, then confirm a previous setup can be recalled.
+- Open the tuning picker by pointer and keyboard. Check that long pitch names
+  wrap within the list on phones. Choose a preset and
+  confirm the button shows its name and open-string pitches. Reopen the list and
+  press Escape to dismiss it while keeping that tuning.
 - Change handedness and tuning directly in the instrument card, including a custom
   tuning with octave numbers. Invalid input must remain uncommitted with an inline
   explanation. Apply and cancel custom pitch edits and change instrument/string
   count while editing to check that the draft state resets cleanly.
-- Click the handedness illustration and use Enter and Space to flip it. Confirm
-  the full current label stays readable at phone widths, keyboard focus remains on the button, and the
-  selected pattern keeps the same string/fret points while its geometry and range
-  labels mirror. Check guitar/bass and each string count, reload and shared links,
-  and an immediate state change with reduced motion enabled.
+- Check that the instrument and handedness choices are visible on phones in all
+  three languages. Select Guitar, Bass, Right-handed, and Left-handed by pointer
+  and by keyboard. Tap and drag each switch. Check that its slider moves toward the selected label
+  and that the keyboard focus is visible. Select the numeric string and fret
+  counts, then confirm the tuning picker shows the matching open pitches. Changing handedness
+  should mirror the board and range labels while keeping the same fingering points.
+  Verify the choice on reload and when reopening a shared link.
 - Search all three languages in the inline catalog, browse scales and arpeggios,
   and choose results with the pointer or keyboard. Browsing retains the selection.
+  Choosing a result updates the card title, checkmark, and formula degrees.
   After selection, check that keyboard focus stays on the chosen result. Arrow
   keys should follow the visible rows and columns after the catalog reflows.
-- Edit a custom formula, then change root, spelling, or instrument to check that the
-  draft survives. The custom-scale action should appear only after editing. Choose a named scale to reset it, and test invalid custom input.
+- Open the formula editor, change a degree, and cancel. Confirm the displayed
+  degrees still match the selected scale. Edit again, then change root, spelling,
+  or instrument to check that the draft survives. Choose a named scale to reset
+  it, and test invalid custom input.
   Switch language during a draft and confirm pitch values survive while string
   labels and active validation messages translate.
 - Use the inline notes/degrees, spelling, and outside-note controls. Confirm that
   settings remain available and horizontal fretboard scroll is retained.
-- Check System, Light, and Dark from the appearance button. An explicit choice
-  should survive reload and musical links; returning to System should follow
-  later device changes. Repeat with storage unavailable. Confirm focused notes,
-  selected patterns, and playing audio survive a theme change.
+- On a device set to dark mode, open a fresh session and confirm the page starts
+  in Light. Switch to Dark, reload, and open a shared musical link to check the
+  saved choice. Changing the OS appearance should preserve the selected theme.
+  Switch back to Light and check it persists. Repeat the toggle with storage
+  unavailable. Confirm focused notes, selected patterns, and playback survive
+  each switch.
 - Inspect dark controls, note labels, root rings, pattern guides, and keyboard
   focus. Icons should reinforce action labels. Emulate reduced motion and confirm
   motion stops while selection and sounding notes remain visible. Downloaded
@@ -96,7 +110,7 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
 - Switch the reference row between notes and degrees, tap its values, then use
   board notes with the pointer or keyboard. Check pitch-class highlights and the
   exact string/fret detail, which appears only after inspection. Check that changing
-  the pattern stops the current note and that the tonic can sound alongside a pluck.
+  the pattern stops the current note.
 - Start without saved preferences and confirm frets 0–12 is selected. Use the
   sliding switch to show the full neck, reload, and confirm the view is remembered.
   Check that the limited-view label changes from 0–12 to 12–0 for left-handed playing.
@@ -130,13 +144,13 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   and saved preferences restore valid selections in the chosen neck view. Click a
   selected pattern bracket again to clear it and restore visible scale notes to color
   without resetting horizontal scroll. No separate pattern or half-neck buttons
-  should remain. Thin brackets must have readable pattern numbers, shapes, and fret ranges,
-  sit in distinct rows, align with the correct frets in either handedness, and
-  scroll with the diagram. Both ends must have vertical guides continuing through
+  should remain. Check that separated brackets can share a row and that overlapping
+  ones sit at different heights. Each bracket must show a localized label such as
+  “Pattern 1”, align with its frets in either handedness, and scroll with the diagram.
+  Both ends must have vertical guides continuing through
   the neck behind notes; the selected guides should be stronger. Test Enter and
-  Space and confirm focus stays on the
-  activated range after the SVG updates. Pattern selection must not resize the
-  neck; only changing the neck view or instrument changes its geometry. Navigate
+  Space and confirm focus stays on the activated range after the board updates.
+  The neck should keep its dimensions across pattern selections. Navigate
   muted and highlighted notes by keyboard and confirm pattern brackets retain access.
   Check that the 0–12/full-neck switch sits in the header, wraps
   cleanly on phones, and remains keyboard-operable.
@@ -145,8 +159,8 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   the page width.
 
 The permanent suite runs workspace and appearance flows in Chromium, Firefox, and
-WebKit. It includes phone-width checks in all three languages, both handedness
-settings, and the illustrated orientation control. Additional visual checks inspect complete
+WebKit. It includes phone-width checks in all three languages, both instruments,
+and both handedness settings. Additional visual checks inspect complete
 pages and generated PDFs; the layout measurement approach is recorded in
 [design.md](design.md#layout-measurement).
 
@@ -154,7 +168,7 @@ pages and generated PDFs; the layout measurement approach is recorded in
 
 - **Browser coverage:** CI covers Chromium, Firefox, and WebKit. WebKit coverage
   does not replace physical Safari/iPhone, Android, mobile-keyboard, and screen-reader
-  testing. Native modules, SVG, Web Audio, and modern CSS are required.
+  testing. Native modules, Web Audio, and modern CSS are required.
 - **Accessibility:** keyboard controls, labels, selection focus, and reduced-motion
   styling are implemented. A formal accessibility audit has not been completed;
   there is no WCAG conformance claim.
@@ -178,7 +192,8 @@ pages and generated PDFs; the layout measurement approach is recorded in
   of export settings. Four original lesson PDFs are included as repository assets.
 - **State and privacy:** preferences are stored on the device when storage is
   available. URLs intentionally expose the musical configuration for sharing;
-  the app has no application backend or analytics. Hosting and repository services
+  the app has no application backend or analytics. The backing-track finder sends
+  a musical query to YouTube on request. YouTube, hosting, and repository services
   have their own policies.
 - **Outcomes:** there are no published adoption, usability-study, learning-gain,
   or performance benchmark results.

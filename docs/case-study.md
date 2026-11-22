@@ -32,9 +32,8 @@ changes the actual notes and patterns rather than relabeling a standard diagram.
 
 The initial interface collected setup, scale browsing, display settings, and PDF
 export in one sidebar. The current workspace keeps instrument setup and a
-searchable scale catalog above the fretboard. The custom formula editor stays in
-the scale card and shows its apply action after editing. Display controls and
-the tonic reference sit below the playing surface. Thin pattern brackets
+searchable scale catalog above the fretboard. The Scale card shows the selected
+degrees and opens an inline formula editor on demand. Display controls sit below the playing surface. Thin pattern brackets
 select exact fingerings; a separate switch chooses frets 0–12 or the full neck.
 These groups stack on phones. Repeated instructions, setup cards, and practice
 prose are removed from the main flow.

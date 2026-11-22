@@ -2,37 +2,31 @@
 
 All browser assets are served locally; no CDN or account is needed to use Scales.
 
-| Component                      | Version / source                                             | License / notice                                                          |
-| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| pdf-lib                        | 1.17.1, https://github.com/Hopding/pdf-lib                   | MIT, `public/vendor/LICENSE-pdf-lib.md`                                   |
-| @pdf-lib/fontkit               | 1.1.1, https://github.com/Hopding/fontkit                    | MIT, `public/vendor/LICENSE-fontkit.txt`                                  |
-| Literata                       | supplied font files; https://github.com/googlefonts/literata | SIL Open Font License 1.1, `public/assets/fonts/OFL-Literata.txt`         |
-| DejaVu Sans (regular and bold) | supplied font files; https://dejavu-fonts.github.io/         | Bitstream Vera / DejaVu notices, `public/assets/fonts/LICENSE-DejaVu.txt` |
-| Prettier (development only)    | 3.9.10, https://github.com/prettier/prettier                 | MIT; installed package `LICENSE`                                          |
+| Component                      | Version / source                                                                         | License / notice                                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| pdf-lib                        | 1.17.1, https://github.com/Hopding/pdf-lib                                               | MIT, `public/vendor/LICENSE-pdf-lib.md`                                                            |
+| @pdf-lib/fontkit               | 1.1.1, https://github.com/Hopding/fontkit                                                | MIT, `public/vendor/LICENSE-fontkit.txt`                                                           |
+| Font Awesome Free Solid        | [6.7.2, Fonticons, Inc.](https://github.com/FortAwesome/Font-Awesome/releases/tag/6.7.2) | Webfont under SIL OFL 1.1, CSS under MIT. [Bundled license](public/vendor/LICENSE-fontawesome.txt) |
+| Literata                       | supplied font files; https://github.com/googlefonts/literata                             | SIL Open Font License 1.1, `public/assets/fonts/OFL-Literata.txt`                                  |
+| DejaVu Sans (regular and bold) | supplied font files; https://dejavu-fonts.github.io/                                     | Bitstream Vera / DejaVu notices, `public/assets/fonts/LICENSE-DejaVu.txt`                          |
+| Prettier (development only)    | 3.9.10, https://github.com/prettier/prettier                                             | MIT; installed package `LICENSE`                                                                   |
 
 The four initial guided books were adapted from the PDFs supplied by Lucas
 Marques, retaining their original visual system.
 Marques & Co. branding has its own terms in BRANDING.md.
 
-## Handedness instrument artwork
+The Scales favicon renders the Font Awesome Free Solid guitar glyph in the site's colors.
 
-The locally served [guitar](public/assets/instruments/guitar.webp) and
-[bass](public/assets/instruments/bass.webp) artwork is adapted from the public
-previews of these models by [Ryan_Nein](https://sketchfab.com/Ryan_Nein):
+## Instrument selector icons
 
-- [Fender Stratocaster Guitar](https://sketchfab.com/3d-models/fender-stratocaster-guitar-15a37147641b4c1b963bb494b234593f)
-- [Fender PJ Bass](https://sketchfab.com/3d-models/fender-pj-bass-50bdb58f21dd4d2bb6d4b884b760ce52)
+Both headstock icons are by Studio TROISQUATRE, from Noun Project, and are
+licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
-The source works and adapted artwork are licensed under
-[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
-Changes for Scales: AI-assisted background removal using the built-in OpenAI
-image generation tool, horizontal mirroring, transparent padding, resizing, and
-WebP encoding. These are adapted preview images, not new renders from downloaded
-3D models. They represent a six-string guitar and four-string bass; the playable
-fretboard uses the user's selected string count.
+- Guitar uses [Fender Telecaster Headstock, icon 511263](https://thenounproject.com/icon/fender-telecaster-headstock-511263/).
+- Bass uses [Fender Bass Headstock, icon 154940](https://thenounproject.com/icon/fender-bass-headstock-154940/).
 
-The same attribution is shipped in [the artwork credits](public/assets/instruments/credits.html)
-and linked from the homepage footer.
+Scales crops the artwork to the headstocks and uses transparent PNG masks to
+match the switch labels in both themes.
 
 ## Explorer header image
 

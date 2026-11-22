@@ -34,6 +34,10 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
 
 ## Interface and documentation changes
 
+- Use the supplied headstock icons for the instrument selector and the bundled
+  Font Awesome Free Solid icons for other controls. Give each control
+  an accessible label and mark its icon `aria-hidden="true"`. Keep project assets
+  and generated markup free of custom SVG.
 - Keep root and scale easy to reach on phone and desktop layouts.
 - Use explicit labels, keyboard controls, meaningful focus return, and inline
   validation. Follow the manual checklist in [testing.md](docs/testing.md).

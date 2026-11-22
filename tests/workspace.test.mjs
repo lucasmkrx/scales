@@ -26,12 +26,13 @@ test('instrument and string setups are recalled without changing the selected mu
   state = changeSetup(state, { instrument: 'bass' }, saved);
   assert.equal(state.strings, 4);
   assert.equal(state.frets, 20);
-  assert.equal(state.hand, 'left');
+  assert.equal(state.hand, 'right');
   assert.equal(state.root, 9);
   assert.equal(state.scale, 'natural-minor');
   state = changeSetup(state, { tuning: 'bass-4-drop-c' }, saved);
   saved = rememberWorkspace(saved, state);
   state = changeSetup(state, { instrument: 'guitar' }, saved);
+  assert.equal(state.hand, 'left');
   assert.equal(state.strings, 7);
   assert.equal(state.tuning, 'guitar-7-drop-a');
   assert.equal(state.frets, 24);
@@ -41,6 +42,26 @@ test('instrument and string setups are recalled without changing the selected mu
   assert.equal(state.tuning, 'guitar-7-drop-a');
   state = changeSetup(state, { instrument: 'bass' }, saved);
   assert.equal(state.tuning, 'bass-4-drop-c');
+  assert.equal(state.hand, 'right');
+});
+test('a link selecting a string count recalls its tuning and the instrument’s latest orientation', () => {
+  const six = restoreWorkspace({
+    tuning: 'guitar-eb-standard',
+    hand: 'right',
+    frets: 21,
+  });
+  const seven = restoreWorkspace({
+    strings: 7,
+    tuning: 'guitar-7-drop-a',
+    hand: 'left',
+    frets: 24,
+  });
+  const saved = rememberWorkspace(rememberWorkspace({}, six), seven);
+  const linked = restoreWorkspace({ instrument: 'guitar', strings: '6' }, saved);
+  assert.equal(linked.tuning, 'guitar-eb-standard');
+  assert.equal(linked.hand, 'left');
+  assert.equal(linked.frets, 24);
+  assert.equal(restoreWorkspace({ strings: '6', hand: 'right' }, saved).hand, 'right');
 });
 test('saved preferences survive reload, while shared links override remembered configuration', () => {
   const saved = rememberWorkspace(

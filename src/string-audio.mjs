@@ -131,7 +131,6 @@ export class PluckedStringPlayer {
     this.context = context;
     this.cache = new Map();
     this.voices = new Set();
-    this.drone = null;
     this.output = context.createGain();
     this.output.gain.value = 0.65;
     this.compressor = context.createDynamicsCompressor();
@@ -182,70 +181,6 @@ export class PluckedStringPlayer {
     };
     source.start(start);
     source.stop(end + 0.01);
-  }
-  startDrone(midi, { instrument = 'guitar' } = {}) {
-    if (!Number.isFinite(midi) || midi < 0 || midi > 151)
-      throw new RangeError('Invalid MIDI pitch');
-    const frequency = 440 * 2 ** ((midi - 69) / 12);
-    if (frequency >= this.context.sampleRate * 0.45)
-      throw new RangeError('Drone pitch is above the audible range');
-    if (this.drone?.midi === midi && this.drone.instrument === instrument)
-      return this.drone;
-    this.stopDrone();
-    const now = this.context.currentTime;
-    const gain = this.context.createGain();
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(instrument === 'bass' ? 0.15 : 0.12, now + 0.12);
-    gain.connect(this.output);
-    // The octave adds definition on small speakers without introducing another
-    // chord tone. Each oscillator has its own harmonic gain before the shared fade.
-    const oscillators = [1, 2]
-      .filter((harmonic) => frequency * harmonic < this.context.sampleRate * 0.45)
-      .map((harmonic) => {
-        const source = this.context.createOscillator();
-        const level = this.context.createGain();
-        source.type = 'sine';
-        source.frequency.setValueAtTime(frequency * harmonic, now);
-        level.gain.value = harmonic === 1 ? 1 : 0.16;
-        source.connect(level);
-        level.connect(gain);
-        source.onended = () => {
-          source.disconnect();
-          level.disconnect();
-        };
-        source.start(now);
-        return source;
-      });
-    this.drone = { midi, instrument, gain, oscillators, started: now };
-    return this.drone;
-  }
-  stopDrone() {
-    const drone = this.drone;
-    if (!drone) return;
-    this.drone = null;
-    const now = this.context.currentTime;
-    // cancelAndHold preserves an in-progress attack before the release. The
-    // fallback computes that linear attack for older Web Audio implementations.
-    if (typeof drone.gain.gain.cancelAndHoldAtTime === 'function')
-      drone.gain.gain.cancelAndHoldAtTime(now);
-    else {
-      const level = drone.instrument === 'bass' ? 0.15 : 0.12;
-      drone.gain.gain.cancelScheduledValues(now);
-      drone.gain.gain.setValueAtTime(
-        level * Math.min(1, Math.max(0, (now - drone.started) / 0.12)),
-        now,
-      );
-    }
-    drone.gain.gain.linearRampToValueAtTime(0, now + 0.12);
-    let remaining = drone.oscillators.length;
-    for (const source of drone.oscillators) {
-      const cleanup = source.onended;
-      source.onended = () => {
-        cleanup();
-        if (--remaining === 0) drone.gain.disconnect();
-      };
-      source.stop(now + 0.13);
-    }
   }
   stop() {
     const now = this.context.currentTime;

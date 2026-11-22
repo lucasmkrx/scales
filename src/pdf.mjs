@@ -26,7 +26,8 @@ export async function createAtlas(
   input,
   { scope = 'selected', allKeys = false, asset, progress = () => {}, signal } = {},
 ) {
-  const { PDFDocument, rgb, PDFName, PDFString, PDFHexString } = globalThis.PDFLib ?? {};
+  const pdf = globalThis.PDFLib ?? {};
+  const { PDFDocument, rgb, PDFName, PDFString, PDFHexString } = pdf;
   if (!PDFDocument || !globalThis.fontkit)
     throw new Error('PDF libraries are not loaded');
   const get =
@@ -44,12 +45,13 @@ export async function createAtlas(
   const [bodyBytes, boldBytes, headBytes, logoBytes] = await Promise.all(
     ['DejaVuSans.ttf', 'DejaVuSans-Bold.ttf', 'Literata-Bold.ttf']
       .map((name) => get(`assets/fonts/${name}`))
-      .concat(get('assets/marques-and-co.svg')),
+      .concat(get('assets/marques-and-co.png')),
   );
   const body = await doc.embedFont(bodyBytes, { subset: true }),
     bold = await doc.embedFont(boldBytes, { subset: true }),
     heading = await doc.embedFont(headBytes, { subset: true });
-  const logo = new TextDecoder().decode(logoBytes).match(/\bd="([^"]+)"/)[1];
+  const logo = await doc.embedPng(logoBytes);
+  const logoSize = logo.scale(84 / logo.width);
   const color = (hex) =>
     rgb(
       ...hex
@@ -132,14 +134,39 @@ export async function createAtlas(
     });
   }
   function poly(page, points, fill, border) {
-    const path = points.map(([x, y], i) => `${i ? 'L' : 'M'} ${x} ${y}`).join(' ') + ' Z';
-    page.drawSvgPath(path, {
-      x: 0,
-      y: H,
-      color: fill,
-      borderColor: border,
-      borderWidth: border ? 0.45 : 0,
-    });
+    const [[firstX, firstY], ...rest] = points;
+    page.pushOperators(
+      pdf.pushGraphicsState(),
+      pdf.setFillingColor(fill),
+      pdf.setStrokingColor(border),
+      pdf.setLineWidth(0.45),
+      pdf.moveTo(firstX, H - firstY),
+      ...rest.map(([x, y]) => pdf.lineTo(x, H - y)),
+      pdf.closePath(),
+      pdf.fillAndStroke(),
+      pdf.popGraphicsState(),
+    );
+  }
+  function openStringColumn(page, left, right, top, bottom) {
+    const y1 = H - top,
+      y2 = H - bottom,
+      radius = 7;
+    page.pushOperators(
+      pdf.pushGraphicsState(),
+      pdf.setFillingColor(color(fretFill(0))),
+      pdf.moveTo(left + radius, y1),
+      pdf.lineTo(right - radius, y1),
+      pdf.appendQuadraticCurve(right, y1, right, y1 - radius),
+      pdf.lineTo(right, y2 + radius),
+      pdf.appendQuadraticCurve(right, y2, right - radius, y2),
+      pdf.lineTo(left + radius, y2),
+      pdf.appendQuadraticCurve(left, y2, left, y2 + radius),
+      pdf.lineTo(left, y1 - radius),
+      pdf.appendQuadraticCurve(left, y1, left + radius, y1),
+      pdf.closePath(),
+      pdf.fill(),
+      pdf.popGraphicsState(),
+    );
   }
   function headingRuns(str) {
     return String(str)
@@ -275,11 +302,10 @@ export async function createAtlas(
       'right',
     );
     text(page, 30, 589, 'Scales / Lucas Marques / CC BY 4.0', 5.5, body, muted);
-    page.drawSvgPath(logo, {
-      x: W / 2 - 42,
-      y: 16,
-      scale: 0.084,
-      color: color('#1d1d1d'),
+    page.drawImage(logo, {
+      x: (W - logoSize.width) / 2,
+      y: 16 - logoSize.height,
+      ...logoSize,
     });
   }
   function head(page, s, title, subtitle = '') {
@@ -351,10 +377,7 @@ export async function createAtlas(
         right = Math.max(oa, ob),
         openTop = l.edgeY(l.nut),
         openBottom = l.edgeY(l.nut, true);
-      page.drawSvgPath(
-        `M ${left + 7} ${openTop} L ${right - 7} ${openTop} Q ${right} ${openTop} ${right} ${openTop + 7} L ${right} ${openBottom - 7} Q ${right} ${openBottom} ${right - 7} ${openBottom} L ${left + 7} ${openBottom} Q ${left} ${openBottom} ${left} ${openBottom - 7} L ${left} ${openTop + 7} Q ${left} ${openTop} ${left + 7} ${openTop} Z`,
-        { x: 0, y: H, color: color(fretFill(0)) },
-      );
+      openStringColumn(page, left, right, openTop, openBottom);
       for (let f = 1; f <= hi; f++) {
         const [a, b] = l.edges(f);
         poly(

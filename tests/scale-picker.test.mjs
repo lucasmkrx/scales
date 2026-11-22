@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scaleGroups, COMMON_SCALES, initialScaleView } from '../src/scale-picker.mjs';
 import { SCALES, FAMILIES } from '../src/catalog.mjs';
-import { boardSvg } from '../src/board.mjs';
+import { boardMarkup } from '../src/board.mjs';
 const ids = (options) => scaleGroups(options).flatMap((g) => g.scales.map((s) => s.id));
 test('common scales are a focused starting set, and the full catalog has no duplicates or omissions', () => {
   assert.deepEqual(ids({}), COMMON_SCALES);
@@ -41,7 +41,7 @@ test('search spans all collections, matches all three languages and aliases, and
 test('seven-string note circles retain separation in full and position maps', () => {
   for (const hand of ['left', 'right'])
     for (const opts of [{}, { small: true, width: 400, height: 190, lo: 0, hi: 4 }]) {
-      const svg = boardSvg(
+      const board = boardMarkup(
         {
           instrument: 'guitar',
           strings: 7,
@@ -51,24 +51,27 @@ test('seven-string note circles retain separation in full and position maps', ()
         },
         opts,
       );
-      const circles = [
-        ...svg.matchAll(/<circle cx="([^"]+)" cy="([^"]+)" r="([^"]+)"/g),
-      ].map((m) => ({ x: +m[1], y: +m[2], r: +m[3] }));
-      const groups = new Map();
-      for (const c of circles) {
-        const key = `${c.x},${c.y}`;
-        if (!groups.has(key) || groups.get(key).r < c.r) groups.set(key, c);
-      }
-      const notes = [...groups.values()];
-      assert.equal(new Set(notes.map((c) => c.y)).size, 7);
+      const notes = [
+        ...board.matchAll(
+          /class="(?:note|preview-note)([^"]*)" style="left:([.\d]+)px;top:([.\d]+)px;width:([.\d]+)px;height:([.\d]+)px/g,
+        ),
+      ].map(([, classes, left, top, width, height]) => ({
+        x: Number(left) + Number(width) / 2,
+        y: Number(top) + Number(height) / 2,
+        radius: Number(height) / 2 + (classes.includes('root-note') ? 2.8 : 0),
+      }));
+      assert.equal(new Set(notes.map((note) => note.y.toFixed(3))).size, 7);
       for (const a of notes)
         for (const b of notes)
-          if (a.x === b.x && a.y < b.y)
-            assert.ok(b.y - a.y > a.r + b.r, 'circles on neighboring strings overlap');
+          if (Math.abs(a.x - b.x) < 0.001 && a.y + 0.001 < b.y)
+            assert.ok(
+              b.y - a.y > a.radius + b.radius,
+              'circles on neighboring strings overlap',
+            );
     }
 });
 
-test('SVG open-string labels show both names on one marker in either orientation', () => {
+test('Fretboard open-string labels show both names on one marker in either orientation', () => {
   const state = {
     instrument: 'guitar',
     strings: 6,
@@ -78,18 +81,18 @@ test('SVG open-string labels show both names on one marker in either orientation
   };
   for (const hand of ['left', 'right'])
     for (const small of [false, true]) {
-      const sharp = boardSvg({ ...state, hand, spelling: 'sharp' }, { small });
-      const flat = boardSvg({ ...state, hand, spelling: 'flat' }, { small });
-      const both = boardSvg({ ...state, hand, spelling: 'both' }, { small });
-      assert.match(sharp, />D♯<\/text>/);
-      assert.doesNotMatch(sharp, />E♭<\/text>/);
-      assert.match(flat, />E♭<\/text>/);
-      assert.doesNotMatch(flat, />D♯<\/text>/);
-      assert.match(both, />E♭<\/text>/);
-      assert.match(both, />D♯<\/text>/);
+      const sharp = boardMarkup({ ...state, hand, spelling: 'sharp' }, { small });
+      const flat = boardMarkup({ ...state, hand, spelling: 'flat' }, { small });
+      const both = boardMarkup({ ...state, hand, spelling: 'both' }, { small });
+      assert.match(sharp, />D♯<\/span>/);
+      assert.doesNotMatch(sharp, />E♭<\/span>/);
+      assert.match(flat, />E♭<\/span>/);
+      assert.doesNotMatch(flat, />D♯<\/span>/);
+      assert.match(both, />E♭<\/span>/);
+      assert.match(both, />D♯<\/span>/);
       assert.equal(
-        [...both.matchAll(/<g class="(?:note|preview-note) /g)].length,
-        [...sharp.matchAll(/<g class="(?:note|preview-note) /g)].length,
+        [...both.matchAll(/class="(?:note|preview-note)\b/g)].length,
+        [...sharp.matchAll(/class="(?:note|preview-note)\b/g)].length,
       );
     }
 });

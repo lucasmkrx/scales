@@ -5,7 +5,7 @@ import { LANGUAGES, normalizeLanguage, tuningName } from '../src/locales.mjs';
 import { SCALES, TUNINGS, FAMILIES } from '../src/catalog.mjs';
 import { normalizeState, selection, sharedState } from '../src/music.mjs';
 import { restoreWorkspace, rememberWorkspace } from '../src/workspace.mjs';
-import { boardSvg } from '../src/board.mjs';
+import { boardMarkup } from '../src/board.mjs';
 import { matchingGuides } from '../src/guides.mjs';
 
 function textKeys(value, prefix = '') {
@@ -66,8 +66,8 @@ test('regional locale aliases survive custom shared links and device preferences
 });
 
 test('Spanish note controls distinguish a scale tonic from a chord root', () => {
-  const scale = boardSvg({ lang: 'es', root: 0, scale: 'major' });
-  const chord = boardSvg({ lang: 'es', root: 0, scale: 'major-triad' });
+  const scale = boardMarkup({ lang: 'es', root: 0, scale: 'major' });
+  const chord = boardMarkup({ lang: 'es', root: 0, scale: 'major-triad' });
   assert.match(scale, new RegExp(copy.es.root));
   assert.match(chord, new RegExp(copy.es.chordRoot));
   assert.match(chord, /Traste|traste/);

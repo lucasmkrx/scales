@@ -48,38 +48,48 @@ tuning pitches, and formulas. Keep instrument controls grouped next to music
 selection, and give export work a quieter inline section below the board. Use alignment, spacing,
 and consistent type sizes before adding more cards or decorative elements.
 
+The Scale card shows the current root and scale name above the catalog. Players
+can browse a collection or search by name, then choose a result. A check marks
+the selected result. The formula shows one degree per chip, in playing order.
+Edit opens a text field for entering a custom formula.
+
+Pill-shaped buttons appear in the scale catalog, playback controls, and PDF
+actions. A check marks the current scale, and the switch thumb marks the active
+instrument or orientation.
+
 On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 while leaving the settings visible in normal page order. Activating it focuses
-the scale heading below the shortcut. A single inline caption explains the selected
+the fretboard heading below the shortcut. A single inline caption explains the selected
 pattern and its lowest note and degree. The bracket already supplies its fret span.
-The optional tonic reference sits beside the display controls. Key spelling adds
+Key spelling adds
 one display choice and enharmonic entries to the existing root selector, keeping the control surface
 small while making written scale degrees available. Routine help is kept in
-accessible descriptions; validation and meaningful status remain visible. The
-custom formula stays inline, with its apply action appearing after an edit. A
+accessible descriptions; validation and meaningful status remain visible. A
 single reference row follows the current note/degree mode. Repeated setup cards,
 practice prose, and the PDF configuration summary are removed.
 
-The handedness control has its own full-width row so its illustration and full
-“Right-handed” or “Left-handed” label are easy to read. The guitar and bass use
-locally served transparent product artwork adapted from Ryan_Nein’s instrument
-previews. AI-assisted background removal preserves the approved visual direction;
-the images are padded and resized without stretching. Clicking or pressing
-Enter or Space flips the artwork and switches the fretboard orientation. Its
-accessible name describes the next action. Only the illustration mirrors, so the
-label stays readable. The artwork follows the chosen instrument and represents
-a six-string guitar or four-string bass; the fretboard follows the selected string count.
-Reduced motion switches immediately without the flip animation. A small footer
-link provides the author, original sources, license, and adaptation details.
+The instrument and orientation switches each show two labeled positions. The
+sliding indicator marks the current choice. Players can select either label or
+tap or drag the switch. Guitar shows a Telecaster headstock with six tuning pegs.
+Bass shows a Fender bass headstock with four. Both icons follow their labels’
+color in light and dark themes. The available string and fret
+counts appear as numeric choices that players can select directly. The tuning
+picker is a full-width rounded rectangle that shows the open strings from lowest
+to highest. Its 14px corner radius leaves room for the pitch labels. All dropdown
+menus have 20px outer corners. Option rows keep 12px corners even when a label
+wraps or a tuning shows its pitches on a second line. A check marks the current
+choice, and long lists scroll within the menu.
+Choosing a custom tuning reveals individual pitch fields.
 
 ### Appearance and feedback
 
-Icons reinforce familiar actions while their text labels stay visible. The
-appearance control is the compact exception: its accessible name describes both
-the current choice and the next action. It is an ordinary button rather than a
-two-state toggle, since it offers System, Light, and Dark. From System, its first
-activation switches to the opposite visible theme; repeated activation also
-returns to following the device.
+Controls pair their labels with solid icons from the locally served Font Awesome
+Free webfont. The icons inherit the control's text color and are hidden from
+screen readers. The appearance button shows a sun beside “Light” or a moon beside
+“Dark.” The visible label follows the selected language, and the accessible
+name identifies the current theme and the next action. Light is the default in
+every operating-system theme. Choosing Dark keeps it active on future visits until
+the player switches back to Light.
 
 Light and dark themes share the same layout and note colors. Dedicated fretboard
 surfaces, labels, guides, and focus colors keep the diagram integrated with the
@@ -93,13 +103,12 @@ animations and transitions while retaining the same visible states.
 
 ## Constraints
 
-- No application popup menus or modal settings; settings remain on the homepage.
+- Settings remain on the homepage, including the expanded tuning list.
 - Scale selection stays above the fretboard; PDF customization stays below it.
 - Frets 0–12 is the default; a labeled sliding switch reveals the full neck.
   Each view keeps fixed proportions with contained scrolling. Pattern selection
   grays out notes outside the chosen string/fret point set.
-- Thin pattern brackets sit above the frets they describe, with centered pattern,
-  shape, and range labels on distinct rows. Their geometry and labels mirror for
+- Thin pattern brackets sit above the frets they describe, each with a centered label such as “Pattern 1”. The brackets mirror for
   handedness. Click once to select and again to clear; selection must also work
   by keyboard and expose its pressed state.
 - English, Português, and Español retain their regional musical terminology.
@@ -180,8 +189,8 @@ hand position. Other scales and tunings require their own pitch-correct route;
 a complete, compact route must exist before a pattern is offered.
 
 Pattern brackets use a thin horizontal cap and short end strokes, with a
-centered pattern number, shape, and fret-range label. Each has its own numbered
-row, so overlapping spans do not compete for the same space. Thin strokes and
+centered label such as “Pattern 1.” Shape and fret details are available on hover and to assistive technology.
+Brackets share rows where space allows. Overlapping brackets sit at different heights so each label stays readable. Thin strokes and
 open space make the spans read as fretboard annotations. Spatial placement shows
 the occupied frets before selection. Vertical lines extend from both ends down through the
 neck behind the notes; the selected pattern uses stronger guides. The markers
@@ -206,13 +215,13 @@ fonts load, with a named scale, tuning, and selected pattern recorded. Scale and
 instrument panels share a row on desktop and stack before the board on phones.
 These measurements describe layout, not task completion time or comprehension.
 
-The documentation captures use C major, six strings in E standard, left-handed
+The documentation captures use C major, six strings in E standard, right-handed
 playing, compact Position 1, and frets 0–12. After local fonts loaded:
 
 | Viewport width | Scale panel top | Pattern-and-neck surface top | Settings layout               |
 | -------------- | --------------- | ---------------------------- | ----------------------------- |
-| 1360px         | 498px           | 611px                        | Side by side, each 397px high |
-| 390px          | 920px           | 1102px                       | Stacked                       |
+| 1360px         | 540px           | 654px                        | Side by side, each 439px high |
+| 390px          | 1133px          | 1302px                       | Stacked                       |
 
 Both captures contain the page width without horizontal page overflow. The phone
 scrolls the fixed-size diagram inside its own surface. The light and dark captures

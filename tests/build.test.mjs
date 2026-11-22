@@ -3,22 +3,25 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 test('published assets use one revision across the entry point, module graph, and styles', async () => {
   await import('../scripts/build.mjs');
+  const youtubeConfig = JSON.parse(
+    await readFile(new URL('../dist/youtube-config.json', import.meta.url), 'utf8'),
+  );
+  assert.deepEqual(Object.keys(youtubeConfig), ['apiKey']);
+  assert.ok(youtubeConfig.apiKey === (process.env.YOUTUBE_API_KEY?.trim() || ''));
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
   const version = html.match(/src\/app\.mjs\?v=([a-f0-9]{12})/)[1];
   assert.ok(html.includes(`styles.css?v=${version}`));
   assert.ok(html.includes(`theme.js?v=${version}`));
-  assert.ok(
-    html.includes(`controls.svg?v=${version}#moon`) ||
-      html.includes(`controls.svg?v=${version}#monitor`),
-  );
-  assert.ok(!html.includes('controls.svg#'));
-  const app = await readFile(new URL('../dist/src/app.mjs', import.meta.url), 'utf8');
-  assert.ok(app.includes(`controls.svg?v=${version}#`));
-  assert.ok(!app.includes('controls.svg#'));
-  assert.ok(html.includes(`assets/instruments/guitar.webp?v=${version}`));
-  for (const instrument of ['guitar', 'bass']) {
-    assert.ok(app.includes(`assets/instruments/${instrument}.webp?v=${version}`));
-    const path = `assets/instruments/${instrument}.webp`;
+  const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
+  for (const [path, source] of [
+    ['vendor/fontawesome.min.css', html],
+    ['assets/icon.png', html],
+    ['assets/marques-and-co.png', html],
+    ['assets/fonts/fa-solid-900.woff2', css],
+    ['assets/instruments/telecaster-headstock.png', css],
+    ['assets/instruments/bass-headstock.png', css],
+  ]) {
+    assert.ok(source.includes(`./${path}?v=${version}`), path);
     assert.deepEqual(
       await readFile(new URL(`../dist/${path}`, import.meta.url)),
       await readFile(new URL(`../public/${path}`, import.meta.url)),

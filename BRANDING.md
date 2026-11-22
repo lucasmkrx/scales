@@ -1,6 +1,6 @@
 # Marques & Co. branding
 
-The Marques & Co. logo in `public/assets/marques-and-co.svg` is supplied by
+The Marques & Co. logo in `public/assets/marques-and-co.png` is supplied by
 Lucas Marques. It is excluded from the MIT and CC BY licenses.
 
 You may retain the embedded logo when redistributing unmodified Scales

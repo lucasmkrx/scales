@@ -7,12 +7,13 @@ import {
 } from './music.mjs';
 import { copy } from './i18n.mjs';
 import { patternRanges } from './pattern-ranges.mjs';
+
 const screenFretColors = {
-  open: 'var(--board-open, #ece9dc)',
-  octave: 'var(--board-octave, #dddcca)',
-  marker: 'var(--board-marker, #ecebdd)',
-  upper: 'var(--board-upper, #f5f3e9)',
-  lower: 'var(--board-lower, #fcfaf3)',
+  open: 'var(--board-open)',
+  octave: 'var(--board-octave)',
+  marker: 'var(--board-marker)',
+  upper: 'var(--board-upper)',
+  lower: 'var(--board-lower)',
 };
 export const escape = (s) =>
   String(s)
@@ -20,7 +21,46 @@ export const escape = (s) =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
-export function boardSvg(state, options = {}) {
+
+const position = (left, top) => `left:${left}px;top:${top}px`;
+const box = (left, top, width, height) =>
+  `${position(left, top)};width:${width}px;height:${height}px`;
+const labelLines = (label) =>
+  String(label)
+    .split('/')
+    .map((line) => `<span>${escape(line)}</span>`)
+    .join('');
+
+function neckMarkup(model, layout, top, small, t) {
+  const { lo, hi, rows } = model;
+  const parts = [];
+  for (let fret = lo; fret <= hi; fret++) {
+    const [left, right] = layout.edges(fret);
+    const overhang = 12 + (hi - fret) * 0.12;
+    const y = top + layout.top - overhang;
+    const height = layout.bottom - layout.top + 2 * overhang;
+    parts.push(
+      `<span class="fret" style="${box(left, y, right - left, height)};background:${fretFill(fret, screenFretColors)}"></span>`,
+      `<span class="fret-label" style="${position(layout.center(fret), top + layout.height - 14)}">${escape(fret === 0 ? t.open : fret)}</span>`,
+    );
+  }
+  rows.forEach((midi, row) => {
+    const y = top + layout.y(row);
+    const gauge = 0.8 + row * 0.14;
+    const name = noteName(midi, pitchPreference(model.state));
+    parts.push(
+      `<span class="board-string" style="${box(layout.left, y - gauge / 2, layout.right - layout.left, gauge)}"></span>`,
+      `<span class="string-label" style="${position(layout.labelX, y)}">${labelLines(name)}</span>`,
+    );
+  });
+  if (layout.nut !== null)
+    parts.push(
+      `<span class="board-nut" style="${box(layout.nut - 2, top + layout.top - 12, 4, layout.bottom - layout.top + 24)}"></span>`,
+    );
+  return `<div class="neck-details" style="font-size:${small ? 10 : 12}px" aria-hidden="true">${parts.join('')}</div>`;
+}
+
+export function boardMarkup(state, options = {}) {
   const model = boardModel(state, options);
   const small = options.small ?? false;
   const height =
@@ -30,7 +70,44 @@ export function boardSvg(state, options = {}) {
   const { points, rows, lo, hi } = model;
   const t = copy[model.state.lang];
   const arpeggio = model.state.scaleData.family === 'arpeggio';
-  const ink = 'var(--board-ink, #28372e)';
+  const bass = model.state.instrument === 'bass';
+  const fretLabel = (pattern) =>
+    model.state.hand === 'left'
+      ? `${pattern.hi}–${pattern.lo}`
+      : `${pattern.lo}–${pattern.hi}`;
+  const ranges = patternRanges(small ? [] : (options.patterns ?? []), l, {
+    labelFor: (pattern) => `${t.pattern} ${pattern.number}`,
+    hand: model.state.hand,
+  });
+
+  const guideEnd = ranges.height + l.bottom + 12 + (hi - lo) * 0.12;
+  const guides = [...ranges.markers]
+    .sort(
+      (a, b) =>
+        Number(a.pattern.id === options.selectedPattern) -
+        Number(b.pattern.id === options.selectedPattern),
+    )
+    .map(({ pattern, left, right, lane }) => {
+      const start = lane * 32 + 32;
+      return `<span class="pattern-guides${pattern.id === options.selectedPattern ? ' selected' : ''}" data-guide="${escape(pattern.id)}" aria-hidden="true" style="${box(left, start, right - left, guideEnd - start)}"></span>`;
+    })
+    .join('');
+  const markers = ranges.markers
+    .map(({ pattern, left, right, hitLeft, hitRight, lane, label }) => {
+      const details = [
+        bass
+          ? `${t.string} ${pattern.startRow + 1}`
+          : pattern.shape && t.patternShape.replace('{shape}', pattern.shape),
+        `${t.frets} ${fretLabel(pattern)}`,
+        `${t.startingDegree} ${pattern.startDegree}`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      const labelX = (right - left < 90 ? hitLeft + hitRight : left + right) / 2;
+      return `<button type="button" class="pattern-range" data-pattern="${escape(pattern.id)}" aria-pressed="${options.selectedPattern === pattern.id}" aria-label="${escape(label)}" aria-description="${escape(details)}" title="${escape(details)}" style="${box(hitLeft, lane * 32 + 4, hitRight - hitLeft, 28)}"><span class="pattern-label" style="left:${labelX - hitLeft}px">${escape(label)}</span><span class="pattern-bracket" style="left:${left - hitLeft}px;width:${right - left}px"></span></button>`;
+    })
+    .join('');
+
   const focus =
     options.focusPoints &&
     new Set(options.focusPoints.map((point) => `${point.row}:${point.fret}`));
@@ -40,61 +117,11 @@ export function boardSvg(state, options = {}) {
       : !options.focusRange ||
         (note.fret >= options.focusRange.lo && note.fret <= options.focusRange.hi);
   const entry = points.find(inPattern) ?? points[0];
-  const el = [];
-  const text = (x, y, s, size = 12, fill = ink, weight = 400) =>
-    `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" fill="${fill}" font-weight="${weight}">${escape(s)}</text>`;
-  const labelText = (x, y, label, size, fill, weight) =>
-    label.includes('/')
-      ? label
-          .split('/')
-          .map((name, i) =>
-            text(x, y + (i ? size * 0.5 : -size * 0.42), name, size * 0.76, fill, weight),
-          )
-          .join('')
-      : text(x, y, label, size, fill, weight);
-  for (let f = lo; f <= hi; f++) {
-    const [x, z] = l.edges(f);
-    const top = l.top - 12 - (hi - f) * 0.12;
-    const bottom = l.bottom + 12 + (hi - f) * 0.12;
-    el.push(
-      `<rect class="fret" x="${x}" y="${top}" width="${z - x}" height="${bottom - top}" fill="${fretFill(f, screenFretColors)}" stroke="var(--board-grid, #b7b8a8)" stroke-width=".8"/>`,
-    );
-    el.push(
-      text(
-        l.center(f),
-        height - 10,
-        f === 0 ? t.open : f,
-        small ? 10 : 12,
-        'var(--board-ink, #565e51)',
-      ),
-    );
-  }
-  rows.forEach((m, row) => {
-    el.push(
-      `<line class="board-string" x1="${l.left}" x2="${l.right}" y1="${l.y(row)}" y2="${l.y(row)}" stroke="var(--board-string, #959988)" stroke-width="${0.8 + row * 0.14}"/>`,
-    );
-    el.push(
-      labelText(
-        l.labelX,
-        l.y(row) + 4,
-        noteName(m, pitchPreference(model.state)),
-        small ? 10 : 12,
-        ink,
-        650,
-      ),
-    );
-  });
-  if (l.nut !== null)
-    el.push(
-      `<line x1="${l.nut}" x2="${l.nut}" y1="${l.top - 12}" y2="${l.bottom + 12}" stroke="${ink}" stroke-width="4"/>`,
-    );
-  const noteLayerStart = el.length;
-  for (const n of points) {
-    const [a, z] = l.edges(n.fret);
-    const rowGap = (l.bottom - l.top) / Math.max(1, rows.length - 1);
-    const radius = Math.min(small ? 8 : 16, (z - a) * 0.41, rowGap / 2 - 3.2);
-    const x = l.center(n.fret),
-      y = l.y(n.row);
+  const rowGap = (l.bottom - l.top) / Math.max(1, rows.length - 1);
+  const notes = points.map((n) => {
+    const [left, right] = l.edges(n.fret);
+    const radius = Math.min(small ? 8 : 16, (right - left) * 0.41, rowGap / 2 - 3.2);
+    const muted = !inPattern(n);
     let label = small
       ? n.root
         ? arpeggio
@@ -105,80 +132,36 @@ export function boardSvg(state, options = {}) {
         ? n.degree
         : n.name;
     if (!n.active && state.labels === 'degrees') label = '';
-    const muted = !inPattern(n);
-    const fill = muted ? 'var(--board-muted-fill, #d2d6d1)' : n.fill;
-    const rootInk = muted
-      ? 'var(--board-root-muted, #8d9690)'
-      : 'var(--board-root-ink, #111111)';
-    const fg = muted
-      ? 'var(--board-muted-ink, #59645d)'
-      : n.lightText
-        ? 'white'
-        : 'var(--note-ink, #28372e)';
-    let interactive = '';
-    if (!small) {
-      const fret = n.fret === 0 ? t.open : `${t.fret} ${n.fret}`;
-      const description = [
-        n.name,
-        n.root ? (arpeggio ? t.chordRoot : t.root) : '',
-        n.active ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
-        muted ? t.noteOutsideRange : '',
-        `${t.string} ${n.string}`,
-        fret,
-      ]
-        .filter(Boolean)
-        .join(', ');
-      interactive = ` role="button" tabindex="${n === entry ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}"`;
-    }
-    el.push(
-      `<g class="${small ? 'preview-note' : 'note'} ${n.active ? '' : 'outside'}${muted ? ' muted' : ''}"${interactive}><circle cx="${x}" cy="${y}" r="${radius + (n.root ? 2.8 : 0)}" fill="${n.root ? rootInk : fill}" stroke="${n.root ? rootInk : '#8fa2ae'}" stroke-width="${n.root ? 0 : 0.5}"/>${n.root ? `<circle cx="${x}" cy="${y}" r="${radius + 1}" fill="var(--board-root-halo, white)"/>` : ''}<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}"/>${label ? labelText(x, y + (label.includes('/') ? radius * 0.2 : radius * 0.35), label, Math.min(radius * 1.05, label.includes('/') ? radius : label.length > 2 ? radius * 0.85 : 30), fg, 700) : ''}</g>`,
+    const size = radius * (label.includes('/') ? 0.76 : label.length > 2 ? 0.85 : 1.05);
+    const classes = [small ? 'preview-note' : 'note'];
+    if (n.root) classes.push('root-note');
+    if (!n.active) classes.push('outside');
+    if (muted) classes.push('muted');
+    const bounds = box(
+      l.center(n.fret) - radius,
+      ranges.height + l.y(n.row) - radius,
+      radius * 2,
+      radius * 2,
     );
-  }
-  const ranges = patternRanges(small ? [] : (options.patterns ?? []), l, {
-    labelFor: (pattern) => {
-      const name =
-        model.state.instrument === 'bass'
-          ? `${t.string} ${pattern.startRow + 1}`
-          : `${t.pattern} ${pattern.number}`;
-      const bounds =
-        model.state.hand === 'left'
-          ? `${pattern.hi}–${pattern.lo}`
-          : `${pattern.lo}–${pattern.hi}`;
-      return `${name}${pattern.shape ? ` · ${pattern.shape}` : ''} · ${bounds}`;
-    },
+    const style = `${bounds};--pitch-fill:${n.fill};--pitch-ink:${n.lightText ? 'white' : 'var(--note-ink)'};font-size:${size}px`;
+    const attributes = `class="${classes.join(' ')}" style="${style}"`;
+    const content = label ? labelLines(label) : '';
+    if (small) return `<span ${attributes}>${content}</span>`;
+    const description = [
+      n.name,
+      n.root ? (arpeggio ? t.chordRoot : t.root) : '',
+      n.active ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
+      muted ? t.noteOutsideRange : '',
+      `${t.string} ${n.string}`,
+      n.fret === 0 ? t.open : `${t.fret} ${n.fret}`,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    return `<button ${attributes} type="button" tabindex="${n === entry ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}">${content}</button>`;
   });
-  const markers = ranges.markers
-    .map(({ pattern, left, right, hitLeft, hitRight, lane, label }) => {
-      const y = lane * 32 + 4;
-      const description = `${label} · ${t.startingDegree} ${pattern.startDegree}`;
-      const badge =
-        model.state.instrument === 'bass' ? pattern.startRow + 1 : pattern.number;
-      const fretLabel =
-        model.state.hand === 'left'
-          ? `${pattern.hi}–${pattern.lo}`
-          : `${pattern.lo}–${pattern.hi}`;
-      const bounds = `${pattern.shape ? `${pattern.shape} · ` : ''}${fretLabel}`;
-      const narrow = right - left < 90;
-      const labelLeft = narrow ? hitLeft : left;
-      const labelRight = narrow ? hitRight : right;
-      const labelX = (labelLeft + labelRight) / 2;
-      return `<g class="pattern-range${narrow ? ' narrow' : ''}" role="button" tabindex="0" data-pattern="${escape(pattern.id)}" aria-pressed="${options.selectedPattern === pattern.id}" aria-label="${escape(description)}" aria-describedby="pattern-info"><rect class="pattern-hit" x="${hitLeft}" y="${y}" width="${hitRight - hitLeft}" height="28"/><text class="pattern-label" x="${labelX}" y="${y + 14}" text-anchor="middle">${escape(`${badge} · ${bounds}`)}</text><path class="pattern-bracket" d="M${left},${y + 28}V${y + 22}H${right}V${y + 28}"/></g>`;
-    })
-    .join('');
-  const guideEnd = ranges.height + l.bottom + 12 + (hi - lo) * 0.12;
-  const guides = [...ranges.markers]
-    .sort(
-      (a, b) =>
-        Number(a.pattern.id === options.selectedPattern) -
-        Number(b.pattern.id === options.selectedPattern),
-    )
-    .map(({ pattern, left, right, lane }) => {
-      const start = lane * 32 + 32;
-      return `<g class="pattern-guides${pattern.id === options.selectedPattern ? ' selected' : ''}" data-guide="${escape(pattern.id)}" aria-hidden="true"><line data-edge="left" x1="${left}" x2="${left}" y1="${start}" y2="${guideEnd}"/><line data-edge="right" x1="${right}" x2="${right}" y1="${start}" y2="${guideEnd}"/></g>`;
-    })
-    .join('');
+
   const accessibility = small
-    ? 'aria-hidden="true" focusable="false"'
+    ? 'aria-hidden="true"'
     : `role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="keyboard-notes orientation" data-hand="${model.state.hand}"`;
-  return `<svg viewBox="0 0 ${l.width} ${height + ranges.height}" xmlns="http://www.w3.org/2000/svg" ${accessibility}><g transform="translate(0 ${ranges.height})">${el.slice(0, noteLayerStart).join('')}</g>${guides}${markers ? `<g role="group" aria-label="${escape(t.patterns)}">${markers}</g>` : ''}<g transform="translate(0 ${ranges.height})">${el.slice(noteLayerStart).join('')}</g></svg>`;
+  return `<div class="fretboard-map" ${accessibility} style="width:${l.width}px;height:${height + ranges.height}px">${neckMarkup(model, l, ranges.height, small, t)}${guides}${markers ? `<div role="group" aria-label="${escape(t.patterns)}">${markers}</div>` : ''}${notes.join('')}</div>`;
 }

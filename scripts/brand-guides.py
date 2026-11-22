@@ -1,4 +1,4 @@
-"""Add a vector publisher footer while preserving source pages and navigation.
+"""Add the publisher wordmark while preserving source pages and navigation.
 
 Install PyMuPDF (pip install -r scripts/requirements.txt), then:
 python scripts/brand-guides.py --source /path/to/original-guides
@@ -16,14 +16,18 @@ FILES={
 }
 def main():
  parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',type=Path,required=True);args=parser.parse_args()
- svg=fitz.open(ROOT/'public/assets/marques-and-co.svg');logo=fitz.open(stream=svg.convert_to_pdf(),filetype='pdf');outdir=ROOT/'public/guides';outdir.mkdir(exist_ok=True);report=[]
+ logo=fitz.Pixmap(str(ROOT/'public/assets/marques-and-co.png'))
+ logo_height=84*logo.height/logo.width
+ outdir=ROOT/'public/guides';outdir.mkdir(exist_ok=True);report=[]
  for src,target in FILES.items():
   source=fitz.open(args.source/src);out=fitz.open();transforms=[]
+  logo_xref=0
   for old in source:
    w,h=old.rect.width,old.rect.height;page=out.new_page(width=w,height=h);page.draw_rect(page.rect,fill=(.985,.99,.995),color=None)
    page.show_pdf_page(fitz.Rect(0,0,w,h-18),source,old.number,keep_proportion=True)
    scale=(h-18)/h;tx=(w-w*scale)/2;matrix=fitz.Matrix(scale,0,0,scale,tx,0);transforms.append(matrix)
-   page.show_pdf_page(fitz.Rect(w/2-42,h-16,w/2+42,h-16+84*.14087),logo,0)
+   logo_rect=fitz.Rect(w/2-42,h-16,w/2+42,h-16+logo_height)
+   logo_xref=page.insert_image(logo_rect,pixmap=logo,xref=logo_xref)
    page.insert_text((30,h-7),'Scales / Lucas Marques / CC BY 4.0',fontsize=5.5,color=(.27,.34,.40))
   for old in source:
    for item in old.get_links():
@@ -41,11 +45,15 @@ def main():
   for i,p in enumerate(check):
    assert len(p.get_links())==len(source[i].get_links()),(target,i+1)
    assert 'CC BY 4.0' in p.get_text()
-   logos=[z for z in p.get_drawings() if 80<z['rect'].width<85 and 10<z['rect'].height<13 and z['rect'].y0>575]
-   assert logos,(target,i+1,'Missing vector logo')
-  report.append({'file':target,'pages':len(check),'vector_logo_on_every_page':True,'links_and_bookmarks_preserved':True})
+   expected=fitz.Rect(p.rect.width/2-42,p.rect.height-16,p.rect.width/2+42,p.rect.height-16+logo_height)
+   assert any(image['width']==logo.width and image['height']==logo.height
+              and max(abs(a-b) for a,b in zip(image['bbox'],expected))<0.01
+              for image in p.get_image_info()),(target,i+1,'Missing publisher wordmark')
+  report.append({'file':target,'pages':len(check),'logo_on_every_page':True,'links_and_bookmarks_preserved':True})
   if (ROOT/'work/qa').exists():
    for n in [0,4,len(check)-1]:check[n].get_pixmap(matrix=fitz.Matrix(1.2,1.2)).save(ROOT/f'work/qa/branded-{target}-{n+1}.png')
   print(report[-1])
- (ROOT/'work/qa/guide-branding.json').write_text(json.dumps(report,indent=2))
+ report_path=ROOT/'work/qa/guide-branding.json'
+ report_path.parent.mkdir(parents=True,exist_ok=True)
+ report_path.write_text(json.dumps(report,indent=2))
 if __name__=='__main__':main()

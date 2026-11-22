@@ -38,6 +38,8 @@ test('C major uses the exact compact fingering and a keyboard-operable bracket',
 }) => {
   await page.goto(url());
   const first = marker(page, 'caged-major-1');
+  await expect(first).toHaveAccessibleName('Pattern 1');
+  await expect(first.locator('.pattern-label')).toHaveText('Pattern 1');
   await first.click();
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await expect(activeNotes(page)).toHaveCount(17);
@@ -56,6 +58,22 @@ test('C major uses the exact compact fingering and a keyboard-operable bracket',
   await first.press('Space');
   await expect(first).toHaveAttribute('aria-pressed', 'true');
   await expect(first).toBeFocused();
+});
+
+test('keyboard focus moves to the next playable fret in either orientation', async ({
+  page,
+}) => {
+  for (const hand of ['right', 'left']) {
+    await page.goto(url({ hand }));
+    const openE = page.locator('#board .note[data-row="0"][data-fret="0"]');
+    const firstF = page.locator('#board .note[data-row="0"][data-fret="1"]');
+    await openE.focus();
+    await openE.press(hand === 'right' ? 'ArrowRight' : 'ArrowLeft');
+    await expect(firstF).toBeFocused();
+    await expect(firstF).toHaveAttribute('tabindex', '0');
+    await expect(openE).toHaveAttribute('tabindex', '-1');
+    await expect(page.locator('#board .note[tabindex="0"]')).toHaveCount(1);
+  }
 });
 
 test('new pattern links restore and expanding the neck retains the same fingering', async ({
@@ -97,7 +115,7 @@ test('inline settings remain contained across languages, phone widths, and hande
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     ).toBe(true);
     const width = await page
-      .locator('#board svg')
+      .locator('#board .fretboard-map')
       .evaluate((board) => board.getBoundingClientRect().width);
     expect(width).toBe(657);
     await expect(page.locator('#instrument-settings')).toBeVisible();
@@ -141,34 +159,109 @@ test('mobile navigation reaches and focuses the fretboard without hiding setting
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(url());
   await page.locator('#jump-to-board').click();
-  await expect(page.locator('#scale-title')).toBeFocused();
-  const heading = await page.locator('#scale-title').boundingBox();
+  await expect(page.locator('#fretboard-heading')).toBeFocused();
+  const heading = await page.locator('#fretboard-heading').boundingBox();
   expect(heading.y).toBeGreaterThanOrEqual(0);
   expect(heading.y).toBeLessThan(300);
   await expect(page.locator('#instrument-settings')).toBeVisible();
+});
+
+test('search and collections update the selected scale, formula, and fretboard', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto(url());
+  const selected = page.locator('#scale-selection');
+  const degrees = page.locator('#formula-degrees > span');
+  const search = page.locator('#search');
+  const results = page.locator('#scale-results');
+  await expect(selected).toHaveText('C Major');
+  const common = results.getByRole('button');
+  await expect(common).toHaveCount(8);
+  expect(await results.evaluate((list) => list.scrollHeight <= list.clientHeight)).toBe(
+    true,
+  );
+  expect(
+    await common.evaluateAll((choices) =>
+      choices.every((choice) => choice.getBoundingClientRect().height >= 44),
+    ),
+  ).toBe(true);
+  await page.locator('#root').selectOption('9');
+
+  await page.locator('[data-view="arpeggios"]').click();
+  await results.locator('[data-scale="minor-triad"]').click();
+  await expect(selected).toHaveText('A Minor triad');
+  await expect(degrees).toHaveText(['1', '♭3', '5']);
+  await expect(page.locator('#fretboard-heading')).toHaveText('Fretboard');
+
+  await search.fill('aeolian');
+  const minor = results.locator('[data-scale="natural-minor"]');
+  await search.press('ArrowDown');
+  await expect(minor).toBeFocused();
+  await minor.press('Enter');
+  await expect(minor).toHaveAttribute('aria-pressed', 'true');
+  await expect(selected).toHaveText('A Natural minor');
+  await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '♭6', '♭7']);
+  await expect(page).toHaveURL(/scale=natural-minor/);
+
+  await search.fill('unmatched search');
+  await expect(results.getByRole('button')).toHaveCount(0);
+  await expect(results).toContainText('No scales match');
+  await page.locator('#clear-search').click();
+  await expect(search).toBeFocused();
+  await expect(page.locator('#scale-tabs')).toBeVisible();
+  await expect(selected).toHaveText('A Natural minor');
 });
 
 test('custom formula drafts survive other settings and saved setups restore on a fresh visit', async ({
   page,
 }) => {
   await page.goto(url());
-  await expect(page.locator('#apply-scale')).toBeHidden();
-  await page.locator('#formula-input').fill('1 2 b3 4 5 6 b7');
-  await expect(page.locator('#apply-scale')).toBeVisible();
-  await page.locator('#hand').click();
-  await expect(page.locator('#hand')).toHaveAttribute('data-hand', 'left');
-  await expect(page.locator('#formula-input')).toHaveValue('1 2 b3 4 5 6 b7');
-  await page.locator('#apply-scale').click();
+  const edit = page.locator('#edit-formula');
+  const input = page.locator('#formula-input');
+  const apply = page.locator('#apply-scale');
+  const degrees = page.locator('#formula-degrees > span');
+  await expect(input).toBeHidden();
+  await edit.press('Enter');
+  await expect(input).toBeFocused();
+  await expect(apply).toBeDisabled();
+  await input.fill('1 2 b3 4 5 6 b7');
+  await expect(apply).toBeEnabled();
+  await page.locator('#hand label:has(input[value="left"])').click();
+  await expect(page.getByRole('radio', { name: 'Left-handed' })).toBeChecked();
+  await expect(input).toHaveValue('1 2 b3 4 5 6 b7');
+  await apply.click();
   await expect(page).toHaveURL(/scale=custom/);
+  await expect(edit).toBeFocused();
+  await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '6', '♭7']);
   await page.locator('#root').selectOption('9');
-  await page.locator('#formula-input').fill('1 2 2');
-  await page.locator('#apply-scale').click();
-  await expect(page.locator('#formula-input')).toHaveAttribute('aria-invalid', 'true');
+  await edit.click();
+  await input.fill('1 2 2');
+  await input.press('Enter');
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
   await expect(page).toHaveURL(/formula=1\+2\+b3\+4\+5\+6\+b7/);
+  for (const [lang, message] of [
+    ['pt', 'Comece pelo grau 1'],
+    ['es', 'Empieza por el grado 1'],
+    ['en', 'Start on 1'],
+  ]) {
+    await page.locator('#language').selectOption(lang);
+    await expect(page.locator('#formula-error')).toContainText(message);
+    await expect(input).toHaveValue('1 2 2');
+  }
+  await input.press('Escape');
+  await expect(input).toBeHidden();
+  await expect(edit).toBeFocused();
+  await edit.click();
+  await expect(input).toHaveValue('1 2 b3 4 5 6 b7');
+  await input.fill('1 3 5');
+  await page.locator('#cancel-formula').click();
+  await expect(input).toBeHidden();
+  await expect(edit).toBeFocused();
   await page.goto('/');
-  await expect(page.locator('#hand')).toHaveAttribute('data-hand', 'left');
+  await expect(page.getByRole('radio', { name: 'Left-handed' })).toBeChecked();
   await expect(page.locator('#root')).toHaveValue('9');
-  await expect(page.locator('#formula-input')).toHaveValue('1 2 b3 4 5 6 b7');
+  await expect(degrees).toHaveText(['1', '2', '♭3', '4', '5', '6', '♭7']);
 });
 
 test('key spelling preserves distinct sharp and flat tonic names across reloads', async ({
@@ -186,11 +279,10 @@ test('key spelling preserves distinct sharp and flat tonic names across reloads'
   await expect(page.locator('#notes-strip')).toContainText('C♭');
 });
 
-test('individual notes and the tonic reference sound independently', async ({ page }) => {
+test('auditioning a note highlights its pitch on the fretboard and in the reference row', async ({
+  page,
+}) => {
   await page.goto(url());
-  const drone = page.locator('#drone');
-  await drone.click();
-  await expect(drone).toHaveAttribute('aria-pressed', 'true');
   const referenceNote = page.locator('#notes-strip button[data-pitch="0"]');
   const soundingTone = page.locator('#notes-strip td.sounding');
   await referenceNote.click();
@@ -199,13 +291,6 @@ test('individual notes and the tonic reference sound independently', async ({ pa
   await expect(page.locator('#note-readout')).toContainText('unison');
   await expect(soundingTone).toHaveCount(0);
   await expect(referenceNote).toHaveAttribute('aria-pressed', 'true');
-  await expect(drone).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('#root').selectOption('2');
-  await expect(drone).toHaveAttribute('aria-pressed', 'false');
-  await drone.click();
-  await expect(drone).toHaveAttribute('aria-pressed', 'true');
-  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
-  await expect(drone).toHaveAttribute('aria-pressed', 'false');
 });
 
 test('PDF customization can cancel and then download a valid localized reference', async ({

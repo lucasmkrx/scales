@@ -1,8 +1,15 @@
-// Keep one predictable row per pattern; each bracket shares neck coordinates.
-// Labels and hit areas stay within the canvas even on narrow upper frets.
-export function patternRanges(patterns, layout, { labelFor, laneHeight = 32 } = {}) {
+const markerGap = 8;
+// Compare positions at the same precision in both hands. Mirroring the same fret
+// edge can otherwise yield slightly different floating-point values for tied starts.
+const packingCoordinate = (pixels) => Math.round(pixels * 1_000_000);
+
+export function patternRanges(
+  patterns,
+  layout,
+  { labelFor, laneHeight = 32, hand } = {},
+) {
   const width = Math.max(0, layout.width);
-  const markers = patterns.map((pattern, index) => {
+  const markers = patterns.map((pattern) => {
     const edges = [...layout.edges(pattern.lo), ...layout.edges(pattern.hi)];
     const left = Math.min(...edges);
     const right = Math.max(...edges);
@@ -12,14 +19,25 @@ export function patternRanges(patterns, layout, { labelFor, laneHeight = 32 } = 
       0,
       Math.min((left + right - hitWidth) / 2, width - hitWidth),
     );
-    return { pattern, left, right, hitLeft, hitRight: hitLeft + hitWidth, label, index };
+    return { pattern, left, right, hitLeft, hitRight: hitLeft + hitWidth, label };
   });
-  markers.sort(
-    (a, b) => (a.pattern.number ?? 0) - (b.pattern.number ?? 0) || a.index - b.index,
-  );
-  markers.forEach((marker, lane) => (marker.lane = lane));
+  markers.sort((a, b) => (a.pattern.number ?? 0) - (b.pattern.number ?? 0));
+
+  // Pack from the nut in either orientation, keeping keyboard order by pattern number.
+  const spans = markers.map((marker) => ({
+    marker,
+    start: packingCoordinate(hand === 'left' ? width - marker.hitRight : marker.hitLeft),
+    end: packingCoordinate(hand === 'left' ? width - marker.hitLeft : marker.hitRight),
+  }));
+  spans.sort((a, b) => a.start - b.start);
+  const nextFree = [];
+  for (const { marker, start, end } of spans) {
+    const available = nextFree.findIndex((position) => position <= start);
+    marker.lane = available < 0 ? nextFree.length : available;
+    nextFree[marker.lane] = end + packingCoordinate(markerGap);
+  }
   return {
-    markers: markers.map(({ index, ...marker }) => marker),
-    height: markers.length ? markers.length * laneHeight + 8 : 0,
+    markers,
+    height: nextFree.length ? nextFree.length * laneHeight + 8 : 0,
   };
 }

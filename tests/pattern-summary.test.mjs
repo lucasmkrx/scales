@@ -7,7 +7,7 @@ test('a CAGED summary shows the lowest note and its degree', () => {
   const state = { root: 0, scale: 'major' };
   const pattern = scalePatterns(state).patterns[0];
   const summary = patternSummary(state, pattern);
-  assert.equal(summary.title, 'Pattern 1 · E shape');
+  assert.equal(summary.title, 'Pattern 1');
   assert.match(summary.detail, /Lowest note: B \(7\)/);
   assert.equal(patternSummary(state, null), null);
 });
@@ -24,14 +24,17 @@ test('pattern summaries preserve key spelling in every language', () => {
     };
     const pattern = scalePatterns(state).patterns[0];
     const summary = patternSummary(state, pattern);
-    assert.ok(summary.title.includes('E'));
+    assert.equal(
+      summary.title,
+      { en: 'Pattern 1', pt: 'Desenho 1', es: 'Patrón 1' }[lang],
+    );
     assert.ok(summary.detail.includes('E♯ (7)'));
     assert.ok(!summary.detail.includes('{'));
   }
 });
 
-test('bass routes identify their actual starting string', () => {
+test('bass routes use the same numbering as the bracket', () => {
   const state = { instrument: 'bass', strings: 5, root: 0 };
   const pattern = scalePatterns(state).patterns[0];
-  assert.equal(patternSummary(state, pattern).title, `String ${pattern.startRow + 1}`);
+  assert.equal(patternSummary(state, pattern).title, `Pattern ${pattern.number}`);
 });

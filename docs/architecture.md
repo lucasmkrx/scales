@@ -1,6 +1,6 @@
 # Architecture and engineering decisions
 
-Scales is a static browser application with a shared music model, SVG rendering,
+Scales is a static browser application with a shared music model, an HTML fretboard,
 Web Audio playback, and vector PDF export. Node.js is used for development,
 testing, the static build, and an optional PDF command-line entry point.
 
@@ -13,13 +13,11 @@ flowchart TD
     UI[User controls] --> State
     Catalog[Scale intervals and tuning pitches] --> Music[Selected music and pitch model]
     State --> Music
-    Music --> SVG[Interactive SVG fretboard]
+    Music --> Board[Interactive HTML fretboard]
     Music --> Layout[PDF geometry and contents plan]
     Layout --> PDF[Vector PDF atlas]
-    SVG --> Synth[Plucked-string synthesis]
-    Music --> Tonic[Sustained tonic]
+    Board --> Synth[Plucked-string synthesis]
     Synth --> Audio[Web Audio]
-    Tonic --> Audio
     State --> Saved[Updated URL and optional device storage]
 ```
 
@@ -32,20 +30,20 @@ the selected root; the displayed label is separate from the sounding pitch.
 | Module                                          | Responsibility                                                                                                    |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | [catalog.mjs](../src/catalog.mjs)               | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
-| [music.mjs](../src/music.mjs)                   | Validate selections and calculate notes, degrees, SVG coordinates, and shared URLs                                |
-| [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align pattern brackets with fret geometry and place patterns in numbered rows                                     |
+| [music.mjs](../src/music.mjs)                   | Validate selections and calculate notes, degrees, fretboard coordinates and shared URLs                           |
+| [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align brackets to frets and let separated brackets share a row                                                    |
 | [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets for supported setups                                                    |
 | [intervals.mjs](../src/intervals.mjs)           | Name written intervals in all supported languages                                                                 |
 | [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
 | [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and search the multilingual catalog without changing the active scale                       |
-| [board.mjs](../src/board.mjs)                   | Render the shared model into keyboard-accessible SVG markup                                                       |
+| [board.mjs](../src/board.mjs)                   | Place frets, strings, note controls, and pattern markers on a keyboard-accessible HTML fretboard                  |
 | [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
 | [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
-| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes and the tonic, manage cached buffers, and fade stopped sounds                            |
+| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes, manage cached buffers, and fade stopped sounds                                          |
 | [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                                       |
 | [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                                    |
 | [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
-| [theme.js](../public/theme.js)                  | Resolve device appearance before paint and manage local System, Light, and Dark preferences                       |
+| [theme.js](../public/theme.js)                  | Apply the saved Light or Dark theme before paint, using Light on the first visit                                  |
 | [app.mjs](../src/app.mjs)                       | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
 
 The pure model and layout functions can be tested without a browser. The DOM and
@@ -61,6 +59,11 @@ script. This keeps the deployed product compatible with GitHub Pages and avoids
 requiring a server for state, playback, or export. The build copies maintained
 source and local public assets rather than running a framework compiler.
 
+The optional backing-track finder queries YouTube Data API v3 from the browser
+after an explicit search. The build writes the website-restricted browser key
+to `dist/youtube-config.json`. The player loads when a result is selected.
+[Search configuration and query behavior](backing-tracks.md)
+
 The tradeoff is manual coordination of DOM state and rendering. As the interface
 grows, browser-flow tests and careful controller boundaries become more valuable.
 The current implementation is not evidence that a framework would be unsuitable
@@ -70,11 +73,10 @@ for a larger application.
 
 Both renderers calculate from the same interval and tuning data. Changing tuning
 changes each note and position. Handedness mirrors horizontal coordinates while
-retaining string order and readable text. SVG and PDF use different coordinate
+retaining string order and readable text. The HTML fretboard and PDF use different coordinate
 systems and density constraints, so they have separate layout functions.
 
-This prevents duplicated musical facts, but does not eliminate separate visual
-QA. The PDF uses a continuous tapered neck; the web uses its own SVG layout.
+Each renderer needs its own visual checks. The PDF uses a continuous tapered neck.
 Both renderers use the shared guitar pattern model. The homepage favors complete
 first-octave instances where available; the PDF can use a different whole-octave
 instance on the full instrument neck. Each renderer uses exact pattern points.
@@ -109,19 +111,18 @@ takes priority over that saved preference.
 Explicit musical links take priority over that saved practice selection. Preferences are versioned and optional: unavailable storage does
 not prevent use of the app.
 
-Instrument and string-count setups are recalled separately. Changing instrument
-keeps the musical selection and restores a compatible setup, with default fret
-counts of 21 for guitar and 20 for bass when no explicit choice exists. Custom
+Each instrument remembers its orientation, fret count, and last string count.
+Each string count remembers its tuning and custom pitches for that instrument.
+Switching instruments keeps the musical selection. New guitar and bass setups
+start right-handed, with 21 frets for guitar and 20 for bass. Custom
 tuning and formula edits commit only after validation. Display changes retain
 horizontal fretboard position; a new setup starts at its open-string end.
 
-Appearance is a separate device preference, stored as `scales.theme`, and is not
-part of a musical URL or instrument setup. A small script in the document head
-resolves System, Light, or Dark before the stylesheet paints. System follows
-`prefers-color-scheme`, including changes while the page is open; an explicit
-choice remains in effect until changed. Unavailable storage does not prevent
-theme switching during the current visit. Theme changes update CSS variables
-without rerendering the fretboard or touching playback state.
+The document head applies Light before paint unless the player has saved Dark
+under `scales.theme` on this device. Both themes stay consistent across
+operating-system appearance changes and shared musical links. When device storage
+is unavailable, the button still switches themes for the current visit. A theme
+change updates CSS variables while preserving the fretboard and playback state.
 
 ### Inline settings and focused interaction
 
@@ -130,40 +131,37 @@ fretboard on wider screens. The groups stack on narrow screens, with scale
 selection first. The browser keeps root, search, collections, results, and the
 custom formula editor together. Search and
 collection browsing retain the current musical selection until a result is chosen.
-The diagram header shows the selected scale and the neck-view switch. The page
+The diagram header contains the Fretboard heading and the neck-view switch. The Scale card identifies the active root and scale. The page
 begins directly with settings, with the main heading available to screen readers.
 
-The instrument section includes string count, handedness, fret count, and tuning;
-choosing a custom tuning reveals its pitch fields in place. PDF customization
-remains in its own full-width section below the playing surface.
-Handedness uses a full-width button below the string and fret controls. Transparent
-guitar or bass product artwork sits beside the explicit current label, such as
-“Right-handed” or “Left-handed.” Only the artwork mirrors; the text stays readable.
-The button keeps keyboard focus across updates, and the same preference and URL
-state drive the illustration, fretboard geometry, range labels, and PDF output.
-The locally served WebP files are adapted from Ryan_Nein's public model previews
-using AI-assisted background removal, mirroring, padding, and resizing. They are
-representative six-string guitar and four-string bass images; the fretboard uses
-the actual selected string count. A localized footer link opens the shipped
-source, author, license, and modification credits.
-All settings remain on the homepage without application popup menus.
+The instrument card presents sliding switches for instrument and handedness.
+Choosing Guitar or Bass restores a compatible setup. Choosing Right-handed or
+Left-handed updates the fretboard geometry, range labels, and PDF output.
+Native radio groups expose the available string and fret counts directly.
+The full-width tuning picker includes the open pitches from lowest to highest.
+Choosing a custom tuning reveals its pitch fields in place. PDF settings occupy
+their own full-width section below the playing surface.
+One shared listbox serves tuning, language, root, note spelling, backing-track filters,
+and PDF scope. Native selects supply option labels, values, and disabled states.
+Keyboard, pointer, and touch selections use the same change handlers.
 On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses
 its heading. The mobile settings use tighter spacing without hiding controls.
 
+The formula displays the selected degrees until the player opens its editor.
 Custom formula drafts survive unrelated setting changes. Selecting a named scale
-resets the formula editor to that scale's degrees. The apply action appears only
-after an edit; routine formula help stays available to screen readers. Custom
+resets the formula to that scale's degrees. Custom
 tuning and formula validation appear beside their inputs. Keyboard selection returns focus to the
 chosen result after its active state updates.
 
 Clickable pattern ranges above the neck select exact string/fret point sets.
 Their spans describe where a fingering lies, rather than selecting every note
-inside a rectangular fret window. Thin bracket caps use centered pattern, shape,
-and fret-range labels, with one pattern per row in pattern-number order. They
-share the neck's SVG geometry and horizontal scrolling. Both ends have vertical guides extending
+inside a rectangular fret window. Each bracket carries a numbered label, such as
+“Pattern 1.” Its accessible description and tooltip give the shape or starting
+string, fret span, and lowest degree. Brackets can share a row when their spans and
+labels fit side by side. They scroll horizontally with the frets. Both ends have vertical guides extending
 through the neck behind the notes; selection strengthens those guides. A marker
 toggles on with a click, Enter, or Space, and toggles off when activated again. Pressed
-state and keyboard focus survive the SVG update.
+state and keyboard focus survive the fretboard update.
 A restrained inline caption names the selected pattern and its lowest note and
 degree. It does not repeat the fret span already drawn on the bracket or add a
 note-count card.
@@ -209,7 +207,7 @@ PDF atlases continue to include the full instrument neck and available patterns;
 the homepage view switch does not crop the printable reference.
 
 Notes outside a selected pattern's point set turn gray, including notes at frets
-that other strings use inside the pattern. Marker geometry and range labels
+that other strings use inside the pattern. Marker geometry and fret descriptions
 follow handedness, while pattern identities stay musically stable. There are no
 separate pattern or half-neck buttons. An unselected marker state shows all scale
 notes in the chosen view. The diagram's dimensions depend on the selected view
@@ -226,7 +224,7 @@ that system; it is never reinterpreted as a CAGED position. New pattern links re
 valid selected marker in
 the chosen neck view.
 
-Display controls, Hear tonic, and a single interactive reference row sit below
+Display controls and a single interactive reference row sit below
 the diagram. That row follows the chosen note or degree labels. The root legend
 and share action share one footer beneath the neck; note feedback appears there
 only after inspection. The main board has one tab stop, with arrow keys moving
@@ -249,10 +247,6 @@ pattern fades the current pluck. A version token cancels pending audio starts
 and prevents an older pluck from clearing the current note's highlight when it
 ends.
 
-Hear tonic uses quiet sine oscillators at the root and octave with short gain
-fades. It sounds independently of plucked notes. Root, instrument, string-count,
-or tuning changes stop it, as do page hiding and navigation.
-
 The note and degree table doubles as a set of pitch controls. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and
 location. Board notes retain their actual string and fret in the detail readout.
@@ -264,7 +258,7 @@ perceptual realism. References are recorded in [references.md](references.md).
 
 ### PDF layout and cancellation
 
-pdf-lib and fontkit load on demand. Fonts and the vector logo are local assets.
+pdf-lib and fontkit load on demand. Fonts and the publisher logo are local assets.
 The generator plans the cover, contents, reading page, and scale pages before
 rendering. Export estimates reuse that planner, including additional contents
 pages for a large catalog.
@@ -279,9 +273,9 @@ Larger atlases still require more browser memory and time.
 
 ### Cache-consistent releases
 
-The build hashes the source modules, appearance bootstrap, icon sprite, and
-stylesheet. It appends that revision to the entry script, appearance script,
-icon references, stylesheet URL, and relative module imports throughout the graph.
+The build computes a shared revision for the source modules, appearance bootstrap,
+styles, and visual assets. The published page uses that revision for its scripts,
+stylesheets, icon font, and relative module imports.
 An updated entry point therefore requests matching dependencies rather than
 reusing an older unversioned import. All paths remain relative for project hosting.
 
@@ -303,8 +297,8 @@ exports.
 
 Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples
-are bundled. The app sends no application data to a backend; hosting services
-and any external links retain their own policies.
+are bundled. Backing-track searches send the musical query to YouTube.
+YouTube serves thumbnails and the selected video under its own policies.
 
 ## Extending the system
 

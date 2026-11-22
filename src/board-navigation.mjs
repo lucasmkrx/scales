@@ -50,7 +50,7 @@ export function enableBoardNavigation(board, playNote) {
       notes,
       current,
       event.key,
-      note.ownerSVGElement.dataset.hand,
+      note.closest('[data-hand]').dataset.hand,
     )?.element.focus();
   });
 }
