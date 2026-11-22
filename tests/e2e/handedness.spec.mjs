@@ -22,6 +22,26 @@ const points = (page) =>
     .evaluateAll((notes) =>
       notes.map((note) => `${note.dataset.row}:${note.dataset.fret}`).sort(),
     );
+async function expectHeadstocksFacing(page, hand) {
+  const glyphs = page.locator('#instrument .instrument-glyph');
+  const x = hand === 'left' ? -1 : 1;
+  await expect
+    .poll(() =>
+      glyphs.evaluateAll((icons) =>
+        icons.map((icon) => {
+          const transform = getComputedStyle(icon).transform;
+          const matrix = new DOMMatrixReadOnly(
+            transform === 'none' ? undefined : transform,
+          );
+          return [Math.sign(matrix.a), Math.sign(matrix.d)];
+        }),
+      ),
+    )
+    .toEqual([
+      [x, 1],
+      [x, 1],
+    ]);
+}
 const pageErrors = new WeakMap();
 
 test.beforeEach(({ page }) => {
@@ -40,6 +60,7 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   const left = hand.getByRole('radio', { name: 'Left-handed' });
   await expect(right).toBeChecked();
   await expect(left).not.toBeChecked();
+  await expectHeadstocksFacing(page, 'right');
   const rightBox = await right.boundingBox();
   const leftBox = await left.boundingBox();
   expect(rightBox.x + rightBox.width).toBeLessThanOrEqual(leftBox.x + 1);
@@ -57,6 +78,7 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   await hand.locator('label:has(input[value="left"])').click();
   await expect(left).toBeChecked();
   await expect(right).not.toBeChecked();
+  await expectHeadstocksFacing(page, 'left');
   expect(await fretX(12)).toBeLessThan(await fretX(0));
   expect((await board.boundingBox()).width).toBe(originalWidth);
   await expect(page.locator('#neck-octave-label')).toHaveText('12–0');
@@ -109,6 +131,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await expect(bass).toBeChecked();
   await expect(left).toBeChecked();
   await expect(page.locator('#neck-octave-label')).toHaveText('12–0');
+  await expectHeadstocksFacing(page, 'left');
   await expect(strings.getByRole('radio', { disabled: false })).toHaveCount(3);
   await expect(stringCount(4)).toBeChecked();
 
@@ -138,6 +161,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
 
   await left.press('ArrowLeft');
   await expect(right).toBeChecked();
+  await expectHeadstocksFacing(page, 'right');
   await bass.press('ArrowLeft');
   await expect(guitar).toBeChecked();
   await expect(right).toBeChecked();
@@ -153,6 +177,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await page.goto('/');
   await expect(bass).toBeChecked();
   await expect(left).toBeChecked();
+  await expectHeadstocksFacing(page, 'left');
   await expect(stringCount(5)).toBeChecked();
   await expect(fretCount(24)).toBeChecked();
   await page.locator('#edit-pitches').click();

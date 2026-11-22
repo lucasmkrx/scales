@@ -597,6 +597,9 @@ main {
   background-color: currentColor;
   mask: var(--headstock) center / contain no-repeat;
 }
+#instrument-form:has(input[name='hand'][value='left']:checked) .instrument-glyph {
+  transform: scaleX(-1);
+}
 .telecaster-headstock {
   --headstock: url('./assets/instruments/telecaster-headstock.png');
 }

@@ -73,8 +73,8 @@ practice prose, and the PDF configuration summary are removed.
 
 The instrument and orientation switches each show two labeled positions. A filled pill slides behind the selected label, which also shows a checkmark.
 Players can tap a label, drag to either side, or use the arrow keys. Guitar shows a Telecaster headstock with six tuning pegs.
-Bass shows a Fender bass headstock with four. Both icons follow their labels’
-color in light and dark themes. The available string and fret
+Bass shows a Fender bass headstock with four. Both headstocks mirror horizontally
+for left-handed playing and follow their labels’ color in light and dark themes. The available string and fret
 counts appear as numeric choices that players can select directly. The tuning
 picker is a full-width rounded rectangle that shows the open strings from lowest
 to highest. Its 14px corner radius leaves room for the pitch labels. All dropdown
