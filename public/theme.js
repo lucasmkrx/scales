@@ -15,7 +15,7 @@
     root.style.colorScheme = preference;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', preference === 'dark' ? '#0a140e' : '#fffefa');
+      ?.setAttribute('content', preference === 'dark' ? '#0a140e' : '#fffaf0');
     window.dispatchEvent(new Event('themechange'));
   };
   window.tukanyTheme = Object.freeze({

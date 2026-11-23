@@ -30,6 +30,7 @@ test('dropdown corners stay capped, count buttons are circular, and the other bu
 }) => {
   await page.goto(url());
   await expectCircularCounts(page);
+  await expectSwitchLabelsCentered(page);
   await page.locator('#edit-formula').click();
   const trigger = page.locator('#tuning');
   const popup = page.locator('.choice-popup');
@@ -42,6 +43,21 @@ test('dropdown corners stay capped, count buttons are circular, and the other bu
   const selected = list.getByRole('option', { selected: true });
   await expect(selected.locator('small')).toBeVisible();
   await expect(selected).toHaveCSS('border-radius', '12px');
+  const optionAlignment = await selected.evaluate((option) => {
+    const title = option.querySelector('span').getBoundingClientRect();
+    const detail = option.querySelector('small').getBoundingClientRect();
+    const check = option.querySelector('.choice-check').getBoundingClientRect();
+    const row = option.getBoundingClientRect();
+    const textCenter = (title.top + detail.bottom) / 2;
+    return {
+      sharedIndent: title.left - detail.left,
+      textOffset: textCenter - (row.top + row.height / 2),
+      checkOffset: check.top + check.height / 2 - textCenter,
+    };
+  });
+  expect(optionAlignment.sharedIndent).toBeCloseTo(0, 0);
+  expect(optionAlignment.textOffset).toBeCloseTo(0, 0);
+  expect(optionAlignment.checkOffset).toBeCloseTo(0, 0);
   for (const key of ['Home', 'End']) {
     await page.keyboard.press(key);
     await expect(key === 'Home' ? options.first() : options.last()).toBeFocused();
@@ -106,6 +122,19 @@ async function expectCircularCounts(page) {
     expect(height).toBeCloseTo(width, 2);
     await expect(face).toHaveCSS('border-radius', '50%');
   }
+}
+
+async function expectSwitchLabelsCentered(page) {
+  const offsets = await page.locator('.switch-control label').evaluateAll((labels) =>
+    labels.map((label) => {
+      const face = label.getBoundingClientRect();
+      const text = label
+        .querySelector('.switch-option [data-i18n]')
+        .getBoundingClientRect();
+      return text.top + text.height / 2 - (face.top + face.height / 2);
+    }),
+  );
+  for (const offset of offsets) expect(offset).toBeCloseTo(0, 0);
 }
 
 test('settings open the same listbox and apply localized keyboard and pointer choices', async ({
@@ -245,6 +274,11 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await toggle.press('Space');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('body')).toHaveCSS('background-image', 'none');
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+    'content',
+    '#fffaf0',
+  );
+  await expect(page.locator('#scale-selection')).toHaveCSS('font-family', /Literata/);
   expect(await noteColors()).toEqual(lightColors);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -367,6 +401,8 @@ test('dark appearance keeps controls contained and preserves mirrored pattern ge
       /repeating-linear-gradient/,
     );
     await expect(page.locator('#scale-selection')).toHaveCSS('font-family', /monospace/);
+    await expect(page.locator('#instrument-form')).toHaveCSS('font-family', /monospace/);
+    await expectSwitchLabelsCentered(page);
     await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
     await expect(page.locator('#neck-octave-label')).toHaveText(
       state.hand === 'left' ? '12–0' : '0–12',
