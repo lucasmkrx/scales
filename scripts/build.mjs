@@ -18,6 +18,10 @@ const theme = await readFile(new URL('public/theme.js', root), 'utf8');
 const visualAssets = [
   './vendor/fontawesome.min.css',
   './assets/fonts/fa-solid-900.woff2',
+  './assets/fonts/ibm-plex-sans.woff2',
+  './assets/fonts/ibm-plex-mono.woff2',
+  './assets/fonts/ibm-plex-mono-semibold.woff2',
+  './assets/fonts/ibm-plex-mono-bold.woff2',
   './assets/icon.png',
   './assets/marques-and-co.png',
   './assets/instruments/telecaster-headstock.png',

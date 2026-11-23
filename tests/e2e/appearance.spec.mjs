@@ -226,6 +226,29 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(url());
   await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
+  await expect(page.locator('#scale-selection')).toHaveCSS(
+    'font-family',
+    /^"?IBM Plex Sans"?,/,
+  );
+  await expect(page.locator('#scale-family-trigger')).toHaveCSS(
+    'font-family',
+    /^"?IBM Plex Sans"?,/,
+  );
+  await expect(page.locator('#root-notes label > span').first()).toHaveCSS(
+    'font-family',
+    /^"?IBM Plex Mono"?,/,
+  );
+  const loadedFonts = await page.evaluate(async () => {
+    await document.fonts.ready;
+    return [
+      ...new Set(
+        [...document.fonts]
+          .filter((font) => font.status === 'loaded' && font.family.includes('IBM Plex'))
+          .map((font) => font.family.replaceAll('"', '')),
+      ),
+    ].sort();
+  });
+  expect(loadedFonts).toEqual(['IBM Plex Mono', 'IBM Plex Sans']);
   const noteColors = () =>
     page.locator('#board .note:not(.muted)').evaluateAll((notes) =>
       notes.map((note) => {
@@ -276,9 +299,12 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await expect(page.locator('body')).toHaveCSS('background-image', 'none');
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
     'content',
-    '#fffaf0',
+    '#ffffff',
   );
-  await expect(page.locator('#scale-selection')).toHaveCSS('font-family', /Literata/);
+  await expect(page.locator('#scale-selection')).toHaveCSS(
+    'font-family',
+    /^"?IBM Plex Sans"?,/,
+  );
   expect(await noteColors()).toEqual(lightColors);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -400,8 +426,14 @@ test('dark appearance keeps controls contained and preserves mirrored pattern ge
       'background-image',
       /repeating-linear-gradient/,
     );
-    await expect(page.locator('#scale-selection')).toHaveCSS('font-family', /monospace/);
-    await expect(page.locator('#instrument-form')).toHaveCSS('font-family', /monospace/);
+    await expect(page.locator('#scale-selection')).toHaveCSS(
+      'font-family',
+      /^"?IBM Plex Mono"?,/,
+    );
+    await expect(page.locator('#instrument-form')).toHaveCSS(
+      'font-family',
+      /^"?IBM Plex Mono"?,/,
+    );
     await expectSwitchLabelsCentered(page);
     await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
     await expect(page.locator('#neck-octave-label')).toHaveText(

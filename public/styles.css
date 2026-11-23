@@ -5,14 +5,26 @@
   font-display: block;
 }
 @font-face {
-  font-family: Literata;
-  src: url('./assets/fonts/Literata-Regular.ttf') format('truetype');
+  font-family: 'IBM Plex Sans';
+  src: url('./assets/fonts/ibm-plex-sans.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('./assets/fonts/ibm-plex-mono.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: Literata;
-  src: url('./assets/fonts/Literata-Bold.ttf') format('truetype');
+  font-family: 'IBM Plex Mono';
+  src: url('./assets/fonts/ibm-plex-mono-semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('./assets/fonts/ibm-plex-mono-bold.woff2') format('woff2');
   font-weight: 700;
   font-display: swap;
 }
@@ -27,56 +39,53 @@
   font-display: swap;
 }
 :root {
-  --ink: #30251e;
-  --muted: #6c5a4b;
-  --paper: #fffaf0;
-  --rule: #deceb6;
-  --pale: #f2e6d2;
-  --accent: #783342;
-  --background: #efe4d3;
-  --control-border: #bfa98e;
-  --hover-border: #916f55;
-  --accent-solid: #783342;
-  --accent-hover: #5b2330;
-  --accent-contrast: #fffaf0;
-  --focus: #8d5260;
+  --ink: #1b2925;
+  --muted: #53655e;
+  --paper: #fff;
+  --rule: #dce5e1;
+  --pale: #e6f2eb;
+  --accent: #176448;
+  --background: #f1f5f3;
+  --control-border: #bacac2;
+  --hover-border: #739986;
+  --accent-solid: #176448;
+  --accent-hover: #104e39;
+  --accent-contrast: #fff;
+  --focus: #2f8a68;
   --error: #9b3030;
-  --segmented: #f0e2d0;
-  --subtle: #faf3e6;
-  --diagram: #f9f1e0;
-  --tone-selected: #efe0ca;
-  --shadow: #533b2b24;
-  --shadow-soft: #533b2b13;
-  --scroll-thumb: #bca385;
-  --sounding-background: #442a27;
-  --sounding-ink: #fffaf0;
+  --segmented: #eaf0ed;
+  --subtle: #f5f8f6;
+  --diagram: #f6f8f7;
+  --tone-selected: #e0efe6;
+  --shadow: #203e3120;
+  --shadow-soft: #203e310c;
+  --scroll-thumb: #a6c0b2;
+  --sounding-background: #21483b;
+  --sounding-ink: #fff;
   --note-selected: #a16207;
-  --note-playing: #783342;
-  --board-open: #ebdcc1;
-  --board-octave: #e4d2b3;
-  --board-marker: #efe0c8;
-  --board-upper: #f5e8d2;
-  --board-lower: #fcf3e4;
-  --board-grid: #baaa92;
-  --board-string: #988977;
-  --board-ink: #594e42;
-  --board-muted-fill: #d9cfc1;
-  --board-muted-ink: #665747;
+  --note-playing: #176448;
+  --board-open: #e2ebe6;
+  --board-octave: #d8e5de;
+  --board-marker: #e8efeb;
+  --board-upper: #eff4f1;
+  --board-lower: #fbfcfb;
+  --board-grid: #b4c2bb;
+  --board-string: #899c92;
+  --board-ink: #485951;
+  --board-muted-fill: #d4ded9;
+  --board-muted-ink: #53665c;
   --muted-note-opacity: 0.6;
   --board-root-ink: #111111;
-  --board-root-muted: #9a8975;
+  --board-root-muted: #84988f;
   --board-root-halo: #ffffff;
-  --board-note-rim: #a6927c;
+  --board-note-rim: #92a69b;
   --note-ink: #28372e;
   --pitch-accidental: #fff;
-  --pattern-ink: #705747;
+  --pattern-ink: #4a6559;
   --pattern-active: var(--accent);
-  --pattern-guide: #9d6e65;
-  --type:
-    adobe-caslon-pro, 'Adobe Caslon Pro', Literata, 'Tukany Accidentals', Georgia, serif;
-  --mono:
-    input-mono, InputMono, 'Tukany Accidentals', ui-monospace, 'SFMono-Regular', Menlo,
-    Consolas, monospace;
+  --pattern-guide: #6f9a85;
+  --type: 'IBM Plex Sans', 'Tukany Accidentals', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', 'Tukany Accidentals', ui-monospace, Menlo, Consolas, monospace;
   --pill-radius: 9999px;
   --gutter: clamp(16px, 3vw, 36px);
   --page: 1272px;
@@ -167,7 +176,7 @@ fieldset {
 h1,
 h2,
 h3 {
-  font: 400 26px/1.2 var(--type);
+  font: 600 26px/1.2 var(--type);
   letter-spacing: -0.025em;
 }
 a {
@@ -373,7 +382,7 @@ input[type='checkbox'] {
 }
 .site-header {
   background: var(--paper);
-  border-bottom: 3px double var(--rule);
+  border-bottom: 1px solid var(--rule);
 }
 .masthead,
 main,
@@ -438,7 +447,7 @@ input::placeholder {
   display: grid;
   place-items: center;
   color: var(--accent-contrast);
-  border-radius: 3px;
+  border-radius: 7px;
   background: var(--accent-solid);
 }
 .brand-mark .icon {
@@ -1026,7 +1035,7 @@ input[aria-invalid='true'] {
   padding: 17px var(--scale-inset) 18px;
   border-bottom: 1px solid var(--rule);
   border-radius: 5px 5px 0 0;
-  background: linear-gradient(105deg, var(--pale), var(--subtle));
+  background-color: var(--subtle);
 }
 :root[data-theme='dark'] .scale-card-header {
   background-image: var(--scanlines), linear-gradient(105deg, var(--pale), var(--paper));
