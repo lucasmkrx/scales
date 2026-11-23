@@ -58,7 +58,7 @@
   --board-root-halo: #ffffff;
   --board-note-rim: #8fa2ae;
   --note-ink: #28372e;
-  --pitch-accidental: #000;
+  --pitch-accidental: #fff;
   --pattern-ink: #526b5d;
   --pattern-active: #286148;
   --pattern-guide: #5b8770;
@@ -1270,6 +1270,10 @@ input[aria-invalid='true'] {
 .staff-lines {
   opacity: 0.5;
 }
+:root:not([data-theme='dark']) .is-in-pattern .staff-notehead.accidental-pitch {
+  stroke: #000;
+  stroke-width: 0.85;
+}
 .staff-pitch-letter {
   font:
     bold 7px system-ui,
@@ -1429,6 +1433,9 @@ input[aria-invalid='true'] {
   margin-right: 4px;
   border-radius: 100%;
   box-shadow: inset 0 0 0 1px #273c2929;
+}
+:root:not([data-theme='dark']) .color-dot.accidental-pitch {
+  box-shadow: inset 0 0 0 1px #000;
 }
 .diagram {
   background: var(--diagram);
@@ -1712,6 +1719,12 @@ input[aria-invalid='true'] {
   --halo-width: 1px;
   --rim-width: 2.8px;
   --rim-color: var(--board-root-ink);
+}
+:root:not([data-theme='dark']) .fretboard-map .accidental-pitch:not(.muted) {
+  --rim-color: #000;
+}
+:root:not([data-theme='dark']) .fretboard-map .accidental-pitch:not(.root-note, .muted) {
+  --rim-width: 1px;
 }
 .fretboard-map .muted {
   --rim-color: var(--board-root-muted);

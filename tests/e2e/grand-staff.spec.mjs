@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 const url =
   '/?instrument=guitar&strings=6&tuning=guitar-standard&frets=24&root=0&scale=major&neck=octave&range=full';
 const black = 'rgb(0, 0, 0)';
+const white = 'rgb(255, 255, 255)';
 const boardPitches = (page, filter = '') =>
   page
     .locator(`#board .note${filter}`)
@@ -57,7 +58,9 @@ async function expectStaffColors(page, monochromeInk) {
   for (const pitch of pitches) {
     const active = !monochromeInk && pitch.fretColor;
     const expectedInk = monochromeInk ?? pitch.fretColor;
-    expect(pitch.headStroke, `notehead border at MIDI ${pitch.midi}`).toBe('none');
+    expect(pitch.headStroke, `notehead border at MIDI ${pitch.midi}`).toBe(
+      active && expectedInk === white ? black : 'none',
+    );
     expect(pitch.letters, `pitch label at MIDI ${pitch.midi}`).toEqual(
       active ? [pitch.writtenLetter] : [],
     );
@@ -119,7 +122,7 @@ test('the staff shows each sounding pitch once and retains the whole neck view w
   expect((await staffPitches(page)).at(-1)).toBe(88);
 });
 
-test('selected patterns color borderless noteheads and keep stems neutral in either theme', async ({
+test('selected patterns outline white notes and keep stems neutral in either theme', async ({
   page,
 }) => {
   await page.goto(url);
@@ -142,15 +145,18 @@ test('selected patterns color borderless noteheads and keep stems neutral in eit
             .evaluate((lines) => getComputedStyle(lines).stroke);
     await expectStaffColors(page, ink);
     await bracket.click();
-    const sharpColor = theme === 'light' ? black : 'rgb(170, 184, 175)';
+    const sharpColor = theme === 'light' ? white : 'rgb(170, 184, 175)';
     await expect(sharp).toHaveCSS('fill', sharpColor);
     await expect(sharpFret).toHaveCSS('background-color', sharpColor);
     await expect(sharpDot).toHaveCSS('background-color', sharpColor);
     if (theme === 'light') {
-      await expect(sharpFret).toHaveCSS('color', 'rgb(255, 255, 255)');
+      await expect(sharpFret).toHaveCSS('color', 'rgb(40, 55, 46)');
+      await expect(sharpFret).toHaveCSS('--rim-color', '#000');
+      await expect(sharpFret).toHaveCSS('--rim-width', '1px');
+      await expect(sharpDot).toHaveCSS('box-shadow', /rgb\(0, 0, 0\).*1px.*inset/);
       await expect(sharpNote.locator('.staff-pitch-letter')).toHaveCSS(
         'fill',
-        'rgb(255, 255, 255)',
+        'rgb(40, 55, 46)',
       );
     }
     await expect(sharpNote.locator('.staff-pitch-letter')).toHaveText('F');

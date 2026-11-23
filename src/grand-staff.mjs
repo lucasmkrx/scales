@@ -1,4 +1,4 @@
-import { pitchColor, pitchLabelColor } from './board.mjs';
+import { isAccidentalPitch, pitchColor, pitchLabelColor } from './board.mjs';
 import { copy } from './i18n.mjs';
 import { midiName, mod, spelledMidiName } from './music.mjs';
 import { staffKeySignature, staffSpellingState } from './staff-key.mjs';
@@ -173,9 +173,9 @@ function staffNote(
   const stemX = stemEnd < 0 ? headEdge - 1 : -headEdge;
   const stem = `<rect class="staff-stem" x="${stemX}" y="${Math.min(0, stemEnd)}" width="1" height="${Math.abs(stemEnd)}" fill="currentColor"/>`;
   const pc = mod(midi);
-  const head = `<ellipse class="staff-notehead" rx="${inPattern ? 6.8 : 5.3}" ry="${inPattern ? 4.1 : 3.5}" transform="rotate(-23)" fill="${inPattern ? pitchColor(pc, fill) : 'currentColor'}"/>`;
+  const head = `<ellipse class="staff-notehead${isAccidentalPitch(pc) ? ' accidental-pitch' : ''}" rx="${inPattern ? 6.8 : 5.3}" ry="${inPattern ? 4.1 : 3.5}" transform="rotate(-23)" fill="${inPattern ? pitchColor(pc, fill) : 'currentColor'}"/>`;
   const letter = inPattern
-    ? `<text class="staff-pitch-letter" text-anchor="middle" y="2.45" fill="${pitchLabelColor(pc, lightText)}">${name[0]}</text>`
+    ? `<text class="staff-pitch-letter" text-anchor="middle" y="2.45" fill="${pitchLabelColor(lightText)}">${name[0]}</text>`
     : '';
   const marker = `<path class="staff-selection-marker" d="M0 ${markerY - y}l4 ${selectionMarkerHeight}h-8z" fill="currentColor"/>`;
   return `<g class="${classes}" data-staff-midi="${midi}" transform="translate(${x} ${y})"><title>${name}</title>${ledgers}${accidentals.join('')}${stem}${head}${letter}${marker}</g>`;

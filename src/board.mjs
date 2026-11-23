@@ -9,10 +9,11 @@ import {
 import { copy } from './i18n.mjs';
 import { patternRanges } from './pattern-ranges.mjs';
 
+export const isAccidentalPitch = (pc) => !PALETTE[pc];
 export const pitchColor = (pc, fallback = PALETTE[pc] ?? '#ffffff') =>
-  `var(--pitch-${PALETTE[pc] ? pc : 'accidental'}, ${fallback})`;
-export const pitchLabelColor = (pc, lightText) =>
-  `var(--pitch-label-ink, ${lightText || !PALETTE[pc] ? 'white' : 'var(--note-ink)'})`;
+  `var(--pitch-${isAccidentalPitch(pc) ? 'accidental' : pc}, ${fallback})`;
+export const pitchLabelColor = (lightText) =>
+  `var(--pitch-label-ink, ${lightText ? 'white' : 'var(--note-ink)'})`;
 
 const screenFretColors = {
   open: 'var(--board-open)',
@@ -140,6 +141,7 @@ export function boardMarkup(state, options = {}) {
     if (!n.active && state.labels === 'degrees') label = '';
     const size = radius * (label.includes('/') ? 0.76 : label.length > 2 ? 0.85 : 1.05);
     const classes = [small ? 'preview-note' : 'note'];
+    if (isAccidentalPitch(n.pc)) classes.push('accidental-pitch');
     if (n.root) classes.push('root-note');
     if (!n.active) classes.push('outside');
     if (muted) classes.push('muted');
@@ -149,7 +151,7 @@ export function boardMarkup(state, options = {}) {
       radius * 2,
       radius * 2,
     );
-    const style = `${bounds};--pitch-fill:${pitchColor(n.pc, n.fill)};--pitch-ink:${pitchLabelColor(n.pc, n.lightText)};font-size:${size}px`;
+    const style = `${bounds};--pitch-fill:${pitchColor(n.pc, n.fill)};--pitch-ink:${pitchLabelColor(n.lightText)};font-size:${size}px`;
     const attributes = `class="${classes.join(' ')}" style="${style}"`;
     const content = label ? labelLines(label) : '';
     if (small) return `<span ${attributes}>${content}</span>`;
