@@ -35,7 +35,7 @@ import { copy } from './i18n.mjs';
 import { routes, syncExplorerPage } from './site.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
 import { boardMarkup, escape, isAccidentalPitch, pitchColor } from './board.mjs';
-import { grandStaffLayout, grandStaffMarkup, staffPitchName } from './grand-staff.mjs';
+import { staffLayout, staffMarkup, staffPitchName } from './staff.mjs';
 import { enableBackingTracks } from './backing-track-finder.mjs';
 import { enableBoardNavigation } from './board-navigation.mjs';
 import { enableSlideSwitch } from './slide-switch.mjs';
@@ -246,14 +246,16 @@ function updateStaffTabStop() {
 new ResizeObserver(updateStaffTabStop).observe(staff);
 
 function renderStaff(model) {
-  const layout = grandStaffLayout(model, currentPattern());
-  staff.innerHTML = grandStaffMarkup(layout, model.state.lang);
+  const layout = staffLayout(model, currentPattern());
+  const { lang } = model.state;
+  $('staff-heading').textContent = copy[lang][layout.clef.label];
+  staff.innerHTML = staffMarkup(layout, lang);
   const low = layout.notes[0]?.name ?? '';
   const high = layout.notes.at(-1)?.name ?? '';
   $('staff-range').textContent = low === high ? low : `${low} – ${high}`;
   updateStaffTabStop();
 }
-// Keep the note between the pinned clefs and the right edge of the staff.
+// Keep the note between the pinned clef and the right edge of the staff.
 function revealStaffNote(note, align = 'nearest') {
   if (!note || staff.scrollWidth <= staff.clientWidth) return;
   const left = staff.querySelector('.staff-clef-column').getBoundingClientRect().right;

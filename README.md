@@ -52,15 +52,16 @@ three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
 Tap a fretboard note or a note or degree in the reference row to hear it and
-highlight where it appears. The grand staff below the fretboard shows each
-displayed pitch as a quarter note, from low to high. Fingerings that sound the same
+highlight where it appears. The staff below the fretboard uses treble clef for
+guitar and bass clef for bass. It shows each displayed pitch as a quarter note
+one octave above its sounding pitch. Fingerings that sound the same
 pitch share a notehead. The staff is monochrome until you select a pattern.
 The pattern's noteheads then take their fretboard colors while the stems use
 the staff ink. Each colored head shows its written letter, and the other pitches
 fade. Selecting a fret places a small pointer below its exact pitch.
-Key signatures appear after both clefs. In D harmonic minor, for example, the
+The key signature appears after the clef. In D harmonic minor, for example, the
 signature supplies B♭ and the staff writes C♯ beside the raised seventh.
-See the [staff notation conventions](docs/references.md#grand-staff-notation).
+See the [staff notation conventions](docs/references.md#staff-notation).
 **Note names** controls how pitches are written.
 For example, the same fret can show C♯, D♭, or both. **By key** follows the
 scale’s written degrees. When a key has two common names, you can choose

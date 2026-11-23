@@ -1,22 +1,37 @@
 import { isAccidentalPitch, pitchColor, pitchLabelColor } from './board.mjs';
 import { copy } from './i18n.mjs';
 import { midiName, mod, spelledMidiName } from './music.mjs';
-import { bassClefPath, braceHeight, bracePath, trebleClefPath } from './staff-glyphs.mjs';
+import { bassClefPath, trebleClefPath } from './staff-glyphs.mjs';
 import { staffKeySignature, staffSpellingState } from './staff-key.mjs';
 
 const letters = 'CDEFGAB';
 const lineGap = 8;
-const staffHeight = 4 * lineGap;
-const staffStart = 17;
+const staffTop = 24;
+const staffBottom = staffTop + 4 * lineGap;
+const staffStart = 6;
 const engravingScale = 1.5;
 const selectionMarkerHeight = 5;
-const clefWidth = 53;
+const clefWidth = 42;
 const signatureSpacing = 9;
-const treble = { top: 24, bottomStep: 30 }; // E4
-// The middle-C ledger line is one staff space from either staff.
-const bass = { top: treble.top + staffHeight + 2 * lineGap, bottomStep: 18 }; // G2
-const middleC = 28;
-const staffY = (step, clef) => clef.top + (clef.bottomStep + 8 - step) * (lineGap / 2);
+const clefs = {
+  guitar: {
+    id: 'treble',
+    label: 'trebleStaff',
+    bottomStep: 30, // E4
+    anchorStep: 32, // G4
+    signatureOctave: 4,
+    path: trebleClefPath,
+  },
+  bass: {
+    id: 'bass',
+    label: 'bassStaff',
+    bottomStep: 18, // G2
+    anchorStep: 24, // F3
+    signatureOctave: 2,
+    path: bassClefPath,
+  },
+};
+const staffY = (step, clef) => staffBottom + (clef.bottomStep - step) * (lineGap / 2);
 
 const accidentalPaths = {
   '♯': 'M-2-6v13M2-8V5M-4-1l8-2m-8 6 8-2',
@@ -37,13 +52,15 @@ function ledgerOffsets(step, clef) {
 }
 
 export function staffPitchName(midi, state, notation = staffSpellingState(state)) {
+  const writtenMidi = midi + 12; // Guitar and bass notation sounds an octave lower.
   const outside = !notation.scaleData.intervals.includes(mod(midi - notation.root));
   if (outside && ['sharp', 'flat'].includes(state.spelling))
-    return midiName(midi, state.spelling);
-  return spelledMidiName(midi, notation);
+    return midiName(writtenMidi, state.spelling);
+  return spelledMidiName(writtenMidi, notation);
 }
 
-export function grandStaffLayout({ state, points }, pattern) {
+export function staffLayout({ state, points }, pattern) {
+  const clef = clefs[state.instrument];
   const pitches = new Map(points.map((point) => [point.midi, point]));
   const focused = pattern && new Set(pattern.points.map((point) => point.midi));
   const notation = staffSpellingState(state);
@@ -58,7 +75,6 @@ export function grandStaffLayout({ state, points }, pattern) {
       const name = staffPitchName(midi, state, notation);
       const [, letter, signs, octave] = /^([A-G])([♯♭]*)(-?\d+)$/.exec(name);
       const step = Number(octave) * 7 + letters.indexOf(letter);
-      const clef = step >= middleC ? treble : bass;
       const y = staffY(step, clef);
       // Quarter-note stems point toward the middle line. Distant ledger notes
       // reach that line, even when it takes more than the usual 3½ spaces.
@@ -92,14 +108,15 @@ export function grandStaffLayout({ state, points }, pattern) {
       };
     });
   const top = Math.min(
-    treble.top - 17,
+    staffTop - 17,
     ...notes.map(({ y, stemEnd }) => y + Math.min(-13, stemEnd - 2)),
   );
   const bottom = Math.max(
-    bass.top + staffHeight + 10,
+    staffBottom + 10,
     ...notes.map(({ y, stemEnd }) => y + Math.max(13, stemEnd + 2)),
   );
   return {
+    clef,
     notes,
     signature,
     headerWidth,
@@ -110,27 +127,17 @@ export function grandStaffLayout({ state, points }, pattern) {
   };
 }
 
-function clefMarkup() {
-  const bottom = bass.top + staffHeight;
+function clefMarkup(clef) {
   // SMuFL uses 250 design units per staff space and registers clefs on their pitches.
-  const clefScale = lineGap / 250;
-  const braceScale = (bottom - treble.top) / braceHeight;
-  const trebleY = staffY(middleC + 4, treble); // G4
-  const bassY = staffY(middleC - 4, bass); // F3
-  return `<g class="staff-clefs" fill="currentColor">
-      <path class="staff-joining-line" d="M${staffStart} ${treble.top}V${bottom}" stroke="currentColor" stroke-width=".85"/>
-      <path class="staff-brace" d="${bracePath}" transform="translate(5 ${bottom}) scale(${braceScale} ${-braceScale})"/>
-      <path class="staff-clef" data-clef="treble" d="${trebleClefPath}" transform="translate(25 ${trebleY}) scale(${clefScale} ${-clefScale})"/>
-      <path class="staff-clef" data-clef="bass" d="${bassClefPath}" transform="translate(25 ${bassY}) scale(${clefScale} ${-clefScale})"/>
-    </g>`;
+  const scale = lineGap / 250;
+  const y = staffY(clef.anchorStep, clef);
+  return `<path class="staff-clef" data-clef="${clef.id}" fill="currentColor" d="${clef.path}" transform="translate(13 ${y}) scale(${scale} ${-scale})"/>`;
 }
 
 function staffLines(start, end) {
   const lines = [];
-  for (const clef of [treble, bass]) {
-    for (let line = 0; line < 5; line++) {
-      lines.push(`M${start} ${clef.top + line * lineGap}H${end}`);
-    }
+  for (let line = 0; line < 5; line++) {
+    lines.push(`M${start} ${staffTop + line * lineGap}H${end}`);
   }
   return `<path class="staff-lines" d="${lines.join('')}" fill="none" stroke="currentColor" stroke-width=".85"/>`;
 }
@@ -142,12 +149,12 @@ function keySignatureMarkup(signature, clef) {
     // Bass uses the same arrangement two octaves lower.
     const index = letters.indexOf(letter);
     const wraps = index < letters.indexOf(sign === '♯' ? 'A' : 'F');
-    const octave = (clef === treble ? 4 : 2) + Number(wraps);
+    const octave = clef.signatureOctave + Number(wraps);
     const y = staffY(octave * 7 + index, clef);
     const x = clefWidth + (i + 0.5) * signatureSpacing;
     return `<path data-pitch="${letter}${sign}" d="${accidentalPaths[sign]}" transform="translate(${x} ${y})"/>`;
   });
-  return `<g class="staff-key-signature" data-clef="${clef === treble ? 'treble' : 'bass'}" fill="none" stroke="currentColor" stroke-width="1.3">${paths.join('')}</g>`;
+  return `<g class="staff-key-signature" data-clef="${clef.id}" fill="none" stroke="currentColor" stroke-width="1.3">${paths.join('')}</g>`;
 }
 
 function staffNote(
@@ -194,11 +201,11 @@ function staffNote(
   return `<g class="${classes}" data-staff-midi="${midi}" transform="translate(${x} ${y})"><title>${name}</title>${ledgers}${accidentals.join('')}${stem}${head}${letter}${marker}</g>`;
 }
 
-export function grandStaffMarkup(
-  { notes, signature, headerWidth, width, top, height, patternNumber },
+export function staffMarkup(
+  { clef, notes, signature, headerWidth, width, top, height, patternNumber },
   lang,
 ) {
-  const label = [copy[lang].grandStaff];
+  const label = [copy[lang][clef.label], copy[lang].writtenPitch];
   if (signature.length) label.push(`${copy[lang].keySignature} ${signature.join(' ')}`);
   label.push(...notes.map(({ name }) => name));
   if (patternNumber !== undefined) {
@@ -209,14 +216,13 @@ export function grandStaffMarkup(
   }
   const noteWidth = width - headerWidth;
   const markerY = top + height - selectionMarkerHeight - 2;
-  return `<div class="grand-staff-score" role="img" aria-label="${label.join(' · ')}">
+  return `<div class="staff-score" role="img" aria-label="${label.join(' · ')}">
     <svg xmlns="http://www.w3.org/2000/svg" class="staff-clef-column" width="${headerWidth * engravingScale}" height="${height * engravingScale}" viewBox="0 ${top} ${headerWidth} ${height}" aria-hidden="true">
       ${staffLines(staffStart, headerWidth)}
-      ${clefMarkup()}
-      ${keySignatureMarkup(signature, treble)}
-      ${keySignatureMarkup(signature, bass)}
+      ${clefMarkup(clef)}
+      ${keySignatureMarkup(signature, clef)}
     </svg>
-    <svg xmlns="http://www.w3.org/2000/svg" class="grand-staff-svg" width="${noteWidth * engravingScale}" height="${height * engravingScale}" viewBox="${headerWidth} ${top} ${noteWidth} ${height}" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" class="staff-notes-svg" width="${noteWidth * engravingScale}" height="${height * engravingScale}" viewBox="${headerWidth} ${top} ${noteWidth} ${height}" aria-hidden="true">
       ${staffLines(headerWidth, width - 5)}
       ${notes.map((note) => staffNote(note, markerY)).join('')}
     </svg>

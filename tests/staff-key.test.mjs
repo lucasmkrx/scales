@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { boardModel, rootName, SCALES, spelledMidiName } from '../src/music.mjs';
-import { grandStaffLayout } from '../src/grand-staff.mjs';
+import { staffLayout } from '../src/staff.mjs';
 import { staffKeySignature, staffSpellingState } from '../src/staff-key.mjs';
 
 const signature = (input) => staffKeySignature(staffSpellingState(input));
@@ -105,7 +105,7 @@ test('reading the signature and printed accidentals recovers every fretboard pit
   for (const scale of SCALES) {
     for (let root = 0; root < 12; root++) {
       const model = boardModel({ scale: scale.id, root, allNotes: true }, { hi: 12 });
-      const { notes, signature } = grandStaffLayout(model);
+      const { notes, signature } = staffLayout(model);
       const expected = [...new Set(model.points.map(({ midi }) => midi))].sort(
         (a, b) => a - b,
       );
@@ -129,8 +129,8 @@ test('reading the signature and printed accidentals recovers every fretboard pit
           );
         }
         const alteration = byPosition.get(position) ?? byLetter.get(letter) ?? 0;
-        const soundingPitch = 12 * (Number(octave) + 1) + naturals[letter] + alteration;
-        assert.equal(soundingPitch, midi, `${scale.id} at root ${root}: ${name}`);
+        const writtenPitch = 12 * (Number(octave) + 1) + naturals[letter] + alteration;
+        assert.equal(writtenPitch - 12, midi, `${scale.id} at root ${root}: ${name}`);
       }
     }
   }
@@ -139,7 +139,7 @@ test('reading the signature and printed accidentals recovers every fretboard pit
 test('an inline natural cancels the signature only at its written octave', () => {
   const board = boardModel({ root: 7, allNotes: true }, { hi: 24 });
   const phrase = [53, 54, 65, 78]; // F3, F♯3, F4, F♯5
-  const { signature, notes } = grandStaffLayout({
+  const { signature, notes } = staffLayout({
     ...board,
     points: board.points.filter(({ midi }) => phrase.includes(midi)),
   });

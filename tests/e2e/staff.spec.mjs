@@ -25,7 +25,7 @@ function luminance(rgb) {
 
 async function expectStaffColors(page, monochromeInk) {
   const staffInk = await page
-    .locator('.grand-staff-score')
+    .locator('.staff-score')
     .evaluate((score) => getComputedStyle(score).color);
   const pitches = await page
     .locator('#staff-notation [data-staff-midi]')
@@ -170,48 +170,43 @@ test('selected patterns outline white notes and keep stems neutral in either the
   }
 });
 
-test('key signatures on both clefs follow the key and scale, with inline signs for altered pitches', async ({
+test('the instrument clef aligns with its written pitch and carries the key signature', async ({
   page,
 }) => {
   await page.goto(url);
   const staff = page.locator('#staff-notation');
-  async function expectSignature(pitch) {
-    for (const clef of ['treble', 'bass']) {
-      const signs = staff.locator(
-        `.staff-key-signature[data-clef="${clef}"] [data-pitch]`,
-      );
-      await expect(signs).toHaveCount(1);
-      await expect(signs).toHaveAttribute('data-pitch', pitch);
-      await expect(signs).toBeVisible();
-    }
+  async function expectSignature(pitch, clef = 'treble') {
+    await expect(staff.locator('.staff-key-signature')).toHaveCount(1);
+    const sign = staff.locator(`.staff-key-signature[data-clef="${clef}"] [data-pitch]`);
+    await expect(sign).toHaveCount(1);
+    await expect(sign).toHaveAttribute('data-pitch', pitch);
+    await expect(sign).toBeVisible();
+  }
+  async function expectClef(clef, anchorMidi) {
+    const glyph = staff.locator('.staff-clef');
+    await expect(glyph).toHaveCount(1);
+    await expect(glyph).toHaveAttribute('data-clef', clef);
+    const alignment = await staff.evaluate((element, midi) => {
+      const screenY = (shape, point) => point.matrixTransform(shape.getScreenCTM()).y;
+      const originY = (selector) =>
+        screenY(element.querySelector(selector), new DOMPoint(0, 0));
+      const headerLines = element.querySelector('.staff-clef-column .staff-lines');
+      const noteLines = element.querySelector('.staff-notes-svg .staff-lines');
+      return {
+        lineCount: headerLines.getAttribute('d').match(/M/g).length,
+        clef: originY('.staff-clef') - originY(`[data-staff-midi="${midi}"]`),
+        seam:
+          screenY(noteLines, noteLines.getPointAtLength(0)) -
+          screenY(headerLines, headerLines.getPointAtLength(0)),
+      };
+    }, anchorMidi);
+    expect(alignment.lineCount).toBe(5);
+    expect(alignment.clef).toBeCloseTo(0, 0);
+    expect(alignment.seam).toBeCloseTo(0, 0);
   }
   const inline = (midi) => staff.locator(`[data-staff-midi="${midi}"] .staff-accidental`);
   await expect(staff.locator('.staff-key-signature [data-pitch]')).toHaveCount(0);
-  const alignment = await staff.evaluate((element) => {
-    const screenY = (shape, point) => point.matrixTransform(shape.getScreenCTM()).y;
-    const originY = (selector) =>
-      screenY(element.querySelector(selector), new DOMPoint(0, 0));
-    const staffLines = element.querySelector('.staff-clef-column .staff-lines');
-    const noteLines = element.querySelector('.grand-staff-svg .staff-lines');
-    const brace = element.querySelector('.staff-brace').getBoundingClientRect();
-    const topLine = screenY(staffLines, staffLines.getPointAtLength(0));
-    const bottomLine = screenY(
-      staffLines,
-      staffLines.getPointAtLength(staffLines.getTotalLength()),
-    );
-    return {
-      trebleClef:
-        originY('.staff-clef[data-clef="treble"]') - originY('[data-staff-midi="67"]'),
-      bassClef:
-        originY('.staff-clef[data-clef="bass"]') - originY('[data-staff-midi="53"]'),
-      braceTop: brace.top - topLine,
-      braceBottom: brace.bottom - bottomLine,
-      staffSeam: screenY(noteLines, noteLines.getPointAtLength(0)) - topLine,
-    };
-  });
-  for (const [part, offset] of Object.entries(alignment)) {
-    expect(offset, part).toBeCloseTo(0, 0);
-  }
+  await expectClef('treble', 55); // Sounding G3 is written on the G4 line.
   await page.getByRole('radio', { name: 'G', exact: true }).check();
   await expectSignature('F♯');
   await expect(inline(42)).toHaveCount(0);
@@ -227,9 +222,13 @@ test('key signatures on both clefs follow the key and scale, with inline signs f
   await expect(inline(49)).toHaveAttribute('data-sign', '♯');
   await page.locator('#language').selectOption('es');
   await page.reload();
-  await expect(staff.getByRole('img')).toHaveAccessibleName(/Pentagrama doble/);
+  await expect(staff.getByRole('img')).toHaveAccessibleName(/Pentagrama en clave de sol/);
   await expectSignature('B♭');
   await expect(inline(49)).toHaveAttribute('data-sign', '♯');
+  await page.locator('#instrument label:has(input[value="bass"])').click();
+  await expect(staff.getByRole('img')).toHaveAccessibleName(/Pentagrama en clave de fa/);
+  await expectClef('bass', 41); // Sounding F2 is written on the F3 line.
+  await expectSignature('B♭', 'bass');
 });
 
 test('inspecting or playing a note marks its exact octave on the staff', async ({
@@ -239,22 +238,26 @@ test('inspecting or playing a note marks its exact octave on the staff', async (
   const selected = page.locator('#staff-notation .is-selected');
   const visibleMarkers = page.locator('#staff-notation .staff-selection-marker:visible');
   await expect(visibleMarkers).toHaveCount(0);
+  await page.locator('#board [data-midi="48"]').first().click();
+  await expect(selected).toHaveAttribute('data-staff-midi', '48');
+  await expect(selected.locator('title')).toHaveText('C4');
+  await expect(page.locator('#staff-range')).toHaveText('C4');
   const highE = page.locator('#board [data-row="0"][data-fret="0"]');
   await highE.click();
   await expect(selected).toHaveAttribute('data-staff-midi', '64');
   await expect(visibleMarkers).toHaveCount(1);
   await expect(selected.locator('.staff-selection-marker')).toBeVisible();
-  await expect(page.locator('#staff-range')).toContainText('E4');
+  await expect(page.locator('#staff-range')).toHaveText('E5');
   await expectStaffColors(page, black);
   await highE.press('ArrowRight');
   await expect(selected).toHaveAttribute('data-staff-midi', '65');
   await expect(visibleMarkers).toHaveCount(1);
   await expect(selected.locator('.staff-selection-marker')).toBeVisible();
-  await expect(page.locator('#staff-range')).toContainText('F4');
+  await expect(page.locator('#staff-range')).toHaveText('F5');
 
   await page.locator('#notes-strip [data-pitch="4"]').click();
   await expect(selected).toHaveAttribute('data-staff-midi', '40');
-  await expect(page.locator('#staff-range')).toContainText('E2');
+  await expect(page.locator('#staff-range')).toHaveText('E3');
 });
 
 test('the staff follows bass tuning and scrolls within a phone viewport', async ({
@@ -265,6 +268,8 @@ test('the staff follows bass tuning and scrolls within a phone viewport', async 
   await page.locator('#instrument label:has(input[value="bass"])').click();
   expect(await staffPitches(page)).toEqual(await boardPitches(page));
   expect((await staffPitches(page))[0]).toBe(28);
+  await expect(page.locator('#staff-heading')).toHaveText('Bass staff');
+  await expect(page.locator('[data-staff-midi="28"] title')).toHaveText('E2');
   await page.locator('#allNotes').check();
   await expect(page.locator('#staff-notation')).toBeVisible();
   expect(

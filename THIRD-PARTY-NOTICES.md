@@ -2,16 +2,16 @@
 
 All browser assets are served locally; no CDN or account is needed to use Tukany.
 
-| Component                       | Version / source                                                                         | License / notice                                                                                   |
-| ------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| pdf-lib                         | 1.17.1, https://github.com/Hopding/pdf-lib                                               | MIT, `public/vendor/LICENSE-pdf-lib.md`                                                            |
-| @pdf-lib/fontkit                | 1.1.1, https://github.com/Hopding/fontkit                                                | MIT, `public/vendor/LICENSE-fontkit.txt`                                                           |
-| Font Awesome Free Solid         | [6.7.2, Fonticons, Inc.](https://github.com/FortAwesome/Font-Awesome/releases/tag/6.7.2) | Webfont under SIL OFL 1.1, CSS under MIT. [Bundled license](public/vendor/LICENSE-fontawesome.txt) |
-| IBM Plex Sans and Mono          | [Google Fonts](https://github.com/google/fonts), Latin WOFF2 subsets                     | SIL Open Font License 1.1, [bundled license](public/assets/fonts/OFL-IBM-Plex.txt)                 |
-| Bravura clef and brace outlines | [Bravura 1.482](https://github.com/steinbergmedia/bravura/releases/tag/bravura-1.482)    | SIL Open Font License 1.1, [bundled license](public/assets/fonts/OFL-Bravura.txt)                  |
-| Literata                        | supplied font files; https://github.com/googlefonts/literata                             | SIL Open Font License 1.1, `public/assets/fonts/OFL-Literata.txt`                                  |
-| DejaVu Sans (regular and bold)  | supplied font files; https://dejavu-fonts.github.io/                                     | Bitstream Vera / DejaVu notices, `public/assets/fonts/LICENSE-DejaVu.txt`                          |
-| Prettier (development only)     | 3.9.10, https://github.com/prettier/prettier                                             | MIT; installed package `LICENSE`                                                                   |
+| Component                      | Version / source                                                                         | License / notice                                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| pdf-lib                        | 1.17.1, https://github.com/Hopding/pdf-lib                                               | MIT, `public/vendor/LICENSE-pdf-lib.md`                                                            |
+| @pdf-lib/fontkit               | 1.1.1, https://github.com/Hopding/fontkit                                                | MIT, `public/vendor/LICENSE-fontkit.txt`                                                           |
+| Font Awesome Free Solid        | [6.7.2, Fonticons, Inc.](https://github.com/FortAwesome/Font-Awesome/releases/tag/6.7.2) | Webfont under SIL OFL 1.1, CSS under MIT. [Bundled license](public/vendor/LICENSE-fontawesome.txt) |
+| IBM Plex Sans and Mono         | [Google Fonts](https://github.com/google/fonts), Latin WOFF2 subsets                     | SIL Open Font License 1.1, [bundled license](public/assets/fonts/OFL-IBM-Plex.txt)                 |
+| Bravura clef outlines          | [Bravura 1.482](https://github.com/steinbergmedia/bravura/releases/tag/bravura-1.482)    | SIL Open Font License 1.1, [bundled license](public/assets/fonts/OFL-Bravura.txt)                  |
+| Literata                       | supplied font files; https://github.com/googlefonts/literata                             | SIL Open Font License 1.1, `public/assets/fonts/OFL-Literata.txt`                                  |
+| DejaVu Sans (regular and bold) | supplied font files; https://dejavu-fonts.github.io/                                     | Bitstream Vera / DejaVu notices, `public/assets/fonts/LICENSE-DejaVu.txt`                          |
+| Prettier (development only)    | 3.9.10, https://github.com/prettier/prettier                                             | MIT; installed package `LICENSE`                                                                   |
 
 The four initial guided books were adapted from the PDFs supplied by Lucas
 Marques, retaining their original visual system.

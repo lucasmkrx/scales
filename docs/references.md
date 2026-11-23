@@ -85,14 +85,15 @@ Key mode applies the selected formula to the tonic's letter spelling. Explicit
 enharmonic roots override automatic simpler-name selection; these names do not
 change the underlying equal-tempered pitches.
 
-## Grand staff notation
+## Staff notation
 
-The explorer uses a condensed grand staff with one shared middle-C position
-between the two staves. The clefs and brace are Bravura outlines, positioned
+The explorer uses treble clef for guitar and bass clef for bass. Both write
+notes one octave above sounding pitch. For example, a fret that sounds C3
+appears as C4. The clefs are Bravura outlines, positioned
 using the [SMuFL scoring metrics](https://smufl.formats.music/latest/specification/scoring-metrics-glyph-registration.html).
 
-The staff shows the fretboard's sounding pitches in ascending order. Each clef
-carries the same key signature at the appropriate lines and spaces. A signature
+The staff shows the fretboard pitches in ascending order. The key signature
+uses the lines and spaces for the active clef. A signature
 alters a letter in every octave. An inline accidental changes that letter at
 one written octave. For example, if G major includes both F♮4 and F♯4, the
 second F needs its sharp restored. [Music Theory for the 21st-Century Classroom on key signatures](https://musictheory.pugetsound.edu/mt21c/MajorKeySignatures.html)
@@ -116,7 +117,7 @@ and [accidentals](https://musictheory.pugetsound.edu/mt21c/Accidentals.html).
   inline accidentals to preserve the chosen spelling.
 
 The staff spells each scale tone from its degree. For instance, the seventh of
-C♯ major is B♯, and sounding middle C is written B♯3 in that scale. The sharps
+C♯ major is B♯, and sounding C3 is written B♯3 in that scale. The sharps
 and flats display preferences can choose the tonic spelling, while an explicit
 tonic takes precedence.
 
