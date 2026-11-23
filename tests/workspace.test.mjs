@@ -94,13 +94,15 @@ test('saved preferences survive reload, while shared links override remembered c
       tuning: 'bass-6-standard',
       lang: 'pt',
       labels: 'degrees',
-      spelling: 'flat',
       frets: 24,
     }),
   );
+  assert.equal(Object.hasOwn(saved.preferences, 'spelling'), false);
+  saved.preferences.spelling = 'flat';
   const decoded = readPreferences(JSON.stringify(saved));
   assert.equal(restoreWorkspace({}, decoded).instrument, 'bass');
   assert.equal(restoreWorkspace({}, decoded).strings, 6);
+  assert.equal(restoreWorkspace({}, decoded).spelling, 'key');
   const linked = restoreWorkspace(
     {
       instrument: 'guitar',
@@ -118,7 +120,7 @@ test('saved preferences survive reload, while shared links override remembered c
   assert.equal(linked.strings, 6);
   assert.equal(linked.lang, 'en');
   assert.equal(linked.frets, 21);
-  assert.equal(linked.spelling, 'both');
+  assert.equal(linked.spelling, 'key');
   for (const raw of [null, 'not json', 'null', '{"version":2}', '[]'])
     assert.deepEqual(readPreferences(raw), {});
 });

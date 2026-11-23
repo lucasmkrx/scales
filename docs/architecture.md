@@ -89,14 +89,13 @@ to highest. This distinguishes extended strings and octave-shifted custom tuning
 that share the same note letters. The app supports 6- and 7-string guitar and
 4-, 5-, and 6-string bass.
 
-Notes can display both enharmonic names, only sharps/flats, or key-aware spelling.
 Key spelling derives each letter from the written degree formula, including E♯,
 C♭, and double accidentals. The Scale card always shows the same 12 pitches.
-In By key mode the fretboard controls offer alternative names for the selected
-tonic. An optional validated `tonic` value preserves that choice in URLs and saved practice.
+The fretboard controls offer alternative names for the selected tonic. An optional
+validated `tonic` value preserves that choice in URLs and saved practice.
 Without an explicit tonic, the model chooses the simpler spelling, favoring sharps
 on a tie. Contextual MIDI labels retain written octaves, such as B♯3 for sounding C4.
-These display choices preserve pitches, colors, geometry, and playback.
+The explorer uses key spelling and discards legacy spelling preferences and URL parameters.
 
 ### Shareable state and device preferences
 
@@ -140,7 +139,7 @@ Native radio groups expose the available string and fret counts directly.
 The full-width tuning picker includes the open pitches from lowest to highest.
 Choosing a custom tuning reveals its pitch fields in place. PDF settings occupy
 their own full-width section below the playing surface.
-One shared listbox serves tuning, language, scale family, note spelling, backing-track filters,
+One shared listbox serves tuning, language, scale family, tonic spelling, backing-track filters,
 and PDF scope. Native selects supply option labels, values, and disabled states.
 Keyboard, pointer, and touch selections use the same change handlers.
 On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses

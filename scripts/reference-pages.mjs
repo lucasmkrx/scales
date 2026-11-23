@@ -160,7 +160,6 @@ function diagram(lang, { id, tonic }, instrument) {
     scale: id,
     root: tonic === 'A' ? '9' : '0',
     labels: 'notes',
-    spelling: 'key',
     allNotes: 'false',
     range: 'full',
     neck: 'octave',

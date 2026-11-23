@@ -55,7 +55,7 @@ sample catalog or an external audio service.
 | ---------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Altered and extended-range tunings       | Store sounding pitches including octaves, then derive each fret           | Custom input must include octave numbers and ascending pitches   |
 | Left-handed diagrams                     | Mirror horizontal geometry while retaining text and string order          | Requires geometry checks beyond checking note names              |
-| Pitch names versus scale degrees         | Offer familiar enharmonic labels and degree-aware Key spelling            | Explicit enharmonic tonic choices add state-validation cases     |
+| Pitch names versus scale degrees         | Use degree-aware note spelling and offer enharmonic tonic choices         | Explicit enharmonic tonic choices add state-validation cases     |
 | Web and print consistency                | Share the music model and keep separate rendering geometry                | The two drawing systems still need their own layout checks       |
 | Reproducible links and remembered setups | Validate URL state and let explicit fields override local preferences     | Persistent state has more edge cases than a fresh-page-only tool |
 | Accurate synthesized pitch               | Use fractional delay instead of rounding the string loop to whole samples | More DSP complexity than a basic oscillator                      |

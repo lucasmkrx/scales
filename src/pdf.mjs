@@ -940,9 +940,9 @@ export async function createAtlas(
             'En los mapas pequeños, T indica tónica y F indica fundamental. Los grados expresan intervalos desde esa nota. Los signos ♯ y ♭ indican sostenido y bemol.',
           ),
           tr(
-            'By key follows the written degrees. For example, the seventh of F♯ major is E♯. Both shows two names for the same pitch, such as C♯/D♭.',
-            'Pela tonalidade usa E♯ no 7º grau de F♯ maior. Ambos mostra pares como C♯/D♭. A = lá, B = si, C = dó, D = ré, E = mi, F = fá, G = sol.',
-            'Por tonalidad usa E♯ en el 7.º grado de F♯ mayor. Ambos muestra pares como C♯/D♭. A = la, B = si, C = do, D = re, E = mi, F = fa, G = sol.',
+            'C♯ and D♭ name the same pitch. The scale degree determines which letter to use. For example, the seventh of F♯ major is E♯.',
+            'C♯ e D♭ indicam a mesma altura. O grau determina a letra: o 7º grau de F♯ maior é E♯. A = lá, B = si, C = dó, D = ré, E = mi, F = fá, G = sol.',
+            'C♯ y D♭ indican la misma altura. El grado determina la letra: el 7.º grado de F♯ mayor es E♯. A = la, B = si, C = do, D = re, E = mi, F = fa, G = sol.',
           ),
         ],
       ],

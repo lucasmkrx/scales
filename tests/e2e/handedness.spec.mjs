@@ -11,7 +11,6 @@ const url = (changes = {}) =>
     hand: 'right',
     lang: 'en',
     labels: 'notes',
-    spelling: 'both',
     range: 'caged-major-1',
     neck: 'octave',
     ...changes,
@@ -250,20 +249,24 @@ test.describe('phone instrument setup', () => {
     await expect(tuning).toHaveAttribute('aria-expanded', 'true');
     await expect(list).toBeVisible();
     await expect(list).toHaveRole('listbox');
-    const pitchLines = await list.locator('small:not(:empty)').evaluateAll((labels) =>
-      labels.map((label) => {
+    const pitchDetails = list.locator('small:not(:empty)');
+    await expect(pitchDetails.first()).toBeVisible();
+    const pitchesFit = await pitchDetails.evaluateAll((labels) =>
+      labels.every((label) => {
         const row = label.closest('[role="option"]').getBoundingClientRect();
         const range = document.createRange();
         range.selectNodeContents(label);
         const lines = [...range.getClientRects()];
-        return {
-          wrapped: lines.length > 1,
-          fits: lines.every((line) => line.top >= row.top && line.bottom <= row.bottom),
-        };
+        return lines.every(
+          (line) =>
+            line.top >= row.top &&
+            line.bottom <= row.bottom &&
+            line.left >= row.left &&
+            line.right <= row.right,
+        );
       }),
     );
-    expect(pitchLines.some((label) => label.wrapped)).toBe(true);
-    expect(pitchLines.every((label) => label.fits)).toBe(true);
+    expect(pitchesFit).toBe(true);
     await expect(list.getByRole('option', { name: /^E standard\b/i })).toHaveAttribute(
       'aria-selected',
       'true',

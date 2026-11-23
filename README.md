@@ -21,8 +21,8 @@ on YouTube in a new tab and return to the fretboard while the track plays.
 
 ![A short walkthrough of choosing a scale, exploring the fretboard, and customizing a PDF](docs/assets/walkthrough.gif)
 
-Try [A minor pentatonic on guitar](https://tukany.com/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&spelling=both&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
-or [D natural minor on Drop C bass](https://tukany.com/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&spelling=both&scale=natural-minor&frets=20&labels=notes&allNotes=false).
+Try [A minor pentatonic on guitar](https://tukany.com/?instrument=guitar&strings=6&tuning=guitar-standard&hand=right&lang=en&root=9&scale=minor-pentatonic&frets=21&labels=notes&allNotes=false)
+or [D natural minor on Drop C bass](https://tukany.com/?instrument=bass&strings=4&tuning=bass-4-drop-c&hand=right&lang=en&root=2&scale=natural-minor&frets=20&labels=notes&allNotes=false).
 The compact scale browser and instrument settings sit side by side above the
 fretboard on wider screens. They stack on phones, with scale selection first.
 Choose a root note directly on the card, then pick a scale. Common scales appear
@@ -63,11 +63,9 @@ fade. Selecting a fret places a small pointer below its exact pitch.
 The key signature appears after the clef. In D harmonic minor, for example, the
 signature supplies B♭ and the staff writes C♯ beside the raised seventh.
 See the [staff notation conventions](docs/references.md#staff-notation).
-**Note names** controls how pitches are written.
-For example, the same fret can show C♯, D♭, or both. **By key** follows the
-scale’s written degrees. When a key has two common names, you can choose
-which to use, such as F♯ major or G♭ major. The Scale card always offers
-the same 12 root notes.
+Note names follow the scale’s written degrees. When a key has two common names,
+use **Write key as** to choose between them, such as F♯ major or G♭ major.
+The Scale card always offers the same 12 root notes.
 Tukany opens in Light on first visit, even on a device set to dark mode. Use the
 sun-and-moon button in the header to switch themes. Tukany remembers your choice
 on this device. Selection and note animations respect the device's

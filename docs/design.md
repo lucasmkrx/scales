@@ -65,9 +65,9 @@ On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 while leaving the settings visible in normal page order. Activating it focuses
 the fretboard heading below the shortcut. A single inline caption explains the selected
 pattern and its lowest note and degree. The bracket already supplies its fret span.
-The fretboard’s Note names menu controls how pitches are written. By key
-follows the scale formula and offers a choice of tonic spelling when a pitch
-has alternative names. The reference buttons follow the current note or degree
+The fretboard spells pitches according to the scale formula. The Write key as
+menu offers a choice of tonic spelling when a pitch has alternative names.
+The reference buttons follow the current note or degree
 mode. Short labels fit in a circle. Longer labels expand to a pill. Repeated setup cards,
 practice prose, and the PDF configuration summary are removed.
 

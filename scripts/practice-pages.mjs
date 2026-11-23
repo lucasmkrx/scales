@@ -16,7 +16,6 @@ function exercisePath(lang, { instrument, strings, tuning, root, scale }) {
     scale,
     lang,
     labels: 'notes',
-    spelling: 'key',
     allNotes: scale === 'dorian' ? 'true' : 'false',
     range: 'full',
     neck: 'octave',

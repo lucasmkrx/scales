@@ -175,17 +175,17 @@ test('fret defaults follow the instrument while explicit selections and shared l
   assert.equal(normalizeState({ instrument: 'bass', frets: 'invalid' }).frets, 20);
 });
 
-test('Both is the default and legacy Automatic links migrate without changing pitches', () => {
-  assert.equal(normalizeState().spelling, 'both');
-  assert.equal(normalizeState({ spelling: 'auto' }).spelling, 'both');
+test('key spelling is the default, including for the legacy auto value', () => {
+  assert.equal(normalizeState().spelling, 'key');
+  assert.equal(normalizeState({ spelling: 'auto' }).spelling, 'key');
   assert.deepEqual(spellScale({ root: 0, scale: 'natural-minor' }), [
     'C',
     'D',
-    'D♯/E♭',
+    'E♭',
     'F',
     'G',
-    'G♯/A♭',
-    'A♯/B♭',
+    'A♭',
+    'B♭',
   ]);
   assert.deepEqual(spellScale({ root: 0, scale: 'natural-minor', spelling: 'sharp' }), [
     'C',

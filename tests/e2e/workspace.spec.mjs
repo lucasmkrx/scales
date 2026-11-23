@@ -10,7 +10,6 @@ const baseState = {
   root: '0',
   scale: 'major',
   frets: '24',
-  spelling: 'both',
   neck: 'octave',
   range: 'full',
 };
@@ -280,10 +279,15 @@ test('custom formula drafts survive other settings and saved setups restore on a
   await expect(page.locator('#scale-family option[value="custom"]')).toHaveCount(0);
 });
 
-test('note names change the diagram and keep all twelve root choices stable', async ({
+test('key spelling is automatic and keeps all twelve root choices stable', async ({
   page,
 }) => {
-  await page.goto(url({ root: '6', tonic: 'Gb', spelling: 'key' }));
+  await page.goto(url({ root: '6' }));
+  await expect(page.locator('#scale-selection')).toHaveText('F♯ Major');
+  await expect(page.locator('#notes-strip button[data-pitch="5"]')).toHaveText('E♯');
+  await page.goto(url({ root: '6', tonic: 'Gb', spelling: 'sharp' }));
+  await expect(page.locator('#spelling, #spelling-trigger')).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.has('spelling')).toBe(false);
   const roots = page.getByRole('group', { name: 'Root note', exact: true });
   const names = roots.getByRole('radio');
   await expect(names).toHaveCount(12);
@@ -306,26 +310,17 @@ test('note names change the diagram and keep all twelve root choices stable', as
   const tones = page.locator('#notes-strip');
   const keyMenu = page.locator('#key-tonic-trigger');
   const before = await points(page);
-  for (const [mode, first, fourth] of [
-    ['flat', 'G♭', 'B'],
-    ['sharp', 'F♯', 'B'],
-    ['both', 'F♯/G♭', 'B'],
-    ['key', 'G♭', 'C♭'],
-  ]) {
-    await page.locator('#spelling').selectOption(mode);
-    await expect(rootLabels).toHaveText(rootNames);
-    await expect(chosen).toBeChecked();
-    await expect(page.locator('#scale-selection')).toHaveText('G♭ Major');
-    await expect(tones.locator('button[data-pitch="6"]')).toHaveText(first);
-    await expect(tones.locator('button[data-pitch="11"]')).toHaveText(fourth);
-    expect(await keyMenu.isVisible()).toBe(mode === 'key');
-    expect(await points(page)).toEqual(before);
-  }
+  await expect(rootLabels).toHaveText(rootNames);
+  await expect(chosen).toBeChecked();
+  await expect(page.locator('#scale-selection')).toHaveText('G♭ Major');
+  await expect(tones.locator('button[data-pitch="6"]')).toHaveText('G♭');
+  await expect(tones.locator('button[data-pitch="11"]')).toHaveText('C♭');
   await keyMenu.click();
   await page.getByRole('option', { name: 'F♯', exact: true }).click();
   await expect(keyMenu).toBeFocused();
   await expect(page.locator('#scale-selection')).toHaveText('F♯ Major');
   await expect(tones).toContainText('E♯');
+  expect(await points(page)).toEqual(before);
   await page.reload();
   await expect(chosen).toBeChecked();
   await expect(keyMenu).toHaveText('F♯');
@@ -334,7 +329,7 @@ test('note names change the diagram and keep all twelve root choices stable', as
   await expect(page.locator('#scale-selection')).toHaveText('D♭ Major');
   expect(new URL(page.url()).searchParams.has('tonic')).toBe(false);
 
-  await page.goto(url({ root: '11', tonic: 'Cb', spelling: 'key' }));
+  await page.goto(url({ root: '11', tonic: 'Cb' }));
   await expect(names).toHaveCount(12);
   await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeChecked();
   await expect(page.locator('#scale-selection')).toHaveText('C♭ Major');
@@ -342,7 +337,7 @@ test('note names change the diagram and keep all twelve root choices stable', as
   await keyMenu.click();
   await page.getByRole('option', { name: 'Automatic', exact: true }).click();
   await expect(keyMenu).toBeHidden();
-  await expect(page.locator('#spelling-trigger')).toBeFocused();
+  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeFocused();
   await expect(page.locator('#scale-selection')).toHaveText('B Major');
 });
 

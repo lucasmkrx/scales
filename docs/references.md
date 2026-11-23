@@ -81,9 +81,9 @@ instrument samples or additional sample licenses are used.
 - Letter-per-degree spelling and common enharmonic key choices:
   [Ableton Learning Music: Building major scales](https://learningmusic.ableton.com/advanced-topics/building-major-scales.html).
 
-Key mode applies the selected formula to the tonic's letter spelling. Explicit
-enharmonic roots override automatic simpler-name selection; these names do not
-change the underlying equal-tempered pitches.
+The explorer applies the selected formula to the tonic's letter spelling.
+An explicit enharmonic tonic takes precedence over the automatic choice and
+preserves the same underlying equal-tempered pitches.
 
 ## Staff notation
 
@@ -117,9 +117,8 @@ and [accidentals](https://musictheory.pugetsound.edu/mt21c/Accidentals.html).
   inline accidentals to preserve the chosen spelling.
 
 The staff spells each scale tone from its degree. For instance, the seventh of
-C♯ major is B♯, and sounding C3 is written B♯3 in that scale. The sharps
-and flats display preferences can choose the tonic spelling, while an explicit
-tonic takes precedence.
+C♯ major is B♯, and sounding C3 is written B♯3 in that scale. The staff uses
+the tonic spelling selected in the explorer.
 
 ## Appearance and interaction
 

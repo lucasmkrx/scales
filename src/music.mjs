@@ -68,7 +68,7 @@ export const DEFAULTS = {
   hand: 'right',
   lang: 'en',
   root: 0,
-  spelling: 'both',
+  spelling: 'key',
   scale: 'major',
   frets: DEFAULT_FRETS.guitar,
   labels: 'notes',
@@ -143,7 +143,7 @@ export function normalizeState(input = {}) {
   s.labels = s.labels === 'degrees' ? 'degrees' : 'notes';
   s.spelling = ['both', 'sharp', 'flat', 'key'].includes(s.spelling)
     ? s.spelling
-    : 'both';
+    : DEFAULTS.spelling;
   s.root = Number(s.root);
   if (!Number.isInteger(s.root) || s.root < 0 || s.root > 11) s.root = 0;
   const tonic = spellingParts(s.tonic);
@@ -203,13 +203,12 @@ export function rootName(state) {
   return keySpellings(state.scaleData ? state : selection(state)).tonic;
 }
 export function pitchPreference(input) {
-  if (input.spelling === 'key') {
-    const { names } = keySpellings(input.scaleData ? input : selection(input));
-    const count = (sign) =>
-      names.reduce((sum, name) => sum + name.split(sign).length - 1, 0);
-    return count('♭') > count('♯') ? 'flat' : 'sharp';
-  }
-  return ['sharp', 'flat'].includes(input.spelling) ? input.spelling : 'both';
+  const state = input.scaleData ? input : selection(input);
+  if (state.spelling !== 'key') return state.spelling;
+  const { names } = keySpellings(state);
+  const count = (sign) =>
+    names.reduce((sum, name) => sum + name.split(sign).length - 1, 0);
+  return count('♭') > count('♯') ? 'flat' : 'sharp';
 }
 export function spellScale(input) {
   const state = input.scaleData ? input : selection(input);
@@ -219,8 +218,8 @@ export function spellScale(input) {
   );
 }
 export function spelledMidiName(midi, input) {
-  if (input.spelling !== 'key') return midiName(midi, pitchPreference(input));
   const state = input.scaleData ? input : selection(input);
+  if (state.spelling !== 'key') return midiName(midi, pitchPreference(state));
   const index = state.scaleData.intervals.indexOf(mod(midi - state.root));
   if (index < 0) return midiName(midi, pitchPreference(state));
   const name = keySpellings(state).names[index];
@@ -252,6 +251,7 @@ export function boardModel(input, { lo = 0, hi, all = false } = {}) {
   hi = hi ?? s.frets;
   const rows = [...s.tuningData.notes].reverse();
   const spellings = spellScale(s);
+  const chromaticPreference = pitchPreference(s);
   const points = [];
   rows.forEach((open, row) => {
     for (let fret = lo; fret <= hi; fret++) {
@@ -267,7 +267,7 @@ export function boardModel(input, { lo = 0, hi, all = false } = {}) {
         pc,
         root: pc === s.root,
         inScale: index >= 0,
-        name: index >= 0 ? spellings[index] : noteName(pc, pitchPreference(s)),
+        name: index >= 0 ? spellings[index] : noteName(pc, chromaticPreference),
         degree: index >= 0 ? prettyDegree(s.scaleData.formula[index]) : '',
         fill: PALETTE[pc] ?? '#ffffff',
         lightText: [0, 5, 7, 9, 11].includes(pc),
@@ -325,7 +325,10 @@ export function layoutBoard(model, { width = 1100, height = 270, small = false }
 export function sharedState(s) {
   const clean = normalizeState(s);
   const params = new URLSearchParams();
-  for (const k of Object.keys(DEFAULTS)) params.set(k, String(clean[k]));
+  for (const k of Object.keys(DEFAULTS)) {
+    if (k !== 'spelling' || clean.spelling !== DEFAULTS.spelling)
+      params.set(k, String(clean[k]));
+  }
   if (clean.tonic) params.set('tonic', clean.tonic);
   if (clean.tuning === 'custom') params.set('customTuning', clean.customTuning);
   if (clean.scale === 'custom') params.set('formula', clean.formula);

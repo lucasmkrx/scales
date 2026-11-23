@@ -1558,11 +1558,6 @@ input[aria-invalid='true'] {
   justify-content: center;
   gap: 7px;
 }
-.spelling-hint {
-  padding-inline: 24px;
-  margin-block: 0 12px;
-  font-size: 12px;
-}
 .neck-view-switch {
   position: relative;
   display: inline-grid;
@@ -2128,9 +2123,6 @@ button:not(:disabled):active,
   .settings-card-heading,
   .instrument-card .settings-heading {
     margin-bottom: 10px;
-  }
-  .spelling-hint {
-    padding-inline: 14px;
   }
   .masthead {
     height: 58px;

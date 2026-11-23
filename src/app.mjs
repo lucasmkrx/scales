@@ -104,9 +104,9 @@ function renderKeyTonic(s) {
   const names = new Set([SHARPS[s.root], FLATS[s.root]]);
   // Keep uncommon enharmonic spellings from shared links and saved practice.
   if (s.tonic) names.add(prettyDegree(s.tonic));
-  const show = s.spelling === 'key' && names.size > 1;
+  const show = names.size > 1;
   if (!show && control.contains(document.activeElement))
-    $('spelling-trigger').focus({ preventScroll: true });
+    $('root-notes').querySelector('input:checked')?.focus({ preventScroll: true });
   control.hidden = !show;
   if (show) {
     $('key-tonic').innerHTML = options(
@@ -392,8 +392,6 @@ function renderContent() {
   $('pattern-summary').innerHTML = summary
     ? `<strong>${escape(summary.title)}</strong><span>${escape(summary.detail)}</span>`
     : '';
-  $('spelling-hint').textContent =
-    s.spelling === 'key' ? t.keySpellingHint : t.spellingHint;
   $('neck-octave-label').textContent = state.hand === 'left' ? '12–0' : '0–12';
   document
     .querySelectorAll('input[name="neck-view"]')
@@ -477,7 +475,7 @@ function renderTuningFields() {
   $('tuning-fields').innerHTML = s.tuningData.notes
     .map(
       (m, i) =>
-        `<label><span></span><input id="string-pitch-${i}" data-string-pitch value="${midiName(m, s.spelling === 'flat' ? 'flat' : 'sharp')}" autocomplete="off" spellcheck="false" aria-describedby="tuning-error"></label>`,
+        `<label><span></span><input id="string-pitch-${i}" data-string-pitch value="${midiName(m)}" autocomplete="off" spellcheck="false" aria-describedby="tuning-error"></label>`,
     )
     .join('');
   renderTuningLabels();
@@ -537,13 +535,12 @@ function render() {
     document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
       input.checked = input.value === String(state[name]);
     });
-  $('spelling').value = state.spelling;
-  const pitch = (midi) => midiName(midi, pitchPreference(state));
+  const preference = pitchPreference(s);
   $('tuning').value = tuningDraft ? 'custom' : state.tuning;
   $('tuning-name').textContent =
     tuningDraft || state.tuning === 'custom' ? t.custom : tuningName(s.tuningData);
   $('open-string-pitches').innerHTML = s.tuningData.notes
-    .map((midi) => `<span>${pitch(midi)}</span>`)
+    .map((midi) => `<span>${midiName(midi, preference)}</span>`)
     .join(' ');
   renderKeyTonic(s);
   $('allNotes').checked = state.allNotes;
@@ -831,9 +828,6 @@ $('strings').addEventListener('change', (event) => {
 });
 $('hand').addEventListener('change', (event) => update({ hand: event.target.value }));
 $('frets').addEventListener('change', (event) => update({ frets: event.target.value }));
-$('spelling').addEventListener('change', (event) =>
-  update({ spelling: event.target.value }),
-);
 $('root-picker').addEventListener('change', ({ target }) =>
   update({ root: target.value }),
 );
@@ -842,13 +836,14 @@ $('key-tonic').addEventListener('change', ({ target }) =>
 );
 $('labels').addEventListener('change', (event) => update({ labels: event.target.value }));
 function tuningChoices() {
+  const preference = pitchPreference(state);
   const choices = TUNINGS.filter(
     (tuning) =>
       tuning.instrument === state.instrument && tuning.strings === state.strings,
   ).map((tuning) => ({
     value: tuning.id,
     label: tuningName(tuning),
-    detail: tuning.notes.map((midi) => midiName(midi, pitchPreference(state))).join(' '),
+    detail: tuning.notes.map((midi) => midiName(midi, preference)).join(' '),
     selected: tuning.id === $('tuning').value,
   }));
   choices.push({
@@ -1025,5 +1020,6 @@ window.addEventListener('themechange', renderAppearance);
 document.querySelectorAll('.setup-switch').forEach(enableSlideSwitch);
 persist();
 render();
+entryParams.delete('spelling');
 if (entryParams.size === 1 && entryParams.has('lang')) entryParams.delete('lang');
 replaceExplorerURL(entryParams);

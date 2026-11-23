@@ -93,14 +93,15 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   After selection, check that keyboard focus stays on the chosen result. Arrow
   keys should follow the visible rows and columns after the catalog reflows.
 - Open the formula editor, change a degree, and cancel. Confirm the displayed
-  degrees still match the selected scale. Edit again, then change root, spelling,
+  degrees still match the selected scale. Edit again, then change root, tonic spelling,
   or instrument to check that the draft survives. Choose a named scale to reset
   it, and test invalid custom input.
   Switch language during a draft and confirm pitch values survive while string
   labels and active validation messages translate.
-- Switch Note names between sharps, flats, both, and By key. Check that the same
-  12 circles remain in the Scale card and the selected root keeps its position.
-  In By key, compare F♯ major (seventh degree E♯) with G♭ major (fourth degree C♭).
+- Use Write key as to compare F♯ major (seventh degree E♯) with G♭ major
+  (fourth degree C♭). Check that the same 12 circles remain in the Scale card
+  and the selected root keeps its position. Open an older link with `spelling=both`
+  and confirm the same key-based spelling appears.
   Switch between notes and degrees and check that the reference buttons fit their
   labels and the fretboard retains its horizontal scroll position.
 - On a device set to dark mode, open a fresh session and confirm the page starts
@@ -181,9 +182,8 @@ pages and generated PDFs; the layout measurement approach is recorded in
 - **Music scope:** the catalog contains 67 named 12-tone collections, not every
   possible scale or tuning tradition. Pelog is explicitly a 12-tone approximation.
   Melodic minor uses its ascending/jazz form in both directions.
-- **Spelling:** Key mode follows the written degree formula; Both, Sharps, and
-  Flats retain simpler pitch-name displays. Automatic enharmonic tonic choices
-  are a display convention; explicit root spellings take priority.
+- **Spelling:** Note names follow the written degree formula. An explicit tonic
+  spelling takes priority over the automatic enharmonic choice.
 - **Practice guidance:** the app does not analyze a YouTube track, infer its
   chords, or guarantee that one scale fits an entire progression.
 - **Patterns:** compact major/minor positions match the chosen CAGED reference;

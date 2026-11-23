@@ -1,9 +1,9 @@
-import { normalizeState, selection, SCALES } from './music.mjs';
+import { DEFAULTS, normalizeState, selection, SCALES } from './music.mjs';
 import { guidePlan } from './guide-layout.mjs';
 
 const tuningKeys = ['tuning', 'customTuning'];
 const setupKeys = ['instrument', 'strings', 'frets', ...tuningKeys];
-const preferenceKeys = ['hand', 'lang', 'spelling', 'labels', 'allNotes'];
+const preferenceKeys = ['hand', 'lang', 'labels', 'allNotes'];
 const musicKeys = ['root', 'tonic', 'scale', 'formula'];
 const ranges = ['full', 'lower', 'upper'];
 const validRange = (id) =>
@@ -41,6 +41,7 @@ export function restoreWorkspace(query = {}, saved = {}) {
     instrument,
     strings,
     ...query,
+    spelling: DEFAULTS.spelling,
   });
 }
 export function restoreRange(query = {}, saved = {}) {

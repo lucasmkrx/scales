@@ -80,6 +80,7 @@ test('key-aware MIDI labels keep the correct notated octave around B-sharp and C
   const flat = { root: 6, tonic: 'Gb', scale: 'major', spelling: 'key' };
   assert.equal(spelledMidiName(60, sharp), 'B♯3');
   assert.equal(spelledMidiName(59, flat), 'C♭4');
+  assert.equal(spelledMidiName(59, { root: 6, tonic: 'Gb' }), 'C♭4');
   assert.equal(
     spelledMidiName(69, { root: 0, scale: 'diminished-7', spelling: 'key' }),
     'B♭♭4',
@@ -149,7 +150,7 @@ test('key spelling changes labels without changing fret geometry or membership',
   assert.equal(bothLayout.center(8), keyLayout.center(8));
 });
 
-test('optional tonic names normalize safely and survive shared links without changing legacy URLs', () => {
+test('optional tonic names normalize safely and survive shared links', () => {
   const state = normalizeState({ root: 6, tonic: 'G♭', spelling: 'key' });
   assert.equal(state.tonic, 'Gb');
   assert.equal(state.spelling, 'key');
@@ -160,7 +161,7 @@ test('optional tonic names normalize safely and survive shared links without cha
   for (const tonic of ['F', 'H', 'Gbbb', 'C#b', '<script>', ''])
     assert.equal(normalizeState({ root: 6, tonic }).tonic, undefined);
   assert.equal(normalizeState({ ...state, root: 7 }).tonic, undefined);
-  assert.equal(normalizeState().spelling, 'both');
+  assert.equal(new URLSearchParams(sharedState(state)).has('spelling'), false);
   assert.equal(new URLSearchParams(sharedState({ root: 6 })).has('tonic'), false);
   for (const spelling of ['both', 'sharp', 'flat'])
     assert.equal(normalizeState({ spelling }).spelling, spelling);

@@ -11,7 +11,6 @@ const url = (changes = {}) =>
     hand: 'right',
     lang: 'en',
     labels: 'notes',
-    spelling: 'both',
     range: 'caged-major-1',
     neck: 'octave',
     ...changes,
@@ -141,14 +140,14 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
-  await page.goto(url());
+  await page.goto(url({ root: '6' }));
   await expectCircularCounts(page);
   const list = page.getByRole('listbox');
   for (const [id, label] of [
     ['language', 'Language'],
     ['scale-family', 'Scale family'],
     ['tuning', 'Tuning'],
-    ['spelling', 'Note names'],
+    ['key-tonic', 'Write key as'],
     ['backing-style', 'Style'],
     ['backing-tempo', 'Tempo'],
     ['scope', 'PDF contents'],
@@ -497,7 +496,7 @@ test('reduced motion disables control and fretboard animations during interactio
   }
 });
 
-test('root notes are circles, scale choices share a height, and paired note names fit in pills', async ({
+test('root notes are circles, scale choices share a height, and key-aware names fit', async ({
   page,
 }) => {
   const sizes = (buttons) =>
@@ -537,9 +536,8 @@ test('root notes are circles, scale choices share a height, and paired note name
     const tones = page.locator('#notes-strip button');
     await expect(tones).toHaveCount(12);
     for (const tone of await sizes(tones)) {
-      if (tone.label.includes('/'))
-        expect(tone.width, tone.label).toBeGreaterThan(tone.height);
-      else expect(tone.width, tone.label).toBeCloseTo(tone.height, 0);
+      expect(tone.label).not.toContain('/');
+      expect(tone.width, tone.label).toBeCloseTo(tone.height, 0);
       expect(tone.fits, tone.label).toBe(true);
     }
     await page
