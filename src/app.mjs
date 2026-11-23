@@ -240,12 +240,11 @@ function revealPattern() {
     (left + right - board.clientWidth) / 2 - board.getBoundingClientRect().left;
 }
 const staff = $('staff-notation');
-function updateStaffTabStop() {
-  staff.tabIndex = staff.scrollWidth > staff.clientWidth ? 0 : -1;
-}
-new ResizeObserver(updateStaffTabStop).observe(staff);
 
 function renderStaff(model) {
+  const focusedMidi = staff.contains(document.activeElement)
+    ? document.activeElement.dataset.staffMidi
+    : undefined;
   const layout = staffLayout(model, currentPattern());
   const { lang } = model.state;
   $('staff-heading').textContent = copy[lang][layout.clef.label];
@@ -253,7 +252,12 @@ function renderStaff(model) {
   const low = layout.notes[0]?.name ?? '';
   const high = layout.notes.at(-1)?.name ?? '';
   $('staff-range').textContent = low === high ? low : `${low} – ${high}`;
-  updateStaffTabStop();
+  if (focusedMidi !== undefined) {
+    const note =
+      staff.querySelector(`[data-staff-midi="${focusedMidi}"]`) ??
+      staff.querySelector('[data-staff-midi][tabindex="0"]');
+    note?.focus({ preventScroll: true });
+  }
 }
 // Keep the note between the pinned clef and the right edge of the staff.
 function revealStaffNote(note, align = 'nearest') {
@@ -268,9 +272,18 @@ function revealStaffNote(note, align = 'nearest') {
 function selectStaffNote(midi) {
   const note = staff.querySelector(`[data-staff-midi="${midi}"]`);
   if (!note) return;
-  staff.querySelector('.is-selected')?.classList.remove('is-selected');
-  note.classList.add('is-selected');
-  $('staff-range').textContent = staffPitchName(midi, state);
+  const previous = staff.querySelector('.is-selected');
+  if (note !== previous) {
+    previous?.classList.remove('is-selected');
+    previous?.setAttribute('aria-pressed', 'false');
+    staff
+      .querySelector('[data-staff-midi][tabindex="0"]')
+      ?.setAttribute('tabindex', '-1');
+    note.classList.add('is-selected');
+    note.setAttribute('aria-pressed', 'true');
+    note.setAttribute('tabindex', '0');
+    $('staff-range').textContent = staffPitchName(midi, state);
+  }
   revealStaffNote(note);
 }
 function renderBoard() {
@@ -691,7 +704,7 @@ function highlightSoundingNote(midi) {
   if (midi === null) return;
   document
     .querySelectorAll(
-      `#board [data-midi="${midi}"], #notes-strip button[data-pitch="${midi % 12}"]`,
+      `#board [data-midi="${midi}"], #notes-strip button[data-pitch="${midi % 12}"], #staff-notation [data-staff-midi="${midi}"]`,
     )
     .forEach((el) => el.classList.add('sounding'));
 }
@@ -721,21 +734,64 @@ async function soundNote(midi) {
     }
   }
 }
-function playNote(midi, element) {
-  const note = boardNotes.find(
-    (point) =>
-      point.midi === midi &&
-      (!element ||
-        (point.row === Number(element.dataset.row) &&
-          point.fret === Number(element.dataset.fret))),
-  );
+function inspectFret(midi, element) {
+  const candidates = boardNotes.filter((point) => point.midi === midi);
+  const note = element
+    ? candidates.find(
+        ({ row, fret }) =>
+          row === Number(element.dataset.row) && fret === Number(element.dataset.fret),
+      )
+    : (candidates.find(isHighlighted) ?? candidates[0]);
   if (note)
     inspectNote({
       ...note,
       visible: isHighlighted(note),
     });
+}
+function playNote(midi, element) {
+  inspectFret(midi, element);
   soundNote(midi);
 }
+staff.addEventListener('focusin', (event) => {
+  const note = event.target.closest('[data-staff-midi]');
+  if (note) inspectFret(Number(note.dataset.staffMidi));
+});
+staff.addEventListener('click', (event) => {
+  const note = event.target.closest('[data-staff-midi]');
+  if (!note) return;
+  note.focus({ preventScroll: true });
+  playNote(Number(note.dataset.staffMidi));
+});
+staff.addEventListener('keydown', (event) => {
+  const note = event.target.closest('[data-staff-midi]');
+  if (!note || event.altKey || event.ctrlKey || event.metaKey) return;
+  let next;
+  switch (event.key) {
+    case 'Enter':
+    case ' ':
+      event.preventDefault();
+      if (!event.repeat) playNote(Number(note.dataset.staffMidi));
+      return;
+    case 'ArrowLeft':
+    case 'ArrowDown':
+      next = note.previousElementSibling;
+      break;
+    case 'ArrowRight':
+    case 'ArrowUp':
+      next = note.nextElementSibling;
+      break;
+    case 'Home':
+      next = staff.querySelector('[data-staff-midi]');
+      break;
+    case 'End':
+      next = note.parentElement.lastElementChild;
+      break;
+    default:
+      return;
+  }
+  event.preventDefault();
+  if (next?.matches('[data-staff-midi]')) next.focus({ preventScroll: true });
+});
 $('notes-strip').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-pitch]');
   if (!button) return;
@@ -751,16 +807,7 @@ $('notes-strip').addEventListener('click', (event) => {
 });
 $('board').addEventListener('focusin', (event) => {
   const note = event.target.closest('[data-midi]');
-  if (!note) return;
-  const point = boardNotes.find(
-    (point) =>
-      point.row === Number(note.dataset.row) && point.fret === Number(note.dataset.fret),
-  );
-  if (point)
-    inspectNote({
-      ...point,
-      visible: isHighlighted(point),
-    });
+  if (note) inspectFret(Number(note.dataset.midi), note);
 });
 window.addEventListener('pagehide', stopNoteAudio);
 document.addEventListener('visibilitychange', () => {

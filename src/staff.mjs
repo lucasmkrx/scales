@@ -173,6 +173,7 @@ function staffNote(
     muted,
   },
   markerY,
+  tabStop,
 ) {
   const ledgers = ledger.length
     ? `<path d="${ledger.map((offset) => `M-9 ${offset}h18`).join('')}" stroke="currentColor" stroke-width="1.2"/>`
@@ -198,7 +199,9 @@ function staffNote(
     ? `<text class="staff-pitch-letter" text-anchor="middle" y="2.45" fill="${pitchLabelColor(lightText)}">${name[0]}</text>`
     : '';
   const marker = `<path class="staff-selection-marker" d="M0 ${markerY - y}l4 ${selectionMarkerHeight}h-8z" fill="currentColor"/>`;
-  return `<g class="${classes}" data-staff-midi="${midi}" transform="translate(${x} ${y})"><title>${name}</title>${ledgers}${accidentals.join('')}${stem}${head}${letter}${marker}</g>`;
+  const target =
+    '<rect class="staff-note-target" x="-11" y="-12" width="22" height="24" rx="3" fill="transparent"/>';
+  return `<g class="${classes}" data-staff-midi="${midi}" role="button" tabindex="${tabStop ? 0 : -1}" aria-label="${name}" aria-pressed="false" transform="translate(${x} ${y})"><title>${name}</title>${target}${ledgers}${accidentals.join('')}${stem}${head}${letter}${marker}</g>`;
 }
 
 export function staffMarkup(
@@ -207,24 +210,21 @@ export function staffMarkup(
 ) {
   const label = [copy[lang][clef.label], copy[lang].writtenPitch];
   if (signature.length) label.push(`${copy[lang].keySignature} ${signature.join(' ')}`);
-  label.push(...notes.map(({ name }) => name));
   if (patternNumber !== undefined) {
-    label.push(
-      `${copy[lang].pattern} ${patternNumber}`,
-      ...notes.filter((note) => note.inPattern).map(({ name }) => name),
-    );
+    label.push(`${copy[lang].pattern} ${patternNumber}`);
   }
   const noteWidth = width - headerWidth;
   const markerY = top + height - selectionMarkerHeight - 2;
-  return `<div class="staff-score" role="img" aria-label="${label.join(' · ')}">
+  const entry = notes.find((note) => note.inPattern) ?? notes[0];
+  return `<div class="staff-score" role="toolbar" aria-label="${label.join(' · ')}" aria-describedby="keyboard-notes">
     <svg xmlns="http://www.w3.org/2000/svg" class="staff-clef-column" width="${headerWidth * engravingScale}" height="${height * engravingScale}" viewBox="0 ${top} ${headerWidth} ${height}" aria-hidden="true">
       ${staffLines(staffStart, headerWidth)}
       ${clefMarkup(clef)}
       ${keySignatureMarkup(signature, clef)}
     </svg>
-    <svg xmlns="http://www.w3.org/2000/svg" class="staff-notes-svg" width="${noteWidth * engravingScale}" height="${height * engravingScale}" viewBox="${headerWidth} ${top} ${noteWidth} ${height}" aria-hidden="true">
-      ${staffLines(headerWidth, width - 5)}
-      ${notes.map((note) => staffNote(note, markerY)).join('')}
+    <svg xmlns="http://www.w3.org/2000/svg" class="staff-notes-svg" width="${noteWidth * engravingScale}" height="${height * engravingScale}" viewBox="${headerWidth} ${top} ${noteWidth} ${height}">
+      <g aria-hidden="true">${staffLines(headerWidth, width - 5)}</g>
+      ${notes.map((note) => staffNote(note, markerY, note === entry)).join('')}
     </svg>
   </div>`;
 }

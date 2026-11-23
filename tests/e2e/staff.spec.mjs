@@ -90,7 +90,7 @@ test('the staff shows each sounding pitch once and retains the whole neck view w
   page,
 }) => {
   await page.goto(url);
-  await expect(page.locator('#staff-notation').getByRole('img')).toBeVisible();
+  await expect(page.locator('#staff-notation').getByRole('toolbar')).toBeVisible();
   const initial = await boardPitches(page);
   expect(await staffPitches(page)).toEqual(initial);
   expect(await page.locator('#board [data-midi="64"]').count()).toBeGreaterThan(1);
@@ -222,11 +222,15 @@ test('the instrument clef aligns with its written pitch and carries the key sign
   await expect(inline(49)).toHaveAttribute('data-sign', '♯');
   await page.locator('#language').selectOption('es');
   await page.reload();
-  await expect(staff.getByRole('img')).toHaveAccessibleName(/Pentagrama en clave de sol/);
+  await expect(staff.getByRole('toolbar')).toHaveAccessibleName(
+    /Pentagrama en clave de sol/,
+  );
   await expectSignature('B♭');
   await expect(inline(49)).toHaveAttribute('data-sign', '♯');
   await page.locator('#instrument label:has(input[value="bass"])').click();
-  await expect(staff.getByRole('img')).toHaveAccessibleName(/Pentagrama en clave de fa/);
+  await expect(staff.getByRole('toolbar')).toHaveAccessibleName(
+    /Pentagrama en clave de fa/,
+  );
   await expectClef('bass', 41); // Sounding F2 is written on the F3 line.
   await expectSignature('B♭', 'bass');
 });
@@ -299,4 +303,40 @@ test('the staff follows bass tuning and scrolls within a phone viewport', async 
   expect(firstPatternNote.x + firstPatternNote.width).toBeLessThanOrEqual(
     viewport.x + viewport.width,
   );
+});
+
+test('staff notes play their sounding octave and sync the fretboard with pointer and keyboard', async ({
+  page,
+}) => {
+  await page.goto(url);
+  const staff = page.locator('#staff-notation').getByRole('toolbar');
+  const c4 = staff.getByRole('button', { name: 'C4', exact: true });
+  const d4 = staff.getByRole('button', { name: 'D4', exact: true });
+  await expect(staff.locator('[tabindex="0"]')).toHaveCount(1);
+  await c4.locator('.staff-notehead').click();
+  await expect(c4).toBeFocused();
+  await expect(c4).toHaveAttribute('aria-pressed', 'true');
+  await expect(c4).toHaveClass(/\bsounding\b/);
+  await expect(page.locator('#board [data-midi="48"].sounding').first()).toBeVisible();
+  await expect(page.locator('#board [data-midi="60"].sounding')).toHaveCount(0);
+  await expect(page.locator('#notes-strip [data-pitch="0"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  await c4.press('ArrowRight');
+  await expect(d4).toBeFocused();
+  await expect(d4).toHaveAttribute('tabindex', '0');
+  await expect(c4).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#staff-range')).toHaveText('D4');
+  await expect(d4).not.toHaveClass(/\bsounding\b/);
+  await d4.press('Enter');
+  await expect(d4).toHaveClass(/\bsounding\b/);
+  await expect(page.locator('#board [data-midi="50"].sounding').first()).toBeVisible();
+
+  await d4.press('ArrowLeft');
+  await expect(c4).toBeFocused();
+  await c4.press('Space');
+  await expect(c4).toHaveClass(/\bsounding\b/);
+  await expect(staff.locator('[tabindex="0"]')).toHaveCount(1);
 });

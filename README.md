@@ -51,8 +51,9 @@ string. Diminished scales use four notes per string. Seven-string guitar uses
 three-notes-per-string routes for major/minor instead of extending the CAGED
 templates. Patterns support standard tuning intervals and uniform detuning.
 Bass offers generated compact octave routes. Other notes turn gray while a pattern is selected.
-Tap a fretboard note or a note or degree in the reference row to hear it and
-highlight where it appears. The staff below the fretboard uses treble clef for
+Tap a note on the fretboard, staff, or reference row to hear it and highlight
+where it appears. On the staff, arrow keys move between notes and Enter or Space
+plays the focused note. The staff below the fretboard uses treble clef for
 guitar and bass clef for bass. It shows each displayed pitch as a quarter note
 one octave above its sounding pitch. Fingerings that sound the same
 pitch share a notehead. The staff is monochrome until you select a pattern.

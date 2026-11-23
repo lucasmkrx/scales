@@ -1313,10 +1313,6 @@ input[aria-invalid='true'] {
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) var(--pale);
 }
-#staff-notation:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
 .staff-score {
   display: flex;
   width: max-content;
@@ -1348,6 +1344,22 @@ input[aria-invalid='true'] {
 .staff-note.is-muted {
   color: var(--muted);
   opacity: 0.38;
+}
+.staff-note {
+  cursor: pointer;
+}
+.staff-note:focus-visible {
+  outline: none;
+}
+.staff-note:focus-visible .staff-note-target {
+  stroke: var(--focus);
+  stroke-width: 1.3;
+}
+.staff-note:is(:focus-visible, .sounding) {
+  opacity: 1;
+}
+.staff-note.sounding .staff-selection-marker {
+  fill: var(--note-playing);
 }
 .staff-selection-marker {
   display: none;

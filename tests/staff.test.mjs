@@ -53,11 +53,7 @@ test('the staff uses every visible sounding pitch once in ascending order, in ei
     headLetters.map(([, letter]) => letter),
     patternNames.map((name) => name[0]),
   );
-  assert.ok(
-    staffMarkup(layout, 'es').includes(
-      `Patrón ${pattern.number} · ${patternNames.join(' · ')}"`,
-    ),
-  );
+  assert.ok(staffMarkup(layout, 'es').includes(`Patrón ${pattern.number}"`));
   assert.equal(
     (markup.match(/class="staff-selection-marker"/g) ?? []).length,
     midis.length,
