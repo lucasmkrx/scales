@@ -187,6 +187,31 @@ test('key signatures on both clefs follow the key and scale, with inline signs f
   }
   const inline = (midi) => staff.locator(`[data-staff-midi="${midi}"] .staff-accidental`);
   await expect(staff.locator('.staff-key-signature [data-pitch]')).toHaveCount(0);
+  const alignment = await staff.evaluate((element) => {
+    const screenY = (shape, point) => point.matrixTransform(shape.getScreenCTM()).y;
+    const originY = (selector) =>
+      screenY(element.querySelector(selector), new DOMPoint(0, 0));
+    const staffLines = element.querySelector('.staff-clef-column .staff-lines');
+    const noteLines = element.querySelector('.grand-staff-svg .staff-lines');
+    const brace = element.querySelector('.staff-brace').getBoundingClientRect();
+    const topLine = screenY(staffLines, staffLines.getPointAtLength(0));
+    const bottomLine = screenY(
+      staffLines,
+      staffLines.getPointAtLength(staffLines.getTotalLength()),
+    );
+    return {
+      trebleClef:
+        originY('.staff-clef[data-clef="treble"]') - originY('[data-staff-midi="67"]'),
+      bassClef:
+        originY('.staff-clef[data-clef="bass"]') - originY('[data-staff-midi="53"]'),
+      braceTop: brace.top - topLine,
+      braceBottom: brace.bottom - bottomLine,
+      staffSeam: screenY(noteLines, noteLines.getPointAtLength(0)) - topLine,
+    };
+  });
+  for (const [part, offset] of Object.entries(alignment)) {
+    expect(offset, part).toBeCloseTo(0, 0);
+  }
   await page.getByRole('radio', { name: 'G', exact: true }).check();
   await expectSignature('F♯');
   await expect(inline(42)).toHaveCount(0);

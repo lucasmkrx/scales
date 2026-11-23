@@ -87,6 +87,10 @@ change the underlying equal-tempered pitches.
 
 ## Grand staff notation
 
+The explorer uses a condensed grand staff with one shared middle-C position
+between the two staves. The clefs and brace are Bravura outlines, positioned
+using the [SMuFL scoring metrics](https://smufl.formats.music/latest/specification/scoring-metrics-glyph-registration.html).
+
 The staff shows the fretboard's sounding pitches in ascending order. Each clef
 carries the same key signature at the appropriate lines and spaces. A signature
 alters a letter in every octave. An inline accidental changes that letter at

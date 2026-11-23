@@ -87,6 +87,9 @@ test('written staff steps place middle C and ledger lines on both clefs at conce
   assert.deepEqual(lowE.ledger, [-28, -20, -12, -4]);
   for (const note of [e2, c4, a5]) assert.deepEqual(note.ledger, [0]);
   for (const note of [g2, f3, a3, b3, d4, e4, f5, g5]) assert.deepEqual(note.ledger, []);
+  assert.equal(d4.y - e4.y, c4.y - d4.y);
+  assert.equal(b3.y - c4.y, c4.y - d4.y);
+  assert.equal(c4.y, (a3.y + e4.y) / 2);
   assert.equal(f3.y - a3.y, e2.y - g2.y);
   assert.equal(f5.y - a5.y, 2 * (d4.y - e4.y));
 });
