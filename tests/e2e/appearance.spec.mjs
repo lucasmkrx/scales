@@ -230,6 +230,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
     ),
   ).toBe(true);
   const darkColors = await noteColors();
+  expect(new Set(darkColors.map(({ fill }) => fill)).size).toBe(7);
   for (const [index, { fill, dot }] of darkColors.entries()) {
     expect(fill).not.toBe(lightColors[index].fill);
     expect(fill).toBe(dot);
@@ -243,6 +244,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   );
   await toggle.press('Space');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('body')).toHaveCSS('background-image', 'none');
   expect(await noteColors()).toEqual(lightColors);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -356,6 +358,15 @@ test('dark appearance keeps controls contained and preserves mirrored pattern ge
     await page.setViewportSize({ width: state.width, height: 900 });
     await page.goto(url({ lang: state.lang, hand: state.hand }));
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+      'content',
+      '#0a140e',
+    );
+    await expect(page.locator('body')).toHaveCSS(
+      'background-image',
+      /repeating-linear-gradient/,
+    );
+    await expect(page.locator('#scale-selection')).toHaveCSS('font-family', /monospace/);
     await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
     await expect(page.locator('#neck-octave-label')).toHaveText(
       state.hand === 'left' ? '12–0' : '0–12',

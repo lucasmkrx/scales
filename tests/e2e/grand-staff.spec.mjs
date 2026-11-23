@@ -145,7 +145,7 @@ test('selected patterns outline white notes and keep stems neutral in either the
             .evaluate((lines) => getComputedStyle(lines).stroke);
     await expectStaffColors(page, ink);
     await bracket.click();
-    const sharpColor = theme === 'light' ? white : 'rgb(170, 184, 175)';
+    const sharpColor = theme === 'light' ? white : 'rgb(182, 233, 196)';
     await expect(sharp).toHaveCSS('fill', sharpColor);
     await expect(sharpFret).toHaveCSS('background-color', sharpColor);
     await expect(sharpDot).toHaveCSS('background-color', sharpColor);
