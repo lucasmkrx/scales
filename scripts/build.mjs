@@ -16,7 +16,6 @@ const css = await readFile(new URL('public/styles.css', root), 'utf8');
 const theme = await readFile(new URL('public/theme.js', root), 'utf8');
 const manifest = await readFile(new URL('public/site.webmanifest', root), 'utf8');
 const visualAssets = [
-  'vendor/fontawesome.min.css',
   'assets/fonts/fa-solid-900.woff2',
   'assets/fonts/cookie.woff2',
   'assets/fonts/ibm-plex-sans.woff2',

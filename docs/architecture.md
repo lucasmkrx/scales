@@ -41,7 +41,6 @@ the selected root; the displayed label is separate from the sounding pitch.
 | [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                         |
 | [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines              |
 | [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes, manage cached buffers, and fade stopped sounds                         |
-| [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                      |
 | [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                   |
 | [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in the six supported languages                       |
 | [theme.js](../public/theme.js)                  | Apply the saved Light or Dark theme before paint, using Light on the first visit                 |
@@ -285,13 +284,7 @@ reusing an older unversioned import. All paths remain relative for project hosti
 This is cache busting, not an offline cache. Formatting changes also change the
 revision. CI verifies the published references and tests/builds before deployment.
 
-## Guided books and licensing boundaries
-
-The four [original lesson PDFs](../public/guides/) are repository source assets
-with their original language, orientation, and tuning. The archived matching
-helper checks language, instrument, string count, handedness, and sounding
-open-string pitches. Equivalent enharmonic custom tunings can match, while octave
-and string-count differences are significant.
+## Licensing boundaries
 
 Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples

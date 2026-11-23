@@ -4,6 +4,72 @@
   font-weight: 900;
   font-display: block;
 }
+
+/*! Font Awesome Free 6.7.2 by Fonticons, Inc. (MIT CSS). See vendor/LICENSE-fontawesome.txt. */
+.fa-solid {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-family: 'Font Awesome 6 Free';
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+}
+.fa-arrow-down::before {
+  content: '\f063';
+}
+.fa-arrow-up-right-from-square::before {
+  content: '\f08e';
+}
+.fa-book::before {
+  content: '\f02d';
+}
+.fa-book-open::before {
+  content: '\f518';
+}
+.fa-check::before {
+  content: '\f00c';
+}
+.fa-chevron-down::before {
+  content: '\f078';
+}
+.fa-download::before {
+  content: '\f019';
+}
+.fa-file-pdf::before {
+  content: '\f1c1';
+}
+.fa-headphones::before {
+  content: '\f025';
+}
+.fa-link::before {
+  content: '\f0c1';
+}
+.fa-moon::before {
+  content: '\f186';
+}
+.fa-music::before {
+  content: '\f001';
+}
+.fa-pen::before {
+  content: '\f304';
+}
+.fa-play::before {
+  content: '\f04b';
+}
+.fa-stop::before {
+  content: '\f04d';
+}
+.fa-sun::before {
+  content: '\f185';
+}
+.fa-volume-high::before {
+  content: '\f028';
+}
+.fa-xmark::before {
+  content: '\f00d';
+}
 @font-face {
   font-family: 'IBM Plex Sans';
   src: url('./assets/fonts/ibm-plex-sans.woff2') format('woff2');
@@ -330,11 +396,6 @@ input[type='checkbox'] {
 }
 .check > span {
   margin: 0;
-}
-.two-columns {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
 }
 .hint {
   color: var(--muted);
@@ -1720,6 +1781,7 @@ input[aria-invalid='true'] {
 }
 .neck-details {
   pointer-events: none;
+  font-size: 12px;
 }
 .fret {
   outline: 1px solid var(--board-grid);
@@ -1838,7 +1900,7 @@ input[aria-invalid='true'] {
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) var(--pale);
 }
-.fretboard-map :is(.note, .preview-note) {
+.fretboard-map .note {
   --rim-width: 0.5px;
   --rim-color: var(--board-note-rim);
   position: absolute;
@@ -2033,38 +2095,6 @@ input[aria-invalid='true'] {
 }
 .footer-inner {
   padding-block: 24px 20px;
-}
-.footer-resources {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--rule);
-  font-size: 14px;
-}
-.footer-resources p {
-  max-width: 75ch;
-  margin: 0 0 6px;
-}
-.footer-resources a {
-  color: var(--ink);
-  text-underline-offset: 3px;
-}
-.footer-resources summary {
-  width: fit-content;
-  margin-block: 12px;
-  color: var(--ink);
-  font-weight: 600;
-  cursor: pointer;
-}
-.footer-resources ul {
-  padding-inline-start: 1.25rem;
-}
-.footer-resources li + li {
-  margin-top: 6px;
-}
-.edition-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
 }
 .footer-main,
 .footer-links,

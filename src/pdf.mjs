@@ -595,7 +595,6 @@ export async function createAtlas(
           'center',
         );
     }
-    return l;
   }
   function addLink(page, box, target) {
     const annot = doc.context.obj({

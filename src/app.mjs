@@ -492,7 +492,7 @@ function render() {
   const t = copy[state.lang],
     s = selection(state);
   if (renderedLanguage !== state.lang) {
-    syncExplorerPage(state.lang, projectRoot);
+    syncExplorerPage(state.lang);
     renderedLanguage = state.lang;
   }
   document.querySelectorAll('[data-i18n]').forEach((el) => {

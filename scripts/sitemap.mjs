@@ -1,14 +1,9 @@
-import { GUIDED_BOOKS } from '../src/guides.mjs';
 import { explorerPath, siteOrigin } from '../src/site.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 
 export function sitemap() {
-  const paths = [
-    ...Object.keys(LANGUAGES).map(explorerPath),
-    ...GUIDED_BOOKS.map(({ file }) => `/guides/${file}`),
-  ];
-  const entries = paths.map((path) => {
-    const url = new URL(path, siteOrigin).href.replaceAll('&', '&amp;');
+  const entries = Object.keys(LANGUAGES).map((lang) => {
+    const url = new URL(explorerPath(lang), siteOrigin).href;
     return `  <url><loc>${url}</loc></url>`;
   });
   return [

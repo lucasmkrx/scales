@@ -6,7 +6,6 @@ import { SCALES, TUNINGS, FAMILIES } from '../src/catalog.mjs';
 import { normalizeState, selection, sharedState } from '../src/music.mjs';
 import { restoreWorkspace, rememberWorkspace } from '../src/workspace.mjs';
 import { boardMarkup } from '../src/board.mjs';
-import { matchingGuides } from '../src/guides.mjs';
 
 function textEntries(value, prefix = '') {
   return Object.entries(value)
@@ -82,7 +81,6 @@ test('localized fretboard controls name the tonic, chord root, string and fret',
     assert.ok(chord.includes(`${t.fret} 1`));
     assert.ok(chord.includes(`${t.string} 1`));
     assert.doesNotMatch(chord, /undefined|Fret|String/);
-    assert.deepEqual(matchingGuides({ lang, hand: 'left' }), []);
   }
 });
 

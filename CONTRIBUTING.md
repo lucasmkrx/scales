@@ -18,7 +18,7 @@ npm run dev
 ```
 
 Open http://127.0.0.1:4173. Use `npm run format` after editing maintained source
-or documentation. Vendored libraries, fonts, guide PDFs, and generated artifacts
+or documentation. Vendored libraries, fonts, and generated artifacts
 are excluded from formatting. CI checks formatting, tests, and the static build.
 
 ## Music and catalog changes
@@ -47,7 +47,7 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
 - Update screenshots when a visible change makes them inaccurate. The README
   walkthrough is assembled from actual app captures; it is a demonstration,
   not an automated test or a recording of audio.
-- When adding a public language edition or lesson PDF, update its entry in the
+- When adding a public language edition, update its entry in the
   discovery files and README. Verify its links against the built site using
   the [search discovery guide](docs/discovery.md).
 

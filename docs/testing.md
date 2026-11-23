@@ -44,13 +44,12 @@ HTML report.
 | Pattern range markers         | Shared bracket rows, overlap handling, mirrored fret alignment, localized labels, and bounded hit areas                                                       | [pattern-ranges.test.mjs](../tests/pattern-ranges.test.mjs)                                              |
 | Interval names                | Written intervals have localized names in all six languages                                                                                                   | [intervals.test.mjs](../tests/intervals.test.mjs)                                                        |
 | Workspace preferences         | Recall instrument/string setups and custom tunings; explicit URL fields override saved preferences                                                            | [workspace.test.mjs](../tests/workspace.test.mjs)                                                        |
-| Archived lesson PDFs          | Match actual language, instrument, count, orientation, and sounding tuning pitches, including enharmonic equivalents                                          | [guides.test.mjs](../tests/guides.test.mjs)                                                              |
 | PDF geometry and navigation   | Check neck bounds, octave routes, contents pagination, page sizes, fonts, and real internal destinations                                                      | [guide-layout.test.mjs](../tests/guide-layout.test.mjs), [pdf.test.mjs](../tests/pdf.test.mjs)           |
 | Audio                         | Tune seven pitches at 44.1 and 48 kHz within 3 cents and check harmonic balance, decay, caching, and pluck stopping                                           | [string-audio.test.mjs](../tests/string-audio.test.mjs)                                                  |
 | Browser flows                 | Chromium, Firefox, and WebKit checks cover exact patterns, mobile layouts, jump focus, drafts/preferences, key spelling, audio, and PDF cancellation/download | [workspace.spec.mjs](../tests/e2e/workspace.spec.mjs)                                                    |
 | Appearance preferences        | Light on first visit, saved themes, independence from OS appearance, unavailable storage, keyboard switching, dark mobile layouts, and reduced motion         | [appearance.spec.mjs](../tests/e2e/appearance.spec.mjs)                                                  |
 | Published assets              | Check that the entry point, appearance bootstrap, icon font, stylesheet, and module imports use one revision                                                  | [build.test.mjs](../tests/build.test.mjs)                                                                |
-| Search discovery              | Check the language editions, canonical URLs, crawler policy, sitemap, and links to the four original PDFs                                                     | [discovery-files.test.mjs](../tests/discovery-files.test.mjs), [build.test.mjs](../tests/build.test.mjs) |
+| Search discovery              | Check the language editions, canonical URLs, crawler policy, and sitemap                                                                                      | [discovery-files.test.mjs](../tests/discovery-files.test.mjs), [build.test.mjs](../tests/build.test.mjs) |
 
 Some checks enumerate the full finite catalog; others use representative cases.
 The bracket tests cover every named scale and arpeggio on all five supported guitar
@@ -117,8 +116,7 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   pattern should stop the current note.
 - Open a translated edition with JavaScript disabled. Check its heading,
   language links, and canonical URL in the HTML source. After deployment,
-  check that its URL and a lesson PDF can be fetched from the production
-  sitemap. [Release verification and submission](discovery.md#verify-a-release)
+  fetch the production sitemap and open the edition from it. [Release verification and submission](discovery.md#verify-a-release)
 - On a narrow screen, start at the nut in both orientations and scroll to the
   last fret. Save a bass setup and a selected pattern. Reopen the bare URL,
   then `/fr/` and the older `/?lang=fr`, and confirm all three resume that setup.
@@ -197,7 +195,7 @@ and generated PDFs. The layout measurement approach is recorded in
   Audio needs a user gesture and may be unavailable under browser/device restrictions.
 - **PDFs:** large catalogs use more time and memory; cancellation is available.
   Automated checks cover selected structures and examples, not all combinations
-  of export settings. Four original lesson PDFs are included as repository assets.
+  of export settings.
 - **State and privacy:** preferences are stored on the device when storage is
   available. URLs intentionally expose the musical configuration for sharing;
   the app has no application backend or analytics. Browsing backing tracks

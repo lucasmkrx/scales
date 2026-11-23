@@ -5,15 +5,12 @@ import { boardMarkup } from '../src/board.mjs';
 import { scalePatterns } from '../src/patterns.mjs';
 import { copy } from '../src/i18n.mjs';
 
-test('the playable board has one tab stop and position previews contain no controls', () => {
+test('the playable board has one tab stop', () => {
   const state = { instrument: 'bass', hand: 'left', allNotes: true };
   const board = boardMarkup(state);
   assert.equal([...board.matchAll(/tabindex="0"/g)].length, 1);
   assert.match(board, /<button [^>]*tabindex="-1"/);
   assert.match(board, /data-hand="left"/);
-  const preview = boardMarkup(state, { small: true, lo: 3, hi: 7 });
-  assert.match(preview, /aria-hidden="true"/);
-  assert.doesNotMatch(preview, /<button |tabindex=|data-midi=/);
 });
 
 test('arrows follow the visible neck orientation and skip missing positions', () => {
@@ -50,33 +47,6 @@ test('spoken note labels identify scale degrees, the root, and outside pitches i
   }
 });
 
-test('pattern emphasis preserves the complete neck and dims only frets outside its bounds', () => {
-  for (const hand of ['left', 'right']) {
-    for (const [instrument, strings, frets] of [
-      ['guitar', 7, 24],
-      ['bass', 5, 20],
-    ]) {
-      const state = { instrument, strings, frets, hand, allNotes: true };
-      const full = boardMarkup(state, { width: 1200 });
-      const focused = boardMarkup(state, { width: 1200, focusRange: { lo: 5, hi: 9 } });
-      const markers = [
-        ...focused.matchAll(/<button class="([^"]*)"[^>]*data-fret="(\d+)"[^>]*>/g),
-      ];
-      assert.equal(markers.length, strings * (frets + 1));
-      assert.equal(markers.length, [...full.matchAll(/data-fret=/g)].length);
-      for (const [, classes, fret] of markers) {
-        assert.equal(classes.includes('muted'), Number(fret) < 5 || Number(fret) > 9);
-      }
-      assert.match(focused, /tabindex="0"[^>]*data-fret="5"/);
-      assert.doesNotMatch(full, /class="[^"]*muted/);
-      assert.doesNotMatch(
-        boardMarkup(state, { focusRange: { lo: 0, hi: frets } }),
-        /class="[^"]*muted/,
-      );
-    }
-  }
-});
-
 test('real patterns highlight exact string/fret locations and leave other notes inside their bounds gray', () => {
   for (const hand of ['left', 'right']) {
     const state = { root: 7, scale: 'major', hand };
@@ -88,10 +58,13 @@ test('real patterns highlight exact string/fret locations and leave other notes 
         /<button class="([^"]*)"[^>]*data-row="(\d+)" data-fret="(\d+)"[^>]*>/g,
       ),
     ];
-    assert.equal(markers.filter(([_, classes]) => !classes.includes('muted')).length, 17);
+    const fullBoard = boardMarkup(state);
+    assert.equal(markers.length, [...fullBoard.matchAll(/data-fret=/g)].length);
+    assert.doesNotMatch(fullBoard, /class="[^"]*muted/);
+    assert.equal(markers.filter(([, classes]) => !classes.includes('muted')).length, 17);
     assert.ok(
       markers.some(
-        ([_, classes, row, fret]) =>
+        ([, classes, , fret]) =>
           classes.includes('muted') &&
           Number(fret) >= pattern.lo &&
           Number(fret) <= pattern.hi,

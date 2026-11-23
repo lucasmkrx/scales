@@ -1,7 +1,5 @@
 import { copy } from './i18n.mjs';
 import { LANGUAGES } from './locales.mjs';
-import { GUIDED_BOOKS } from './guides.mjs';
-import { discoveryCopy } from './discovery-copy.mjs';
 
 export const siteOrigin = 'https://tukany.com';
 export const socialImageUrl = siteOrigin + '/assets/tukany-social.jpg';
@@ -9,7 +7,6 @@ export const socialImageUrl = siteOrigin + '/assets/tukany-social.jpg';
 // Resolve against the deployment root so project-path previews work as well.
 export const explorerPath = (lang) => (lang === 'en' ? './' : `./${lang}/`);
 export const explorerUrl = (lang) => new URL(explorerPath(lang), siteOrigin).href;
-export const examplePath = (lang) => explorerPath(lang) + '?key=A&scale=minor-pentatonic';
 
 // Buy Me a Coffee's creator pages currently fall back to English for Portuguese.
 export const coffeeUrl = (lang) =>
@@ -46,21 +43,6 @@ export function pageDetails(lang) {
     inLanguage: site.inLanguage,
     author: { '@id': author['@id'] },
   };
-  const books = GUIDED_BOOKS.map(({ file, title, lang, pages }) => {
-    const url = `${siteOrigin}/guides/${file}`;
-    return {
-      '@type': 'Book',
-      '@id': url,
-      url,
-      name: title,
-      inLanguage: LANGUAGES[lang].tag,
-      numberOfPages: pages,
-      encodingFormat: 'application/pdf',
-      isAccessibleForFree: true,
-      license: 'https://creativecommons.org/licenses/by/4.0/',
-      author: { '@id': author['@id'] },
-    };
-  });
   const page = {
     '@type': 'WebPage',
     '@id': url + '#webpage',
@@ -75,7 +57,6 @@ export function pageDetails(lang) {
     },
     isPartOf: { '@id': site['@id'] },
     mainEntity: { '@id': entity['@id'] },
-    mentions: books.map((book) => ({ '@id': book['@id'] })),
   };
   return {
     url,
@@ -93,13 +74,13 @@ export function pageDetails(lang) {
     },
     jsonLd: {
       '@context': 'https://schema.org',
-      '@graph': [site, page, entity, author, ...books],
+      '@graph': [site, page, entity, author],
     },
   };
 }
 
 // Language can change without a navigation while a custom edit is open.
-export function syncExplorerPage(lang, projectRoot) {
+export function syncExplorerPage(lang) {
   const details = pageDetails(lang);
   document.documentElement.lang = LANGUAGES[lang].tag;
   document.documentElement.dataset.pageLanguage = lang;
@@ -107,17 +88,6 @@ export function syncExplorerPage(lang, projectRoot) {
   document.querySelector('meta[name=description]').content = details.description;
   document.querySelector('link[rel=canonical]').href = details.url;
   document.getElementById('coffee-link').href = coffeeUrl(lang);
-  document.getElementById('practice-example').href = new URL(
-    examplePath(lang),
-    projectRoot,
-  ).href;
-  // Even a returning player with another saved language can explicitly choose English.
-  document.getElementById('english-edition').href = new URL(
-    lang === 'en' ? './' : './?lang=en',
-    projectRoot,
-  ).href;
-  for (const el of document.querySelectorAll('[data-discovery]'))
-    el.textContent = discoveryCopy[lang][el.dataset.discovery];
   for (const [name, value] of Object.entries(details.social))
     document.querySelector(`meta[property="${name}"], meta[name="${name}"]`).content =
       value;

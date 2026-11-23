@@ -20,13 +20,6 @@ The explorer maps 67 named scales, modes, and arpeggios to all 12 roots. It supp
 - [How to choose a scale, read the fretboard, and generate a PDF in any of the six languages](https://raw.githubusercontent.com/lucasmkrx/tukany/main/README.md)
 - [How to find backing tracks and practice drones for a key, scale, and instrument](https://raw.githubusercontent.com/lucasmkrx/tukany/main/docs/backing-tracks.md)
 
-## Downloadable lesson books
-
-- [Left-handed six-string guitar in standard tuning (English PDF)](https://tukany.com/guides/guitar-standard-left-en.pdf)
-- [Left-handed four-string bass in standard tuning (English PDF)](https://tukany.com/guides/bass-standard-left-en.pdf)
-- [Guitarra de seis cordas para destros em afinação padrão de dó sustenido (PDF em português)](https://tukany.com/guides/guitar-c-sharp-right-pt.pdf)
-- [Baixo de quatro cordas para destros em Drop C (PDF em português)](https://tukany.com/guides/bass-drop-c-right-pt.pdf)
-
 ## Optional
 
 - [Musical references for tunings, fingering systems, pitch spelling, and staff notation](https://raw.githubusercontent.com/lucasmkrx/tukany/main/docs/references.md)

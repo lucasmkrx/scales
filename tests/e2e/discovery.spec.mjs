@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { siteOrigin } from '../../src/site.mjs';
 import { copy } from '../../src/i18n.mjs';
-import { discoveryCopy } from '../../src/discovery-copy.mjs';
 import { LANGUAGES } from '../../src/locales.mjs';
 
 test('a crawler can fetch every sitemap entry and the assistant directory', async ({
@@ -21,13 +20,8 @@ test('a crawler can fetch every sitemap entry and the assistant directory', asyn
     expect(url.origin).toBe(siteOrigin);
     const response = await request.get(url.pathname, { maxRedirects: 0 });
     expect(response.status(), location).toBe(200);
-    if (url.pathname.endsWith('.pdf')) {
-      expect(response.headers()['content-type']).toContain('application/pdf');
-      expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-');
-    } else {
-      expect(response.headers()['content-type']).toContain('text/html');
-      expect(await response.text()).toContain(`rel="canonical" href="${url.href}"`);
-    }
+    expect(response.headers()['content-type']).toContain('text/html');
+    expect(await response.text()).toContain(`rel="canonical" href="${url.href}"`);
   }
 });
 
@@ -35,7 +29,9 @@ test.describe('static explorer', () => {
   test.use({ javaScriptEnabled: false });
 
   for (const [lang, { tag }] of Object.entries(LANGUAGES)) {
-    test(`${tag} exposes its practice material without JavaScript`, async ({ page }) => {
+    test(`${tag} displays its title and instructions without JavaScript`, async ({
+      page,
+    }) => {
       const path = lang === 'en' ? '/' : `/${lang}/`;
       const response = await page.goto(path);
       expect(response.ok()).toBe(true);
@@ -46,15 +42,6 @@ test.describe('static explorer', () => {
       ).toBeVisible();
       await expect(page.getByText(copy[lang].noScript)).toBeVisible();
       await expect(page.locator('.workspace')).toBeHidden();
-      const guides = page.locator('#practice-guides');
-      if (!(await guides.locator('a').first().isVisible()))
-        await guides.locator('summary').click();
-      await expect(page.getByText(discoveryCopy[lang].intro)).toBeVisible();
-      await expect(guides.locator('a[href$=".pdf"]')).toHaveCount(4);
-      const next = lang === 'pt' ? 'es' : 'pt';
-      await page.getByRole('link', { name: LANGUAGES[next].label, exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/${next}/$`));
-      await expect(page).toHaveTitle(copy[next].pageTitle);
     });
   }
 });

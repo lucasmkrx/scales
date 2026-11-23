@@ -28,37 +28,33 @@ test('named and custom shared choices open in the matching collection', () => {
   assert.equal(initialScaleFamily('minor-triad'), 'arpeggio');
   assert.equal(initialScaleFamily('custom'), 'custom');
 });
-test('seven-string note circles retain separation in full and position maps', () => {
-  for (const hand of ['left', 'right'])
-    for (const opts of [{}, { small: true, width: 400, height: 190, lo: 0, hi: 4 }]) {
-      const board = boardMarkup(
-        {
-          instrument: 'guitar',
-          strings: 7,
-          tuning: 'guitar-7-standard',
-          scale: 'chromatic',
-          hand,
-        },
-        opts,
-      );
-      const notes = [
-        ...board.matchAll(
-          /class="(?:note|preview-note)([^"]*)" style="left:([.\d]+)px;top:([.\d]+)px;width:([.\d]+)px;height:([.\d]+)px/g,
-        ),
-      ].map(([, classes, left, top, width, height]) => ({
-        x: Number(left) + Number(width) / 2,
-        y: Number(top) + Number(height) / 2,
-        radius: Number(height) / 2 + (classes.includes('root-note') ? 2.8 : 0),
-      }));
-      assert.equal(new Set(notes.map((note) => note.y.toFixed(3))).size, 7);
-      for (const a of notes)
-        for (const b of notes)
-          if (Math.abs(a.x - b.x) < 0.001 && a.y + 0.001 < b.y)
-            assert.ok(
-              b.y - a.y > a.radius + b.radius,
-              'circles on neighboring strings overlap',
-            );
-    }
+test('seven-string note circles retain separation on the fretboard', () => {
+  for (const hand of ['left', 'right']) {
+    const board = boardMarkup({
+      instrument: 'guitar',
+      strings: 7,
+      tuning: 'guitar-7-standard',
+      scale: 'chromatic',
+      hand,
+    });
+    const notes = [
+      ...board.matchAll(
+        /class="note([^"]*)" style="left:([.\d]+)px;top:([.\d]+)px;width:([.\d]+)px;height:([.\d]+)px/g,
+      ),
+    ].map(([, classes, left, top, width, height]) => ({
+      x: Number(left) + Number(width) / 2,
+      y: Number(top) + Number(height) / 2,
+      radius: Number(height) / 2 + (classes.includes('root-note') ? 2.8 : 0),
+    }));
+    assert.equal(new Set(notes.map((note) => note.y.toFixed(3))).size, 7);
+    for (const a of notes)
+      for (const b of notes)
+        if (Math.abs(a.x - b.x) < 0.001 && a.y + 0.001 < b.y)
+          assert.ok(
+            b.y - a.y > a.radius + b.radius,
+            'circles on neighboring strings overlap',
+          );
+  }
 });
 
 test('Fretboard open-string labels show both names on one marker in either orientation', () => {
@@ -69,22 +65,21 @@ test('Fretboard open-string labels show both names on one marker in either orien
     scale: 'natural-minor',
     root: 0,
   };
-  for (const hand of ['left', 'right'])
-    for (const small of [false, true]) {
-      const sharp = boardMarkup({ ...state, hand, spelling: 'sharp' }, { small });
-      const flat = boardMarkup({ ...state, hand, spelling: 'flat' }, { small });
-      const both = boardMarkup({ ...state, hand, spelling: 'both' }, { small });
-      assert.match(sharp, />D♯<\/span>/);
-      assert.doesNotMatch(sharp, />E♭<\/span>/);
-      assert.match(flat, />E♭<\/span>/);
-      assert.doesNotMatch(flat, />D♯<\/span>/);
-      assert.match(both, />E♭<\/span>/);
-      assert.match(both, />D♯<\/span>/);
-      assert.equal(
-        [...both.matchAll(/class="(?:note|preview-note)\b/g)].length,
-        [...sharp.matchAll(/class="(?:note|preview-note)\b/g)].length,
-      );
-    }
+  for (const hand of ['left', 'right']) {
+    const sharp = boardMarkup({ ...state, hand, spelling: 'sharp' });
+    const flat = boardMarkup({ ...state, hand, spelling: 'flat' });
+    const both = boardMarkup({ ...state, hand, spelling: 'both' });
+    assert.match(sharp, />D♯<\/span>/);
+    assert.doesNotMatch(sharp, />E♭<\/span>/);
+    assert.match(flat, />E♭<\/span>/);
+    assert.doesNotMatch(flat, />D♯<\/span>/);
+    assert.match(both, />E♭<\/span>/);
+    assert.match(both, />D♯<\/span>/);
+    assert.equal(
+      [...both.matchAll(/class="note\b/g)].length,
+      [...sharp.matchAll(/class="note\b/g)].length,
+    );
+  }
 });
 
 test('every scale and collection is named in each supported language', () => {

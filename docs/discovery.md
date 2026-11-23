@@ -30,10 +30,10 @@ or other supported language codes still work. [Practice link examples](../README
 
 ## Public discovery files
 
-- The sitemap lists the six language URLs and the four original lesson PDFs.
+- The sitemap lists the six language URLs.
   Scales, tunings, and custom PDFs generated for an individual practice session
-  stay out of the sitemap. [Production sitemap](https://tukany.com/sitemap.xml) · [Original guitar and bass lessons](../README.md#printable-guitar-and-bass-guides)
-- The crawler policy allows the explorer, lessons, scripts, and styles to be
+  stay out of the sitemap. [Production sitemap](https://tukany.com/sitemap.xml)
+- The crawler policy allows the explorer, scripts, and styles to be
   fetched, and gives the absolute sitemap address. [robots.txt](https://tukany.com/robots.txt)
 - The optional Markdown directory gives assistants a short account of the tool
   and direct links to its editions and learning material. Individual services
@@ -51,15 +51,14 @@ node scripts/serve.mjs
 
 Open a translated edition such as `http://127.0.0.1:4173/pt/` and view its
 page source. Check the document language, translated title, canonical URL,
-language alternates, and social image. Open a PDF from the sitemap. The same
+language alternates, and social image. The same
 checks apply to the HTTPS production addresses after GitHub Pages deploys the
 build. If the domain serves a registrar landing page, check its DNS records and
 the repository’s Pages custom domain. [GitHub Pages domain setup](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)
 
-The build uses the language catalog and published lesson list for discovery.
-When adding an edition or original PDF, also check the README and the agent
-directory against the new build. [Language catalog](../src/locales.mjs) ·
-[Lesson catalog](../src/guides.mjs) · [Sitemap generator](../scripts/sitemap.mjs)
+The build uses the language catalog for discovery. When adding an edition, also
+check the README and the agent directory against the new build. [Language catalog](../src/locales.mjs) ·
+[Sitemap generator](../scripts/sitemap.mjs)
 
 The earlier English, Portuguese, and Spanish practice and scale-reference
 articles have been retired. Keep their HTML and Markdown URLs out of the

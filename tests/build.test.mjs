@@ -2,7 +2,6 @@ import test from 'node:test';
 import { siteOrigin } from '../src/site.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 import { copy } from '../src/i18n.mjs';
-import { GUIDED_BOOKS } from '../src/guides.mjs';
 import { escape } from '../src/board.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
@@ -19,7 +18,6 @@ test('published assets use one revision across the entry point, module graph, an
   const css = await readFile(new URL('../dist/styles.css', import.meta.url), 'utf8');
   const pdf = await readFile(new URL('../dist/src/pdf.mjs', import.meta.url), 'utf8');
   for (const [path, source] of [
-    ['vendor/fontawesome.min.css', html],
     ['favicon.ico', html],
     ['assets/favicon.svg', html],
     ['assets/pinned-tab.svg', html],
@@ -100,6 +98,10 @@ test('every localized explorer ships reciprocal alternates, content, and working
     );
     assert.ok(html.includes(escape(copy[lang].explorerTitle)), file);
     assert.doesNotMatch(html, />undefined<|<!-- page-metadata -->/);
+    assert.doesNotMatch(
+      html,
+      /footer-resources|practice-example|practice-guides|edition-links/,
+    );
     assert.deepEqual(
       [...html.matchAll(/<link rel="canonical" href="([^"]+)"/g)].map(
         (match) => match[1],
@@ -135,16 +137,6 @@ test('every localized explorer ships reciprocal alternates, content, and working
         target.href,
       );
     }
-    for (const edition of editions)
-      assert.ok(
-        links.some((link) => link.href === edition.url),
-        edition.url,
-      );
-    for (const { file: pdf } of GUIDED_BOOKS)
-      assert.ok(
-        links.some((link) => link.pathname === `/guides/${pdf}`),
-        pdf,
-      );
     assert.ok(links.some((link) => link.href === 'https://lucasgmarques.com/'));
   }
 });

@@ -6,7 +6,7 @@ export function mode(intervals, index) {
     mod(intervals[(j + index) % intervals.length] - intervals[index]),
   );
 }
-export function degreeFormula(intervals) {
+function degreeFormula(intervals) {
   if (intervals.length === 7)
     return intervals.map((v, i) => {
       const d = v - major[i];

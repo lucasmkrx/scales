@@ -40,8 +40,6 @@ Browsing retains the current musical selection until the player chooses a result
 
 PDF exports evolved into a complete reference layout: cover, clickable contents,
 reading instructions, a full neck, smaller position maps, and note/degree legends.
-Players can also download the four original guitar and bass lesson books in
-English or Portuguese. [Original lesson PDFs](../README.md#printable-guitar-and-bass-guides)
 
 The browser offers separate download cards for the current family and the full catalog.
 Each card shows the instrument setup, root, map count, page count, and print format.

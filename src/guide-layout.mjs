@@ -1,4 +1,4 @@
-import { selection, boardModel, mod } from './music.mjs';
+import { selection, mod } from './music.mjs';
 
 // The books use a continuous tapered neck; the open-string lane stays rectangular.
 export function guideBoardLayout(
@@ -49,14 +49,8 @@ export function guideBoardLayout(
   };
   const rowGap = small ? height / rows : (height - 48 * vertical) / (rows - 1);
   return {
-    state,
-    lo,
-    hi,
-    rows,
     x,
-    top,
     width,
-    height,
     left: mirror(left),
     end: mirror(end),
     nut: !small || lo === 0 ? mirror(small ? bound(1) : nut) : null,
@@ -67,17 +61,8 @@ export function guideBoardLayout(
     stringY,
     edgeY,
     rowGap,
-    small,
   };
 }
-
-export const guitarWindows = Object.freeze([
-  [0, 4],
-  [3, 7],
-  [5, 9],
-  [8, 12],
-  [10, 14],
-]);
 
 // Choose a playable ascending octave, keeping the hand span small. These routes
 // are derived from actual pitches, so drop and extended-range tunings work too.
@@ -133,8 +118,7 @@ export function bassRoute(input, startRow) {
   if (!routes.length) return null;
   const route = routes[0];
   return {
-    ...route,
-    startRow,
+    points: route.points,
     startFret: fret,
     lo: Math.max(0, route.lo - 1),
     hi: Math.min(s.frets, Math.max(route.hi, route.lo + 3)),

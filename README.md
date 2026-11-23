@@ -96,13 +96,6 @@ The two download cards below the fretboard generate the current scale family or
 the full named catalog in your selected key. Each card shows its scope, number
 of maps, page count, and instrument setup. Opening a saved custom scale offers its formula as a single-scale PDF.
 
-The four original lesson books are also available as direct PDF downloads.
-
-| Language and orientation | Guitar (6 strings)                                                                           | Bass (4 strings)                                                                     |
-| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| English, left-handed     | [Guitar in E standard · 42 pages](https://tukany.com/guides/guitar-standard-left-en.pdf)     | [Bass in E standard · 32 pages](https://tukany.com/guides/bass-standard-left-en.pdf) |
-| Português, destro        | [Guitarra em Dó♯ padrão · 42 páginas](https://tukany.com/guides/guitar-c-sharp-right-pt.pdf) | [Baixo em Drop C · 32 páginas](https://tukany.com/guides/bass-drop-c-right-pt.pdf)   |
-
 <details>
 <summary>Printable output</summary>
 
@@ -165,7 +158,7 @@ npm run format:check
 ```
 
 Use `npm run format` to format maintained source, tests, and documentation.
-Vendored libraries, fonts, generated files, and guide PDFs are excluded.
+Vendored libraries, fonts, and generated files are excluded.
 
 ## Validation
 

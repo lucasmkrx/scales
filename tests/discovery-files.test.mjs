@@ -3,13 +3,12 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { siteOrigin } from '../src/site.mjs';
 import { sitemap } from '../scripts/sitemap.mjs';
-import { GUIDED_BOOKS } from '../src/guides.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 
 const publicFile = (name) =>
   readFile(new URL(`../public/${name}`, import.meta.url), 'utf8');
 
-test('the sitemap and agent directory reference the current public pages and lessons', async () => {
+test('the sitemap and agent directory reference all explorer editions', async () => {
   const [robots, directory] = await Promise.all([
     publicFile('robots.txt'),
     publicFile('llms.txt'),
@@ -19,8 +18,7 @@ test('the sitemap and agent directory reference the current public pages and les
     robots.split('\n').includes(`Sitemap: ${new URL('/sitemap.xml', siteOrigin)}`),
   );
 
-  const pages = Object.keys(LANGUAGES).map((lang) => (lang === 'en' ? '/' : `/${lang}/`));
-  const paths = [...pages, ...GUIDED_BOOKS.map(({ file }) => `/guides/${file}`)];
+  const paths = Object.keys(LANGUAGES).map((lang) => (lang === 'en' ? '/' : `/${lang}/`));
   const addresses = [...sitemap().matchAll(/<loc>([^<]+)<\/loc>/g)].map(
     (entry) => entry[1],
   );

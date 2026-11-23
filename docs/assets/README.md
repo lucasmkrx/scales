@@ -2,7 +2,7 @@
 
 Open the English explorer in C major to try the setup pictured below. Changing
 the tuning or handedness recalculates the fretboard and any PDF you export.
-[Open C major on guitar](https://tukany.com/?key=C) · [Browse the original lesson PDFs](../../README.md#printable-guitar-and-bass-guides)
+[Open C major on guitar](https://tukany.com/?key=C)
 
 ## Current homepage
 

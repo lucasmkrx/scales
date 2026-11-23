@@ -148,9 +148,8 @@ Earlier `es-419` links and preferences open the Spanish edition for Spain.
 
 The terminology review covers the interface, all 67 named scales and arpeggios,
 all collection families, tuning labels, and generated PDF instructions. It
-preserves each collection's intervals and stable identifier. The four supplied
-lesson books are English and Portuguese editions. Players can generate a scale
-atlas in any of the six languages for their instrument and tuning.
+preserves each collection's intervals and stable identifier. Players can generate
+a scale atlas in any of the six languages for their instrument and tuning.
 
 - Language tags pair the language with its region when identifying a regional edition.
   [W3C language-tag guidance](https://www.w3.org/International/articles/language-tags/).

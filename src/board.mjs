@@ -38,7 +38,7 @@ const labelLines = (label) =>
     .map((line) => `<span>${escape(line)}</span>`)
     .join('');
 
-function neckMarkup(model, layout, top, small, t) {
+function neckMarkup(model, layout, top, t) {
   const { lo, hi, rows } = model;
   const parts = [];
   for (let fret = lo; fret <= hi; fret++) {
@@ -64,16 +64,13 @@ function neckMarkup(model, layout, top, small, t) {
     parts.push(
       `<span class="board-nut" style="${box(layout.nut - 2, top + layout.top - 12, 4, layout.bottom - layout.top + 24)}"></span>`,
     );
-  return `<div class="neck-details" style="font-size:${small ? 10 : 12}px" aria-hidden="true">${parts.join('')}</div>`;
+  return `<div class="neck-details" aria-hidden="true">${parts.join('')}</div>`;
 }
 
 export function boardMarkup(state, options = {}) {
   const model = options.model ?? boardModel(state, options);
-  const small = options.small ?? false;
-  const height =
-    options.height ??
-    (small ? 170 : 280) + Math.max(0, model.rows.length - 6) * (small ? 20 : 40);
-  const l = layoutBoard(model, { width: options.width ?? 1100, height, small });
+  const height = options.height ?? 280 + Math.max(0, model.rows.length - 6) * 40;
+  const l = layoutBoard(model, { width: options.width ?? 1100, height });
   const { points, rows, lo, hi } = model;
   const t = copy[model.state.lang];
   const arpeggio = model.state.scaleData.family === 'arpeggio';
@@ -82,7 +79,7 @@ export function boardMarkup(state, options = {}) {
     model.state.hand === 'left'
       ? `${pattern.hi}–${pattern.lo}`
       : `${pattern.lo}–${pattern.hi}`;
-  const ranges = patternRanges(small ? [] : (options.patterns ?? []), l, {
+  const ranges = patternRanges(options.patterns ?? [], l, {
     labelFor: (pattern) => `${t.pattern} ${pattern.number}`,
     hand: model.state.hand,
   });
@@ -118,32 +115,19 @@ export function boardMarkup(state, options = {}) {
   const focus =
     options.focusPoints &&
     new Set(options.focusPoints.map((point) => `${point.row}:${point.fret}`));
-  const inPattern = (note) =>
-    focus
-      ? focus.has(`${note.row}:${note.fret}`)
-      : !options.focusRange ||
-        (note.fret >= options.focusRange.lo && note.fret <= options.focusRange.hi);
+  const inPattern = (note) => !focus || focus.has(`${note.row}:${note.fret}`);
   const entry = points.find(inPattern) ?? points[0];
   const rowGap = (l.bottom - l.top) / Math.max(1, rows.length - 1);
   const notes = points.map((n) => {
     const [left, right] = l.edges(n.fret);
-    const radius = Math.min(small ? 8 : 16, (right - left) * 0.41, rowGap / 2 - 3.2);
+    const radius = Math.min(16, (right - left) * 0.41, rowGap / 2 - 3.2);
     const muted = !inPattern(n);
-    let label = small
-      ? n.root
-        ? arpeggio
-          ? t.chordRootMarker
-          : t.rootMarker
-        : ''
-      : state.labels === 'degrees'
-        ? n.degree
-        : n.name;
-    if (!n.active && state.labels === 'degrees') label = '';
+    const label = model.state.labels === 'degrees' ? n.degree : n.name;
     const size = radius * (label.includes('/') ? 0.76 : label.length > 2 ? 0.85 : 1.05);
-    const classes = [small ? 'preview-note' : 'note'];
+    const classes = ['note'];
     if (isAccidentalPitch(n.pc)) classes.push('accidental-pitch');
     if (n.root) classes.push('root-note');
-    if (!n.active) classes.push('outside');
+    if (!n.inScale) classes.push('outside');
     if (muted) classes.push('muted');
     const bounds = box(
       l.center(n.fret) - radius,
@@ -154,11 +138,10 @@ export function boardMarkup(state, options = {}) {
     const style = `${bounds};--pitch-fill:${pitchColor(n.pc, n.fill)};--pitch-ink:${pitchLabelColor(n.lightText)};font-size:${size}px`;
     const attributes = `class="${classes.join(' ')}" style="${style}"`;
     const content = label ? labelLines(label) : '';
-    if (small) return `<span ${attributes}>${content}</span>`;
     const description = [
       n.name,
       n.root ? (arpeggio ? t.chordRoot : t.root) : '',
-      n.active ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
+      n.inScale ? `${t.degree} ${n.degree}` : arpeggio ? t.outsideChord : t.outsideScale,
       muted ? t.noteOutsideRange : '',
       `${t.string} ${n.string}`,
       n.fret === 0 ? t.open : `${t.fret} ${n.fret}`,
@@ -168,8 +151,5 @@ export function boardMarkup(state, options = {}) {
     return `<button ${attributes} type="button" tabindex="${n === entry ? 0 : -1}" data-row="${n.row}" data-fret="${n.fret}" data-midi="${n.midi}" aria-label="${escape(description)}">${content}</button>`;
   });
 
-  const accessibility = small
-    ? 'aria-hidden="true"'
-    : `role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="keyboard-notes orientation" data-hand="${model.state.hand}"`;
-  return `<div class="fretboard-map" ${accessibility} style="width:${l.width}px;height:${height + ranges.height}px">${neckMarkup(model, l, ranges.height, small, t)}${guides}${markers ? `<div role="group" aria-label="${escape(t.patterns)}">${markers}</div>` : ''}${notes.join('')}</div>`;
+  return `<div class="fretboard-map" role="toolbar" aria-label="${escape(t.fretboard)}" aria-describedby="keyboard-notes orientation" data-hand="${model.state.hand}" style="width:${l.width}px;height:${height + ranges.height}px">${neckMarkup(model, l, ranges.height, t)}${guides}${markers ? `<div role="group" aria-label="${escape(t.patterns)}">${markers}</div>` : ''}${notes.join('')}</div>`;
 }

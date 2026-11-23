@@ -1,11 +1,7 @@
 import { copy } from '../src/i18n.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
-import { GUIDED_BOOKS } from '../src/guides.mjs';
-import { discoveryCopy } from '../src/discovery-copy.mjs';
 import {
   coffeeUrl,
-  examplePath,
-  explorerPath,
   explorerUrl,
   pageDetails,
   siteOrigin,
@@ -54,14 +50,6 @@ export function explorerPage(template, lang = 'en') {
   const themeLabel = t.themeLabel
     .replace('{current}', t.themeModes.light)
     .replace('{next}', t.themeModes.dark);
-  const locales = Object.entries(LANGUAGES).map(([key, { tag, label }]) => {
-    const id = key === 'en' ? ' id="english-edition"' : '';
-    return `<a${id} href="${explorerPath(key)}" lang="${tag}" hreflang="${tag}">${escape(label)}</a>`;
-  });
-  const books = GUIDED_BOOKS.map(({ file, title, lang }) => {
-    const tag = LANGUAGES[lang].tag;
-    return `<li><a href="./guides/${file}" type="application/pdf" lang="${tag}" hreflang="${tag}">${escape(title)} (PDF)</a></li>`;
-  });
   return template
     .replace(
       'lang="en-US" data-page-language="en"',
@@ -70,20 +58,10 @@ export function explorerPage(template, lang = 'en') {
     .replace(`<option value="${lang}" lang=`, `<option selected value="${lang}" lang=`)
     .replaceAll('Theme: Light. Switch to Dark.', escape(themeLabel))
     .replace(coffeeUrl('en'), coffeeUrl(lang))
-    .replace(
-      'href="./?key=A&amp;scale=minor-pentatonic"',
-      `href="${escape(examplePath(lang))}"`,
-    )
     .replace(/(<[\w-]+\b[^<>]*\bdata-i18n="([^"]+)"[^<>]*>)[^<]*(?=<\/)/g, translate)
     .replace(/<[^<>]*\bdata-i18n-aria="([^"]+)"[^<>]*>/g, (tag, key) =>
       tag.replace(/aria-label="[^"]*"/, `aria-label="${escape(t[key])}"`),
     )
-    .replace(
-      /(<[\w-]+\b[^<>]*\bdata-discovery="([^"]+)"[^<>]*>)[^<]*(?=<\/)/g,
-      (_, tag, key) => tag + escape(discoveryCopy[lang][key]),
-    )
-    .replace('<!-- edition-links -->', locales.join('\n'))
-    .replace('<!-- guide-links -->', books.join('\n'))
     .replace('<!-- page-metadata -->', metadata(lang))
     .replace(/\b(href|src|data-flag)="\.\//g, lang === 'en' ? '$&' : '$1="../');
 }

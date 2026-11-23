@@ -64,7 +64,7 @@ function keySpellings(state) {
 }
 export const STRING_COUNTS = { guitar: [6, 7], bass: [4, 5, 6] };
 export const FRET_COUNTS = [20, 21, 22, 24];
-export const DEFAULT_FRETS = { guitar: 21, bass: 20 };
+const DEFAULT_FRETS = { guitar: 21, bass: 20 };
 export const DEFAULTS = {
   instrument: 'guitar',
   strings: 6,
@@ -256,7 +256,7 @@ export function fretFill(fret, colors = printFretColors) {
   if ([3, 5, 7, 9].includes(fret % 12)) return colors.marker;
   return fret >= 12 ? colors.upper : colors.lower;
 }
-export function boardModel(input, { lo = 0, hi, all = false } = {}) {
+export function boardModel(input, { lo = 0, hi } = {}) {
   const s = selection(input);
   hi = hi ?? s.frets;
   const rows = [...s.tuningData.notes].reverse();
@@ -268,7 +268,7 @@ export function boardModel(input, { lo = 0, hi, all = false } = {}) {
       const midi = open + fret;
       const pc = mod(midi);
       const index = s.scaleData.intervals.indexOf(mod(pc - s.root));
-      if (index < 0 && !all && !s.allNotes) continue;
+      if (index < 0 && !s.allNotes) continue;
       points.push({
         row,
         string: row + 1,
@@ -281,20 +281,19 @@ export function boardModel(input, { lo = 0, hi, all = false } = {}) {
         degree: index >= 0 ? prettyDegree(s.scaleData.formula[index]) : '',
         fill: PALETTE[pc] ?? '#ffffff',
         lightText: [0, 5, 7, 9, 11].includes(pc),
-        active: index >= 0,
       });
     }
   });
   return { state: s, rows, lo, hi, points };
 }
-export function layoutBoard(model, { width = 1100, height = 270, small = false } = {}) {
+export function layoutBoard(model, { width = 1100, height = 270 } = {}) {
   const { lo, hi, rows, state } = model;
-  const margin = small ? 22 : 40;
-  const labelMargin = small ? 26 : 48;
+  const margin = 40;
+  const labelMargin = 48;
   const left = state.hand === 'left' ? margin : labelMargin;
   const right = state.hand === 'left' ? width - labelMargin : width - margin;
-  const top = small ? 25 : 35;
-  const bottom = height - (small ? 25 : 42);
+  const top = 35;
+  const bottom = height - 42;
   const start = left + (lo === 0 ? 28 : 0);
   const count = hi - Math.max(1, lo) + 1;
   // Real equal-tempered fret spacing; mirror geometry, never the text or row order.
