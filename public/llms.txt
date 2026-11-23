@@ -1,35 +1,33 @@
 # Tukany
 
-> Tukany is a free guitar and bass scale explorer by Lucas Marques. Players can map notes and scale degrees on a fretboard, hear individual notes, practice fingering patterns, and print a PDF for their own instrument and tuning.
+> Tukany is a free interactive guitar and bass fretboard by Lucas Marques. Players can see and hear scales, modes, and chord arpeggios, practice fingering patterns, and download printable scale diagrams.
 
-The explorer supports six- and seven-string guitars and four-, five-, and six-string basses, with left- and right-handed diagrams. Shared explorer links carry the selected setup in the URL. The practice guides below can be read without running the app.
+The explorer maps 67 named scales, modes, and arpeggios to all 12 roots. It supports six- and seven-string guitars and four-, five-, and six-string basses, with 44 tuning presets, custom tunings, and diagrams for either hand. Select a fret or staff note to hear its pitch. Use Copy link to share a practice setup.
 
-## Explorer
+## Explorer by language
 
 - [Guitar and bass scale explorer in English](https://tukany.com/)
-- [Explorador de escalas para guitarra e baixo em português](https://tukany.com/pt/)
-- [Explorador de escalas para guitarra y bajo en español](https://tukany.com/es/)
+- [Escalas para guitarra e baixo em português do Brasil](https://tukany.com/pt/)
+- [Escalas para guitarra y bajo en español de España](https://tukany.com/es/)
+- [Scale per chitarra e basso in italiano](https://tukany.com/it/)
+- [Gammes pour guitare et basse en français](https://tukany.com/fr/)
+- [Tonleitern für Gitarre und Bass auf Deutsch](https://tukany.com/de/)
 
-## Scale formulas, notes, and arpeggios in Markdown
+## Practice examples and instructions
 
-- [Guitar and bass scale formulas](https://tukany.com/scales/index.md)
-- [Fórmulas de escalas para guitarra e baixo](https://tukany.com/pt/escalas/index.md)
-- [Fórmulas de escalas para guitarra y bajo](https://tukany.com/es/escalas/index.md)
+- [A minor pentatonic on a six-string guitar in standard tuning](https://tukany.com/?key=A&scale=minor-pentatonic)
+- [D natural minor on a four-string bass in Drop C tuning](https://tukany.com/?key=D&scale=natural-minor&instrument=bass&tuning=drop-c)
+- [How to choose a scale, read the fretboard, and generate a PDF in any of the six languages](https://raw.githubusercontent.com/lucasmkrx/tukany/main/README.md)
+- [How to find backing tracks and practice drones for a key, scale, and instrument](https://raw.githubusercontent.com/lucasmkrx/tukany/main/docs/backing-tracks.md)
 
-## Practice guides in Markdown
+## Downloadable lesson books
 
-- [How to practice scales on guitar and bass](https://tukany.com/practice/index.md)
-- [Como praticar escalas na guitarra e no baixo](https://tukany.com/pt/pratica/index.md)
-- [Cómo practicar escalas en guitarra y bajo](https://tukany.com/es/practica/index.md)
-
-## Printable lessons
-
-- [Left-handed guitar, standard tuning — English PDF](https://tukany.com/guides/guitar-standard-left-en.pdf)
-- [Left-handed bass, standard tuning — English PDF](https://tukany.com/guides/bass-standard-left-en.pdf)
-- [Guitarra destra em dó sustenido padrão — PDF em português](https://tukany.com/guides/guitar-c-sharp-right-pt.pdf)
-- [Baixo destro em Drop C — PDF em português](https://tukany.com/guides/bass-drop-c-right-pt.pdf)
+- [Left-handed six-string guitar in standard tuning (English PDF)](https://tukany.com/guides/guitar-standard-left-en.pdf)
+- [Left-handed four-string bass in standard tuning (English PDF)](https://tukany.com/guides/bass-standard-left-en.pdf)
+- [Guitarra de seis cordas para destros em afinação padrão de dó sustenido (PDF em português)](https://tukany.com/guides/guitar-c-sharp-right-pt.pdf)
+- [Baixo de quatro cordas para destros em Drop C (PDF em português)](https://tukany.com/guides/bass-drop-c-right-pt.pdf)
 
 ## Optional
 
-- [Project overview and usage examples](https://raw.githubusercontent.com/lucasmkrx/tukany/main/README.md)
-- [Educational content license and attribution](https://raw.githubusercontent.com/lucasmkrx/tukany/main/CONTENT-LICENSE.md)
+- [Musical references for tunings, fingering systems, pitch spelling, and staff notation](https://raw.githubusercontent.com/lucasmkrx/tukany/main/docs/references.md)
+- [CC BY 4.0 terms and attribution for original educational content and guides](https://raw.githubusercontent.com/lucasmkrx/tukany/main/CONTENT-LICENSE.md)

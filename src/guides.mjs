@@ -9,6 +9,8 @@ export const GUIDED_BOOKS = Object.freeze(
       lang: 'pt',
       hand: 'right',
       pages: 42,
+      title:
+        'Guitarra em dó sustenido padrão para destros — notas, escalas e improvisação',
       file: 'guitar-c-sharp-right-pt.pdf',
     },
     {
@@ -18,6 +20,7 @@ export const GUIDED_BOOKS = Object.freeze(
       lang: 'pt',
       hand: 'right',
       pages: 32,
+      title: 'Baixo em Drop C para destros — notas, escalas e improvisação',
       file: 'bass-drop-c-right-pt.pdf',
     },
     {
@@ -27,6 +30,7 @@ export const GUIDED_BOOKS = Object.freeze(
       lang: 'en',
       hand: 'left',
       pages: 42,
+      title: 'Left-handed guitar in standard tuning — notes, scales and improvisation',
       file: 'guitar-standard-left-en.pdf',
     },
     {
@@ -36,6 +40,7 @@ export const GUIDED_BOOKS = Object.freeze(
       lang: 'en',
       hand: 'left',
       pages: 32,
+      title: 'Left-handed bass in standard tuning — notes, scales and improvisation',
       file: 'bass-standard-left-en.pdf',
     },
   ].map((book) => Object.freeze(book)),

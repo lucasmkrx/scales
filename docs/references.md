@@ -92,8 +92,12 @@ notes one octave above sounding pitch. For example, a fret that sounds C3
 appears as C4. The clefs are Bravura outlines, positioned
 using the [SMuFL scoring metrics](https://smufl.formats.music/latest/specification/scoring-metrics-glyph-registration.html).
 
-The staff shows the fretboard pitches in ascending order. The key signature
-uses the lines and spaces for the active clef. A signature
+The staff shows each sounding pitch used by the available patterns once, in
+ascending order. Selecting a pattern narrows the staff to its pitches. When a
+setup has no patterns, the staff shows one playable octave of the scale.
+Inspecting a fret outside that set temporarily includes its exact pitch.
+
+The key signature uses the lines and spaces for the active clef. A signature
 alters a letter in every octave. An inline accidental changes that letter at
 one written octave. For example, if G major includes both F♮4 and F♯4, the
 second F needs its sharp restored. [Music Theory for the 21st-Century Classroom on key signatures](https://musictheory.pugetsound.edu/mt21c/MajorKeySignatures.html)
@@ -134,26 +138,31 @@ the tonic spelling selected in the explorer.
 ## Regional languages and musical terminology
 
 The interface and generated scale atlases use American English (`en-US`),
-Brazilian Portuguese (`pt-BR`), and Latin American Spanish (`es-419`). Existing
-short URL values `en`, `pt`, and `es` identify those editions. Regional language
-values normalize to the same editions in shared links and saved preferences.
+Brazilian Portuguese (`pt-BR`), Spanish from Spain (`es-ES`), Italian
+(`it-IT`), French (`fr-FR`), and German (`de-DE`). The English edition lives at
+the root, with short language paths for the other five editions. Shared links
+also accept `lang` with a short code or a regional tag. Regional language values
+normalize to the same editions in shared links and saved preferences.
+Earlier `es-419` links and preferences open the Spanish edition for Spain.
+[Public language editions](discovery.md#language-editions)
 
 The terminology review covers the interface, all 67 named scales and arpeggios,
 all collection families, tuning labels, and generated PDF instructions. It
 preserves each collection's intervals and stable identifier. The four supplied
-lesson books are English and Portuguese editions. Spanish users can generate
-scale-reference PDFs for any supported setup.
+lesson books are English and Portuguese editions. Players can generate a scale
+atlas in any of the six languages for their instrument and tuning.
 
-- [W3C language-tag guidance](https://www.w3.org/International/articles/language-tags/)
-  identifies `es-419` as Spanish used in Latin America.
+- Language tags pair the language with its region when identifying a regional edition.
+  [W3C language-tag guidance](https://www.w3.org/International/articles/language-tags/).
 - [Berklee PULSE scales and arpeggios](https://pulse.berklee.edu/content/practice/pdfs/PR_All_Scales_Arp_Treble%20Clef.pdf)
   supports the American English scale, mode, and arpeggio terminology.
 - [José Rodríguez Alvira's seventh-chord reference](https://www.teoria.com/es/referencia/s/septima-acordes.php)
   and [minor-scale lesson](https://www.teoria.com/es/aprendizaje/escalas/04-menores.php)
   support Spanish chord qualities and the distinction between natural, harmonic,
   and melodic minor.
-- [Universidad Autónoma de Chihuahua solfège guide](https://uach.mx/assets/media/publications/2023/4/5380_guias-de-estudio/fa_guia_de_solfeo.pdf)
-  supports Latin American note names, accidentals, and semitone terminology.
+- Spain’s secondary music curriculum uses `intervalos`, `escalas musicales`,
+  `armadura`, and `acordes` for intervals, scales, key signatures, and chords.
+  [Ministerio de Educación, Formación Profesional y Deportes](https://educagob.educacionfpydeportes.gob.es/curriculo/curriculo-lomloe/menu-curriculos-basicos/ed-secundaria-obligatoria/materias/musica/criterios-eval-primer-tercer-curso.html).
 - [INBAL harmony study guide](https://sgeia.inba.gob.mx/archivos/escuelas/musica/2024/esm_guia-armonia-sup-1_2024.pdf)
   supports the distinction between a tonal tonic and a chord's fundamental.
 - [Sumarsam's introduction to Javanese gamelan](https://sumarsam.faculty.wesleyan.edu/files/2023/01/1_Introduction_to_Javanese_Gamelan.pdf)

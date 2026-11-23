@@ -3,12 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Interactive guitar and bass scale explorer and printable atlas generator",
+  "description": "Interactive guitar and bass scale explorer with fretboard diagrams, alternate tunings, and printable scale atlases.",
+  "homepage": "https://tukany.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucasmkrx/tukany.git"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "check:backing-tracks": "node scripts/check-backing-tracks.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "build": "node scripts/build.mjs",

@@ -2,7 +2,7 @@
 
 The homepage should help a player choose a scale, see its notes on the fretboard,
 and hear or practice a nearby position. The refactor prioritizes that sequence
-while keeping instrument, display, custom-scale, and PDF settings inline.
+while keeping instrument settings, display controls, playable scale degrees, and PDF downloads on the homepage.
 
 ## Evidence
 
@@ -40,36 +40,32 @@ Our inference is that the current problem is competing visual priorities and a
 long path to the diagram. A quieter hierarchy can retain functionality while
 making the main task easier to identify.
 
-Begin directly with a concise scale browser beside instrument setup above the
-board and one prominent exploration surface. The two setup groups
-stack on phones, with scale selection first. Keep the selected scale, pattern
-ranges, and fretboard closely related. Reduce repeated selected-scale summaries,
-tuning pitches, and formulas. Keep instrument controls grouped next to music
-selection, and give export work a quieter inline section below the board. Use alignment, spacing,
-and consistent type sizes before adding more cards or decorative elements.
+The scale browser leads into the fretboard. A prominent button in the fretboard
+header shows the current instrument and tuning. It opens a settings dropdown
+over the diagram so the neck stays in position.
+Two download cards below the playing surface describe the current family PDF
+and the full catalog PDF.
 
-The Scale card shows the current root and scale name above the controls. Players
-can transpose the diagram using 12 circular root buttons. Accidentals show both
-names in one circle, such as F♯ and G♭. Common scales are
+The Scale card has a music note icon. The PDF downloads card uses the same
+heading style with a PDF icon. The larger fretboard heading shows the selected
+root and scale name. Players can transpose the diagram using 12 circular root
+buttons. Accidentals show both names in one circle, such as F♯ and G♭. Common scales are
 available on a fresh visit. A family menu brings related choices such as blues
-scales or arpeggios into view. The scale buttons share a height, including
-when a translated name wraps. A check marks the active scale.
-The formula shows one degree per chip, in playing order.
-Edit opens a text field for entering a custom formula.
-
-Pill-shaped buttons appear in the scale catalog, playback controls, and PDF
-actions. A check marks the current scale, and the switch thumb marks the active
-instrument or orientation.
+scales or arpeggios into view. Each name has its degree formula underneath.
+Selecting a name applies it to the fretboard. A solid green background and a
+checkmark identify the selected scale. Names occupy two columns on wide
+screens and one on phones.
+Each formula button pairs a degree with its spelled note in playing order.
+Pressing it sounds the note and highlights that pitch on the fretboard.
 
 On phones, a sticky current-scale shortcut gives a direct route to the fretboard
-while leaving the settings visible in normal page order. Activating it focuses
-the fretboard heading below the shortcut. A single inline caption explains the selected
-pattern and its lowest note and degree. The bracket already supplies its fret span.
+and focuses its heading. A caption identifies the selected pattern and its
+lowest note and degree. The bracket supplies its fret span.
 The fretboard spells pitches according to the scale formula. The Write key as
 menu offers a choice of tonic spelling when a pitch has alternative names.
-The reference buttons follow the current note or degree
-mode. Short labels fit in a circle. Longer labels expand to a pill. Repeated setup cards,
-practice prose, and the PDF configuration summary are removed.
+The Notes/Degrees switch and Show other notes checkbox sit alongside the root legend
+at the foot of the fretboard. They control the diagram labels and visibility
+of pitches outside the scale.
 
 The instrument and orientation switches each show two labeled positions. A filled pill slides behind the selected label, which also shows a checkmark.
 Players can tap a label, drag to either side, or use the arrow keys. Guitar shows a Telecaster headstock with six tuning pegs.
@@ -87,17 +83,17 @@ Choosing a custom tuning reveals individual pitch fields.
 
 Controls pair their labels with solid icons from the locally served Font Awesome
 Free webfont. The icons inherit the control's text color and are hidden from
-screen readers. The appearance button shows a sun beside “Light” or a moon beside
-“Dark.” The visible label follows the selected language, and the accessible
-name identifies the current theme and the next action. Light is the default in
+screen readers. The appearance switch shows a sun and a moon together. A filled
+background marks the active theme. Its tooltip
+and accessible name identify the current theme and the next action in the
+selected language. Light is the default in
 every operating-system theme. Choosing Dark keeps it active on future visits until
 the player switches back to Light.
 
-Light and dark themes share the same layout and note colors. Dedicated fretboard
-surfaces, labels, guides, and focus colors keep the diagram integrated with the
-rest of the interface. Theme changes recolor the existing surface without moving
-the notes, clearing a selection, or interrupting audio. Printable references
-keep their separate light palette.
+Both themes use the same layout, typography, and component shapes. Dark mode uses
+muted green-gray surfaces, lighter text, and a matching set of pitch colors.
+Changing the palette preserves the player’s position, selection, and audio.
+Printable references use a separate light palette.
 
 Motion is brief feedback for selection, button activation, and sounding notes.
 It does not stretch or move the neck. Reduced-motion preferences disable those
@@ -106,23 +102,23 @@ animations and transitions while retaining the same visible states.
 ## Constraints
 
 - Settings remain on the homepage, including the expanded tuning list.
-- Scale selection stays above the fretboard; PDF customization stays below it.
-- Frets 0–12 is the default; a labeled sliding switch reveals the full neck.
-  Each view keeps fixed proportions with contained scrolling. Pattern selection
-  grays out notes outside the chosen string/fret point set.
+- Scale selection stays above the fretboard. The two PDF download cards sit below it.
+- The fretboard spans the configured number of frets at a fixed scale. Narrow
+  screens start at the nut and scroll horizontally. Pattern selection grays out
+  notes outside the chosen string/fret point set.
 - Thin pattern brackets sit above the frets they describe, each with a centered label such as “Pattern 1”. The brackets mirror for
   handedness. Click once to select and again to clear; selection must also work
   by keyboard and expose its pressed state.
-- English, Português, and Español retain their regional musical terminology.
+- Use the musical terminology of each language in labels, scale names, and generated atlases.
 - Preserve custom-input validation, draft values, keyboard operation, note audio,
   remembered setup, shared links, and PDF snapshot behavior.
 
 ## Verification
 
 Compare the board's page position before and after at desktop and phone sizes.
-Check 320, 390, 720, and 1280 CSS-pixel layouts in all three languages, including
-long names and custom tuning. Verify choosing A minor pentatonic, changing range,
-playing notes, finding handedness, and downloading a customized PDF by keyboard
+Check 320, 390, 720, and 1280 CSS-pixel layouts in all six languages, including
+long names and custom tuning. Verify choosing A minor pentatonic, selecting a
+pattern, playing notes, changing handedness, and downloading each PDF by keyboard
 and pointer. Check focus continuity, touch spacing, validation, fixed board size,
 and horizontal page containment. These checks establish functional and layout
 behavior; they do not establish improved usability without observing players.
@@ -199,32 +195,13 @@ neck behind the notes; the selected pattern uses stronger guides. The markers
 and neck scroll as one surface; clearing a selected range restores the visible map without jumping to the nut. The range is
 a spatial guide to an exact fingering, not a rectangle defining note membership.
 
-The default 0–12 view reduces the amount of neck a new player must scan. A visible,
-two-position sliding switch sits in the fretboard header, keeping
-view controls separate from pattern annotations. It offers the full neck without
-hiding settings and wraps below the title on phones. View choices are remembered
-and shareable. Only complete patterns are offered within
-the chosen view: an entire fingering may move by an octave to fit, while a shape
-that still cannot fit is omitted. A short full-neck cue explains missing patterns.
-Expanding the view retains a fitting first-octave instance rather than moving a
-selected pattern unnecessarily. This keeps the simpler view from silently
-clipping shapes or playing hidden notes.
+Complete fingerings use their lower-octave placements when they fit within the
+first twelve frets. Other patterns appear at their playable positions farther
+along the neck. Each bracket and its notes scroll together.
 
 ## Layout measurement
 
-Measure the selected neck view's page position at desktop and phone sizes after
-fonts load, with a named scale, tuning, and selected pattern recorded. Scale and
-instrument panels share a row on desktop and stack before the board on phones.
-These measurements describe layout, not task completion time or comprehension.
-
-The documentation captures use C major, six strings in E standard, right-handed
-playing, compact Position 1, and frets 0–12. After local fonts loaded:
-
-| Viewport width | Fretboard card top | Pattern-and-neck surface top | Settings layout               |
-| -------------- | ------------------ | ---------------------------- | ----------------------------- |
-| 1360px         | 618px              | 732px                        | Side by side, each 517px high |
-| 390px          | 1270px             | 1439px                       | Stacked                       |
-
-Both captures contain the page width without horizontal page overflow. The phone
-scrolls the fixed-size diagram inside its own surface. The light and dark captures
-have matching settings, fretboard card, and neck positions.
+Measure the fretboard's position after fonts load at desktop and phone widths.
+Record the scale, tuning, and selected pattern. Confirm that the neck stays in
+position when the instrument dropdown opens. Check that both themes place the card and neck at the same
+coordinates and that the fretboard and staff scroll within the page.

@@ -18,7 +18,7 @@ keep consistent.
 ## Product constraints
 
 - Support guitar and bass, including extended string counts and altered tunings.
-- Keep both handedness options and all three languages equally usable.
+- Keep both handedness options and all six languages equally usable.
 - Preserve the light fretboard design, pitch colors, Literata headings, and
   discreet Marques & Co. branding in printable output.
 - Serve the tool directly from a public GitHub repository with no application server.
@@ -31,19 +31,20 @@ pitch model feeds the web drawing and the PDF generator. A new tuning therefore
 changes the actual notes and patterns rather than relabeling a standard diagram.
 
 The initial interface collected setup, scale browsing, display settings, and PDF
-export in one sidebar. The current workspace keeps instrument setup and a
-scale catalog grouped by musical family above the fretboard. The Scale card shows the selected
-degrees and opens an inline formula editor on demand. Display controls sit below the playing surface. Thin pattern brackets
-select exact fingerings; a separate switch chooses frets 0–12 or the full neck.
-These groups stack on phones. Repeated instructions, setup cards, and practice
-prose are removed from the main flow.
+export in one sidebar. The homepage now places the scale catalog above the board.
+Each formula button pairs a scale degree with its playable note. The fretboard
+header opens an instrument settings dropdown, and compact display controls sit inside the diagram.
+The full neck scrolls from its nut on smaller screens. Players can select a pattern
+bracket to isolate that fingering on the fretboard and staff.
 Browsing retains the current musical selection until the player chooses a result.
 
 PDF exports evolved into a complete reference layout: cover, clickable contents,
 reading instructions, a full neck, smaller position maps, and note/degree legends.
-The four original lesson books are available as repository source assets. The
-browser now centers on the interactive fretboard and an inline PDF section below
-it, where the contents, reference notes, and estimate are visible before download.
+Players can also download the four original guitar and bass lesson books in
+English or Portuguese. [Original lesson PDFs](../README.md#printable-guitar-and-bass-guides)
+
+The browser offers separate download cards for the current family and the full catalog.
+Each card shows the instrument setup, root, map count, page count, and print format.
 
 Individual notes use a procedural plucked-string model with different guitar and bass
 settings. This adds an audible connection to the diagram without introducing a

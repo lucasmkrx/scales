@@ -1,34 +1,23 @@
-# Documentation media
+# Tukany fretboard screenshots and printable scale charts
 
-These assets show the actual Tukany interface and generated output. The desktop and mobile
-workspace captures and walkthrough use local build `c4a0041d84eb` with reduced
-motion and all local fonts loaded.
-The browser requested a dark color scheme for every capture. Fresh sessions
-opened in Light, and the saved Dark choice restored the dark palette.
+Open the English explorer in C major to try the setup pictured below. Changing
+the tuning or handedness recalculates the fretboard and any PDF you export.
+[Open C major on guitar](https://tukany.com/?key=C) · [Browse the original lesson PDFs](../../README.md#printable-guitar-and-bass-guides)
 
-- `desktop.png` shows a right-handed, six-string guitar in E standard at a
-  1360 × 1560 CSS-pixel viewport. C major uses compact CAGED Position 1 (E shape)
-  in the default frets 0–12 view. Its 17 exact string/fret points at frets 7–10
-  stay in color, including high-E fret 8; fret 12 and other scale notes turn gray.
-  The limited-view switch shows frets 0–12.
-  Each thin bracket cap has a centered label such as “Pattern 1”.
-  Brackets can share a row when they fit side by side. The view switch sits in the fretboard header.
-  Vertical guides connect both ends to the neck behind the notes, with stronger guides for the selection. Only complete patterns that
-  fit the visible neck are offered; the full-neck cue explains missing numbers.
-  Scale and instrument settings share a row above the panel titled “Fretboard”. PDF customization follows the panel.
-  The Scale card shows C major, its root note and its degrees. Twelve circles
-  show all available roots. The scale family menu opens on Common scales, with
-  Major (Ionian) selected. The instrument card shows both headstock icons. Filled
-  segments and checkmarks identify Guitar and Right-handed as the selected options. The numeric controls
-  show six strings and 21 frets. The tuning picker includes the E standard pitches.
-  The inline caption identifies Pattern 1 and its lowest note B (7). The backing-track
-  finder shows C major and Guitar, with Any style and Any tempo selected before a
-  search. Edit opens the formula editor.
-- `desktop-dark.png` shows the same 1360 × 1560 layout with a saved Dark choice.
-  The moon control in the header identifies that preference. Dedicated dark
-  fretboard surfaces keep the note colors, root rings, bracket guides, and labels
-  readable while retaining the same 17 selected points and geometry.
-- `mobile.png` shows the same setup at 390 × 1880 CSS pixels, from the page header
+## Current homepage
+
+- [Light desktop](desktop.png) shows C major on a right-handed, six-string guitar in E standard. The formula pairs the seven degrees with their notes. The 21-fret neck shows all five CAGED patterns, and the treble staff covers the pitches they use. The PDF cards show the 9-page Major & modes family and the 70-page full catalog.
+- [Dark desktop](desktop-dark.png) shows the same setup and layout after switching themes. Both full-page captures measure 1360 × 2047 pixels.
+
+## Printable output
+
+- [C major on left-handed guitar](pdf-reference.png) shows an A4 landscape page from a generated atlas. It includes the full neck and five compact CAGED positions.
+
+## Earlier interface
+
+The mobile screenshots and walkthrough document the previous homepage with its 0–12 view and PDF settings. The phone captures and walkthrough used build `c4a0041d84eb`, apart from the scale picker as noted below.
+
+- `mobile.png` shows a right-handed, six-string guitar in E standard with C major selected at 390 × 1880 CSS pixels, from the page header
   through the stacked settings and fretboard. The fixed-size 0–12 diagram
   and its pattern brackets scroll horizontally together to the selected pattern.
   The root legend and Copy link share a footer above the horizontal scroll hint.
@@ -48,10 +37,6 @@ opened in Light, and the saved Dark choice restored the dark palette.
   are resized to 1020 × 1170 pixels with a shared color palette. The desktop frame
   height accommodates the longer full-neck layout, so the initial 0–12 view has
   some extra space below its content.
-- `pdf-reference.png` shows an A4 landscape reference page for C major on a
-  left-handed six-string guitar. The full neck and five compact CAGED position
-  diagrams use exact pattern points rather than rectangular fret windows. The
-  homepage's limited view does not crop this printable reference.
 
 The original educational material and screenshots follow [CC BY 4.0](../../CONTENT-LICENSE.md).
 Marques & Co. branding and third-party assets retain their respective rights.

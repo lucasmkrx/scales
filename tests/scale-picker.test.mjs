@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { scalesInFamily, initialScaleFamily } from '../src/scale-picker.mjs';
 import { SCALES, FAMILIES } from '../src/catalog.mjs';
 import { boardMarkup } from '../src/board.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
 test('common scales are available immediately and every named scale belongs to a browsable family', () => {
   const common = scalesInFamily('common');
   assert.equal(common.length, 8);
@@ -87,7 +88,7 @@ test('Fretboard open-string labels show both names on one marker in either orien
 });
 
 test('every scale and collection is named in each supported language', () => {
-  for (const lang of ['en', 'pt', 'es']) {
+  for (const lang of Object.keys(LANGUAGES)) {
     for (const scale of SCALES) {
       assert.equal(typeof scale.name[lang], 'string', scale.id);
       assert.ok(scale.name[lang].trim(), scale.id);

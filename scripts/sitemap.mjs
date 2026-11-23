@@ -1,13 +1,10 @@
 import { GUIDED_BOOKS } from '../src/guides.mjs';
-import { routes, siteOrigin } from '../src/site.mjs';
+import { explorerPath, siteOrigin } from '../src/site.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
 
 export function sitemap() {
   const paths = [
-    ...Object.values(routes).flatMap(({ home, guide, reference }) => [
-      home,
-      guide,
-      reference,
-    ]),
+    ...Object.keys(LANGUAGES).map(explorerPath),
     ...GUIDED_BOOKS.map(({ file }) => `/guides/${file}`),
   ];
   const entries = paths.map((path) => {

@@ -8,18 +8,20 @@ import { restoreWorkspace, rememberWorkspace } from '../src/workspace.mjs';
 import { boardMarkup } from '../src/board.mjs';
 import { matchingGuides } from '../src/guides.mjs';
 
-function textKeys(value, prefix = '') {
+function textEntries(value, prefix = '') {
   return Object.entries(value)
     .flatMap(([key, item]) => {
       const path = `${prefix}${key}`;
-      return typeof item === 'string' ? [path] : textKeys(item, `${path}.`);
+      return typeof item === 'string'
+        ? [[path, (item.match(/\{\w+\}/g) ?? []).sort()]]
+        : textEntries(item, `${path}.`);
     })
     .sort();
 }
 
 test('each supported locale covers the interface, musical catalog, families, and tuning names', () => {
   for (const lang of Object.keys(LANGUAGES)) {
-    assert.deepEqual(textKeys(copy[lang]), textKeys(copy.en), lang);
+    assert.deepEqual(textEntries(copy[lang]), textEntries(copy.en), lang);
     assert.match(copy[lang].pageTitle, /^Tukany · /);
     const values = [
       ...SCALES.map((scale) => scale.name[lang]),
@@ -40,8 +42,12 @@ test('regional locale aliases survive custom shared links and device preferences
   for (const [tag, lang] of [
     ['en-US', 'en'],
     ['pt-BR', 'pt'],
+    ['es-ES', 'es'],
     ['es-419', 'es'],
     ['es-MX', 'es'],
+    ['it-IT', 'it'],
+    ['fr-CA', 'fr'],
+    ['de-AT', 'de'],
   ]) {
     assert.equal(normalizeLanguage(tag), lang);
     const state = normalizeState({
@@ -66,21 +72,32 @@ test('regional locale aliases survive custom shared links and device preferences
   assert.equal(normalizeLanguage('invalid'), 'en');
 });
 
-test('Spanish note controls distinguish a scale tonic from a chord root', () => {
-  const scale = boardMarkup({ lang: 'es', root: 0, scale: 'major' });
-  const chord = boardMarkup({ lang: 'es', root: 0, scale: 'major-triad' });
-  assert.match(scale, new RegExp(copy.es.root));
-  assert.match(chord, new RegExp(copy.es.chordRoot));
-  assert.match(chord, /Traste|traste/);
-  assert.doesNotMatch(chord, /undefined|Fret|String/);
-  assert.deepEqual(matchingGuides({ lang: 'es', hand: 'left' }), []);
+test('localized fretboard controls name the tonic, chord root, string and fret', () => {
+  for (const lang of ['es', 'it', 'fr', 'de']) {
+    const t = copy[lang];
+    const scale = boardMarkup({ lang, root: 0, scale: 'major' });
+    const chord = boardMarkup({ lang, root: 0, scale: 'major-triad' });
+    assert.ok(scale.includes(t.root));
+    assert.ok(chord.includes(t.chordRoot));
+    assert.ok(chord.includes(`${t.fret} 1`));
+    assert.ok(chord.includes(`${t.string} 1`));
+    assert.doesNotMatch(chord, /undefined|Fret|String/);
+    assert.deepEqual(matchingGuides({ lang, hand: 'left' }), []);
+  }
 });
 
 test('alternate tuning labels use the selected regional terminology', () => {
   const highC = TUNINGS.find((tuning) => tuning.name === 'High C / EADGC');
   const openD = TUNINGS.find((tuning) => tuning.name === 'Open D');
-  for (const lang of ['pt', 'es'])
-    assert.equal(tuningName(highC, lang), 'C agudo / EADGC');
-  assert.equal(tuningName(openD, 'pt'), 'D aberta');
-  assert.equal(tuningName(openD, 'es'), 'D abierta');
+  for (const [lang, high, open] of [
+    ['en', 'High C', 'Open D'],
+    ['pt', 'C agudo', 'D aberta'],
+    ['es', 'C agudo', 'Abierta en D'],
+    ['it', 'C acuto', 'Aperta in D'],
+    ['fr', 'C aigu', 'Ouvert en D'],
+    ['de', 'Hohes C', 'Offene D-Stimmung'],
+  ]) {
+    assert.equal(tuningName(highC, lang), `${high} / EADGC`);
+    assert.equal(tuningName(openD, lang), open);
+  }
 });

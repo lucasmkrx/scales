@@ -27,24 +27,25 @@ the selected root; the displayed label is separate from the sounding pitch.
 
 ## Module boundaries
 
-| Module                                          | Responsibility                                                                                                    |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [catalog.mjs](../src/catalog.mjs)               | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation                            |
-| [music.mjs](../src/music.mjs)                   | Validate selections and calculate notes, degrees, fretboard coordinates and shared URLs                           |
-| [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align brackets to frets and let separated brackets share a row                                                    |
-| [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets for supported setups                                                    |
-| [intervals.mjs](../src/intervals.mjs)           | Name written intervals in all supported languages                                                                 |
-| [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages                     |
-| [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and group the catalog by musical family                                                     |
-| [board.mjs](../src/board.mjs)                   | Place frets, strings, note controls, and pattern markers on a keyboard-accessible HTML fretboard                  |
-| [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                                          |
-| [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines                               |
-| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes, manage cached buffers, and fade stopped sounds                                          |
-| [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                                       |
-| [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                                    |
-| [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in American English, Brazilian Portuguese, and Latin American Spanish |
-| [theme.js](../public/theme.js)                  | Apply the saved Light or Dark theme before paint, using Light on the first visit                                  |
-| [app.mjs](../src/app.mjs)                       | Coordinate inline controls, draft validation, rendering, playback, and downloads                                  |
+| Module                                          | Responsibility                                                                                   |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [catalog.mjs](../src/catalog.mjs)               | Scale intervals, formulas, localized names, aliases, tuning pitches, and mode rotation           |
+| [music.mjs](../src/music.mjs)                   | Validate selections and calculate notes, degrees, and fretboard coordinates                      |
+| [practice-link.mjs](../src/practice-link.mjs)   | Encode portable practice links, read older links, and preserve the bare homepage                 |
+| [pattern-ranges.mjs](../src/pattern-ranges.mjs) | Align brackets to frets and let separated brackets share a row                                   |
+| [patterns.mjs](../src/patterns.mjs)             | Build complete string/fret fingering sets for supported setups                                   |
+| [intervals.mjs](../src/intervals.mjs)           | Name written intervals in all supported languages                                                |
+| [workspace.mjs](../src/workspace.mjs)           | Restore preferences, recall instrument setups, resolve URL precedence, and estimate PDF pages    |
+| [scale-picker.mjs](../src/scale-picker.mjs)     | Curate common choices and group the catalog by musical family                                    |
+| [board.mjs](../src/board.mjs)                   | Place frets, strings, note controls, and pattern markers on a keyboard-accessible HTML fretboard |
+| [guide-layout.mjs](../src/guide-layout.mjs)     | Compute tapered PDF geometry, bass octave routes, and paginated contents                         |
+| [pdf.mjs](../src/pdf.mjs)                       | Draw PDF pages, embed local fonts and branding, and add internal links and outlines              |
+| [string-audio.mjs](../src/string-audio.mjs)     | Synthesize plucked notes, manage cached buffers, and fade stopped sounds                         |
+| [guides.mjs](../src/guides.mjs)                 | Match the four archived lesson PDFs against a configuration                                      |
+| [locales.mjs](../src/locales.mjs)               | Regional language tags, locale normalization, and tuning names                                   |
+| [i18n.mjs](../src/i18n.mjs)                     | Interface copy and educational descriptions in the six supported languages                       |
+| [theme.js](../public/theme.js)                  | Apply the saved Light or Dark theme before paint, using Light on the first visit                 |
+| [app.mjs](../src/app.mjs)                       | Coordinate inline controls, draft validation, rendering, playback, and downloads                 |
 
 The pure model and layout functions can be tested without a browser. The DOM and
 Web Audio integration remain in their respective controllers. See
@@ -56,11 +57,14 @@ Web Audio integration remain in their respective controllers. See
 
 The interface uses native ES modules and browser APIs, with a small Node build
 script. This keeps the deployed product compatible with GitHub Pages and avoids
-requiring a server for state, playback, or export. The build copies maintained
-source and local public assets rather than running a framework compiler.
+requiring a server for state, playback, or export. The build renders the same
+explorer template in six languages and shares the JavaScript, styles, fonts, and
+PDFs across them. Each edition has its own URL, localized HTML, and canonical
+link. A crawler can read the page title and follow language links before the
+app starts. [Public URLs and discovery files](discovery.md)
 
-The backing-track link builds a YouTube search URL from the current musical
-settings. Following it opens the results in a new tab. [How the query is built](backing-tracks.md)
+Tukany selects backing tracks locally from a catalog of YouTube video IDs.
+Selecting a track loads YouTube’s embedded player below the fretboard. [Track selection and catalog maintenance](backing-tracks.md)
 
 The tradeoff is manual coordination of DOM state and rendering. As the interface
 grows, browser-flow tests and careful controller boundaries become more valuable.
@@ -91,31 +95,44 @@ that share the same note letters. The app supports 6- and 7-string guitar and
 
 Key spelling derives each letter from the written degree formula, including E♯,
 C♭, and double accidentals. The Scale card always shows the same 12 pitches.
-The fretboard controls offer alternative names for the selected tonic. An optional
-validated `tonic` value preserves that choice in URLs and saved practice.
+The Scale card offers alternative names for the selected tonic. The music model
+keeps an explicit choice in its validated `tonic` field.
 Without an explicit tonic, the model chooses the simpler spelling, favoring sharps
 on a tie. Contextual MIDI labels retain written octaves, such as B♯3 for sounding C4.
-The explorer uses key spelling and discards legacy spelling preferences and URL parameters.
+The explorer uses key spelling and ignores the legacy `spelling` preference.
 
 ### Shareable state and device preferences
 
-The URL contains a reproducible musical configuration. On startup, stored
-preferences are read defensively, explicit URL fields are applied, and the result
-is normalized. Bare URLs resume the last root, scale, custom formula, neck view,
-and selected pattern. New sessions start at frets 0–12; the full-neck view is an
-explicit switch choice. Shared URLs encode this as `neck=octave` or `neck=full`;
-the device preference is `preferences.neckView`. An explicit neck URL value
-takes priority over that saved preference.
-Explicit musical links take priority over that saved practice selection. Preferences are versioned and optional: unavailable storage does
-not prevent use of the app.
+`?key=F&scale=minor-blues&hand=left` opens F minor blues on a left-handed
+six-string guitar in standard tuning. The presence of `key` marks a complete
+practice link. Omitted settings use application defaults for that instrument
+and string count, regardless of what the recipient last played.
+
+- `key` uses letter names. For example, `key=Gb` selects G♭ and `key=F%23`
+  selects F♯. Accidentals pin that spelling by default. `spell=auto` preserves
+  automatic spelling for an accidental key, and `spell=fixed` preserves an
+  explicitly chosen natural. Major is the default scale. Other scales use
+  their catalog ID in `scale`, and custom scales use `formula`.
+- `instrument`, `strings`, `frets`, and `hand` describe the instrument setup.
+  Preset names such as `tuning=drop-d` apply to the specified instrument and
+  string count. Custom tunings use `pitches` with octave numbers in ascending order.
+- `pattern` highlights a fingering. `labels=degrees` displays scale degrees,
+  `notes=all` reveals pitches outside the scale, and `lang` selects an interface
+  language. English is the default.
+
+A bare URL resumes saved practice. A language path such as `/fr/` or an older
+language-only link such as `/?lang=fr` opens that session in French. The root
+path serves English HTML and honors a returning player's language preference in
+the app. Older links with numeric `root`, full tuning IDs, or `range` still open.
+Storage is optional.
 
 Handedness is a shared preference and defaults to right-handed.
 Each instrument remembers its fret count and last string count.
 Each string count remembers its tuning and custom pitches for that instrument.
 Switching instruments keeps the musical selection and current orientation. New
-setups start with 21 frets for guitar and 20 for bass. Custom
-tuning and formula edits commit only after validation. Display changes retain
-horizontal fretboard position; a new setup starts at its open-string end.
+setups start with 21 frets for guitar and 20 for bass. Custom tuning edits
+commit after validation. Display changes retain the horizontal fretboard
+position. A new setup starts at its open-string end.
 
 The document head applies Light before paint unless the player has saved Dark
 under `scales.theme` on this device. Both themes stay consistent across
@@ -125,31 +142,27 @@ change updates CSS variables while preserving the fretboard and playback state.
 
 ### Inline settings and focused interaction
 
-A scale browser sits beside instrument setup above the fretboard on wider screens.
-The groups stack on narrow screens, with scale selection first. Root-note radios
-transpose the current music. Selecting a family changes the visible scale choices.
-Choosing one of those scales updates the diagram and formula.
-The diagram header contains the Fretboard heading and the neck-view switch. The Scale card identifies the active root and scale. The page
-begins directly with settings, with the main heading available to screen readers.
+The Scale card sits above the fretboard. Root-note radios transpose the current
+music. Selecting a family changes the visible scale choices. Choosing a scale
+updates the fretboard heading, diagram, and formula. The main heading is available
+to screen readers.
 
-The instrument card presents sliding switches for instrument and handedness.
+The instrument button in the fretboard header displays the current instrument
+and tuning. Its dropdown contains switches for instrument and handedness.
 Choosing Guitar or Bass restores a compatible setup. Choosing Right-handed or
 Left-handed updates the fretboard geometry, range labels, and PDF output.
 Native radio groups expose the available string and fret counts directly.
 The full-width tuning picker includes the open pitches from lowest to highest.
-Choosing a custom tuning reveals its pitch fields in place. PDF settings occupy
-their own full-width section below the playing surface.
-One shared listbox serves tuning, language, scale family, tonic spelling, backing-track filters,
-and PDF scope. Native selects supply option labels, values, and disabled states.
-Keyboard, pointer, and touch selections use the same change handlers.
-On phones, a sticky current-scale shortcut scrolls to the fretboard and focuses
-its heading. The mobile settings use tighter spacing without hiding controls.
+Choosing a custom tuning reveals its pitch fields in place.
+One shared listbox serves tuning, language, scale family, and tonic spelling.
+Keyboard, pointer, and touch selections use the same
+change handlers. On phones, a sticky current-scale shortcut scrolls to the
+fretboard and focuses its heading.
 
-The formula displays the selected degrees until the player opens its editor.
-Custom formula drafts survive unrelated setting changes. Selecting a named scale
-resets the formula to that scale's degrees. Custom
-tuning and formula validation appear beside their inputs. Keyboard selection returns focus to the
-chosen result after its active state updates.
+The formula pairs each degree with its spelled note in a playable button.
+Selecting a scale updates those degrees. Shared links and saved sessions can also
+display a custom formula. Custom tuning validation appears next to its inputs.
+Keyboard selection returns focus to the chosen result after its active state updates.
 
 Clickable pattern ranges above the neck select exact string/fret point sets.
 Their spans describe where a fingering lies, rather than selecting every note
@@ -184,49 +197,40 @@ interval geometry across different starting degrees; their position numbers do
 not claim that every fingering is a distinct shape. Three- and four-note routes
 can shift along the neck and span more frets than compact CAGED positions.
 Other collections and unsupported tuning intervals retain the explicit note-map
-fallback. A complete fingering must fit the selected view; no point is individually
-clipped or wrapped.
+fallback. Every fingering fits the configured instrument neck.
 
 Bass patterns are generated compact root-to-octave routes, each beginning on an
 available starting string. Their exact points follow the selected scale and sounding tuning.
 The model avoids presenting a clipped or unreachable route as a complete pattern.
 
-A sliding switch in the fretboard header selects frets 0–12 or the full neck,
-with both choices visibly labeled. The switch sits below the title on narrow
-screens. The limited-view label counts down as 12–0 for left-handed playing.
-Frets 0–12 is the default; the chosen view is remembered and shared.
-Each view offers only complete patterns within its visible fret bounds. A whole
-shape may move by an octave to fit, preserving its fingering and identity. Patterns
-that still cannot fit are omitted with a cue that the full neck shows more. A
-selection that no longer fits is cleared.
-Expanding the view retains first-octave instances when available, so a selected
-pattern does not move to another octave just because more frets are shown.
-PDF atlases continue to include the full instrument neck and available patterns;
-the homepage view switch does not crop the printable reference.
+The homepage favors complete first-octave placements when available. The remaining
+patterns use complete placements elsewhere on the configured neck. The printable
+atlas also covers the full neck.
 
 Notes outside a selected pattern's point set turn gray, including notes at frets
 that other strings use inside the pattern. Marker geometry and fret descriptions
-follow handedness, while pattern identities stay musically stable. There are no
-separate pattern or half-neck buttons. An unselected marker state shows all scale
-notes in the chosen view. The diagram's dimensions depend on the selected view
-and instrument string count and remain fixed across viewport sizes. Narrow
-screens scroll the diagram horizontally with its pattern brackets; choosing a pattern
-brings its points into view. Clearing the pattern preserves that horizontal
-position. The settings panels stretch to equal height when they share a row.
+follow handedness, while pattern identities stay musically stable. With all markers
+cleared, the board shows the scale across the neck. The diagram's dimensions
+depend on fret and string counts. Narrow screens start at the nut on the left for a
+right-handed setup or the right for a left-handed setup, including when a shared
+link restores a pattern. Selecting a bracket brings that pattern into view.
+Clearing it preserves the horizontal position.
 
 Pattern IDs for CAGED, two-, three-, and four-notes-per-string systems, blues,
 and bass routes survive device preferences and shared links. Old numeric-range
 and region links clear the fingering selection rather than pretending that a
 legacy window is a pattern. A 3NPS ID only restores for a scale/setup that uses
-that system; it is never reinterpreted as a CAGED position. New pattern links restore a
-valid selected marker in
-the chosen neck view.
+that system.
 
-Display controls and a single interactive reference row sit below
-the diagram. That row follows the chosen note or degree labels. The root legend
-and share action share one footer beneath the neck; note feedback appears there
-only after inspection. The main board has one tab stop, with arrow keys moving
-along strings and frets in the displayed orientation.
+The root legend, Notes/Degrees switch, Show other notes checkbox, and share action
+sit inside the diagram beneath the neck. Note feedback appears there after
+inspection. The board has one note tab stop, with arrow keys moving along
+strings and frets in the displayed orientation.
+
+The staff draws each distinct pitch used by the available patterns in ascending
+order. Selecting a pattern limits the staff to that fingering. With no complete
+pattern, the staff shows one playable octave of the scale. Inspecting another
+fret can temporarily add its exact pitch.
 The page groups these controls by their musical task and stacks the groups on
 phones. The rationale and research sources are recorded in [design.md](design.md).
 Assistive-technology compatibility still needs broader validation.
@@ -245,7 +249,7 @@ pattern fades the current pluck. A version token cancels pending audio starts
 and prevents an older pluck from clearing the current note's highlight when it
 ends.
 
-The note and degree table doubles as a set of pitch controls. Activating a tone
+The Scale card’s formula buttons also control playback. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and
 location. Board notes retain their actual string and fret in the detail readout.
 
@@ -261,9 +265,10 @@ The generator plans the cover, contents, reading page, and scale pages before
 rendering. Export estimates reuse that planner, including additional contents
 pages for a large catalog.
 
-The PDF section beneath the fretboard keeps contents, reference-note choices,
-and a page estimate beside the download action. It omits the repeated configuration
-card and format description.
+The two download cards describe their contents, map and page counts, format, and
+instrument configuration. One exports the selected family in the current key,
+or the individual scale for a custom formula. The other exports the full catalog
+in that key.
 The browser captures the selected configuration and export scope before awaiting
 libraries or rendering. Progress and cancellation operate on that export, so a
 later state change cannot silently rename a PDF generated from an earlier state.
@@ -288,20 +293,15 @@ helper checks language, instrument, string count, handedness, and sounding
 open-string pitches. Equivalent enharmonic custom tunings can match, while octave
 and string-count differences are significant.
 
-The browser provides configurable scale-reference exports in the PDF section
-beneath the fretboard. It allows a selected scale,
-family, or full catalog, with all 12 reference notes available for selected-scale
-exports.
-
 Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples
-are bundled. Opening a backing-track search sends the musical query to YouTube,
-where the player can choose a video.
+are bundled. YouTube hosts the backing tracks and serves the embedded player
+when the user plays a track in Tukany.
 
 ## Extending the system
 
 For a new tuning, provide exact sounding pitches including octaves. For a scale,
-provide intervals, degrees, names in all three languages, and aliases. Add entries to
+provide intervals, degrees, names in all six languages, and aliases. Add entries to
 `catalog.mjs`, run the tests, and check the web and PDF layouts. Existing shared
 links depend on stable IDs, so prefer adding aliases over renaming identifiers.
 

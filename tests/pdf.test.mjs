@@ -14,8 +14,16 @@ for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
 const asset = async (path) =>
   new Uint8Array(await readFile(new URL(`../public/${path}`, import.meta.url)));
 test('downloaded guides embed the book fonts and link the contents to real pages', async () => {
+  const coverTitles = {
+    it: 'Copertina e indice',
+    fr: 'Couverture et sommaire',
+    de: 'Titelblatt und Inhaltsverzeichnis',
+  };
   for (const state of [
     { instrument: 'guitar', strings: 6, root: 7, scale: 'major', lang: 'en' },
+    { instrument: 'guitar', strings: 6, root: 5, scale: 'minor-blues', lang: 'it' },
+    { instrument: 'bass', strings: 4, root: 5, scale: 'minor-blues', lang: 'fr' },
+    { instrument: 'guitar', strings: 7, root: 5, scale: 'minor-blues', lang: 'de' },
     {
       instrument: 'guitar',
       strings: 6,
@@ -86,13 +94,24 @@ test('downloaded guides embed the book fonts and link the contents to real pages
       doc.catalog.get(PDFLib.PDFName.of('Lang')).decodeText(),
       LANGUAGES[state.lang].tag,
     );
+    if (coverTitles[state.lang]) {
+      const outlines = doc.context.lookup(doc.catalog.get(PDFLib.PDFName.of('Outlines')));
+      const first = doc.context.lookup(outlines.get(PDFLib.PDFName.of('First')));
+      assert.equal(
+        first.get(PDFLib.PDFName.of('Title')).decodeText(),
+        coverTitles[state.lang],
+      );
+      const scale = SCALES.find((entry) => entry.id === state.scale);
+      assert.ok(doc.getTitle().includes(scale.name[state.lang]));
+      assert.ok(doc.getTitle().includes(copy[state.lang][state.instrument]));
+    }
     if (state.lang === 'es') {
       assert.match(doc.getTitle(), /Guitarra|Bajo/);
       assert.ok(
         doc.getTitle().includes(SCALES.find((scale) => scale.id === state.scale).name.es),
       );
       assert.match(doc.getSubject(), /práctica guiada/);
-      assert.match(doc.getKeywords(), /es-419/);
+      assert.match(doc.getKeywords(), /es-ES/);
       const outlines = doc.context.lookup(doc.catalog.get(PDFLib.PDFName.of('Outlines')));
       const first = doc.context.lookup(outlines.get(PDFLib.PDFName.of('First')));
       assert.equal(

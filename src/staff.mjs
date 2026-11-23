@@ -59,6 +59,27 @@ export function staffPitchName(midi, state, notation = staffSpellingState(state)
   return spelledMidiName(writtenMidi, notation);
 }
 
+export function practiceStaffPoints({ state, points }, patterns) {
+  if (patterns.length) return patterns.flatMap((pattern) => pattern.points);
+
+  // With no fingering system, show a playable scale from tonic to tonic.
+  const scalePoints = points.filter((point) => point.inScale);
+  const pitches = new Set(scalePoints.map((point) => point.midi));
+  const intervals = [...state.scaleData.intervals, 12];
+  const tonic = Math.min(
+    ...scalePoints
+      .filter(
+        (point) => point.root && intervals.every((i) => pitches.has(point.midi + i)),
+      )
+      .map((point) => point.midi),
+  );
+  // A short custom tuning may have no complete tonic-to-tonic octave.
+  // Its lowest twelve semitones still contain every scale degree.
+  const low = Number.isFinite(tonic) ? tonic : Math.min(...pitches);
+  const high = low + (Number.isFinite(tonic) ? 12 : 11);
+  return scalePoints.filter((point) => point.midi >= low && point.midi <= high);
+}
+
 export function staffLayout({ state, points }, pattern) {
   const clef = clefs[state.instrument];
   const pitches = new Map(points.map((point) => [point.midi, point]));

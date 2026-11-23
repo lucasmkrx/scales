@@ -52,20 +52,13 @@ export function restoreRange(query = {}, saved = {}) {
   if (hasMusic(query)) return fallback;
   return validRange(saved.practice?.range) ? saved.practice.range : fallback;
 }
-export function restoreNeckView(query = {}, saved = {}) {
-  if (query.neck !== undefined) return query.neck === 'full' ? 'full' : 'octave';
-  return saved.preferences?.neckView === 'full' ? 'full' : 'octave';
-}
 export function rememberWorkspace(saved, state) {
   const s = normalizeState(state),
     setup = pick(s, setupKeys);
   return {
     version: 1,
     instrument: s.instrument,
-    preferences: {
-      ...pick(s, preferenceKeys),
-      neckView: state.neckView === 'full' ? 'full' : 'octave',
-    },
+    preferences: pick(s, preferenceKeys),
     practice: {
       ...pick(s, ['root', 'tonic', 'scale']),
       ...(s.scale === 'custom' ? { formula: s.formula } : {}),

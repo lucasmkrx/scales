@@ -4,7 +4,6 @@ import { selection, SCALES } from '../src/music.mjs';
 import {
   restoreWorkspace,
   restoreRange,
-  restoreNeckView,
   rememberWorkspace,
   readPreferences,
   changeSetup,
@@ -261,15 +260,14 @@ test('pattern identifiers survive links and saved state without accepting invali
     assert.equal(restoreRange({ range }), 'full');
 });
 
-test('neck view defaults to 0–12, remembers an explicit choice, and respects shared links', () => {
-  assert.equal(restoreNeckView(), 'octave');
-  const saved = rememberWorkspace({}, { neckView: 'full' });
-  assert.equal(saved.preferences.neckView, 'full');
-  assert.equal(restoreNeckView({}, saved), 'full');
-  assert.equal(restoreNeckView({ neck: 'octave' }, saved), 'octave');
-  assert.equal(restoreNeckView({ neck: 'full' }), 'full');
-  assert.equal(restoreNeckView({ neck: 'invalid' }, saved), 'octave');
-  assert.equal(restoreNeckView({}, { preferences: { neckView: 'broken' } }), 'octave');
+test('older neck preferences do not carry a cropped view into new saves', () => {
+  const saved = { preferences: { neckView: 'octave' } };
+  const state = restoreWorkspace({ neck: 'octave', frets: '24' }, saved);
+  assert.equal(state.frets, 24);
+  assert.equal(
+    Object.hasOwn(rememberWorkspace(saved, state).preferences, 'neckView'),
+    false,
+  );
 });
 
 test('explicit enharmonic tonics survive saved practice and musical links', () => {

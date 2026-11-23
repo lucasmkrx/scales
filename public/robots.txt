@@ -1,3 +1,4 @@
+# Allow crawlers to read all language editions, printable lessons and rendering assets.
 User-agent: *
 Allow: /
 

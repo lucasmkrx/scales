@@ -12,7 +12,6 @@ const url = (changes = {}) =>
     lang: 'en',
     labels: 'notes',
     range: 'caged-major-1',
-    neck: 'octave',
     ...changes,
   })}`;
 const errors = new WeakMap();
@@ -24,13 +23,65 @@ test.beforeEach(({ page }) => {
 });
 test.afterEach(({ page }) => expect(errors.get(page)).toEqual([]));
 
-test('dropdown corners stay capped, count buttons are circular, and the other buttons stay pill shaped', async ({
+test('the coffee button follows all six languages and fits with the header controls', async ({
   page,
 }) => {
   await page.goto(url());
+  const language = page.locator('#language-trigger');
+  const coffee = page.locator('.coffee-link');
+  await expect(page.locator('#theme-toggle')).toHaveCSS('border-radius', '9px');
+  await expect(language).toHaveCSS('border-radius', '9px');
+  await expect(coffee).toHaveCSS('border-radius', '9px');
+  const coffeePage = 'https://buymeacoffee.com/lucasmkrx?l=';
+  await expect(coffee).toHaveAttribute('href', `${coffeePage}en`);
+  for (const [option, label, destination] of [
+    ['Español', 'Invítame a un café', 'es'],
+    ['Português', 'Me pague um café', 'en'],
+    ['Italiano', 'Offrimi un caffè', 'it'],
+    ['Français', 'Offrez-moi un café', 'fr'],
+    ['English', 'Buy me a coffee', 'en'],
+    ['Deutsch', 'Kaffee spendieren', 'de'],
+  ]) {
+    await language.click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+    await expect(coffee).toHaveText(label);
+    await expect(coffee).toHaveAccessibleName(label);
+    await expect(coffee).toHaveAttribute('href', `${coffeePage}${destination}`);
+    await page.evaluate(() => document.fonts.ready);
+    for (const width of [320, 401, 441, 560, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const controls = await page
+        .locator('#theme-toggle, #language-trigger, .coffee-link')
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const { left, right, height, top } = element.getBoundingClientRect();
+            return { left, right, height, top };
+          }),
+        );
+      const [theme, selector, button] = controls;
+      expect(theme.left).toBeGreaterThanOrEqual(0);
+      expect(theme.right).toBeLessThan(selector.left);
+      expect(selector.right).toBeLessThan(button.left);
+      expect(button.right).toBeLessThanOrEqual(width);
+      const labelBounds = await coffee.locator('span').boundingBox();
+      expect(labelBounds.x + labelBounds.width).toBeLessThan(button.right);
+      for (const control of controls) {
+        expect(control.top).toBeCloseTo(theme.top, 0);
+        expect(control.height).toBeCloseTo(44, 0);
+      }
+    }
+  }
+  await page.reload();
+  await expect(coffee).toHaveAttribute('href', `${coffeePage}de`);
+});
+
+test('dropdown corners stay capped and the selectors retain their rounded shapes', async ({
+  page,
+}) => {
+  await page.goto(url());
+  await page.locator('#instrument-toggle').click();
   await expectCircularCounts(page);
   await expectSwitchLabelsCentered(page);
-  await page.locator('#edit-formula').click();
   const trigger = page.locator('#tuning');
   const popup = page.locator('.choice-popup');
   const list = popup.getByRole('listbox');
@@ -83,7 +134,7 @@ test('dropdown corners stay capped, count buttons are circular, and the other bu
     expect(hitAreas).toEqual({ cornersExposePage: true, centerHitsOption: true });
   }
   const faces = page.locator(
-    'button:not(#tuning, [role="option"]):visible, .root-notes label > span:visible, .number-keys label > span:visible, .segmented label > span:visible, .switch-option:visible',
+    '.workspace .select-trigger:not(#scale-family-trigger):visible, .root-notes label > span:visible, .number-keys label > span:visible, .segmented label > span:visible, .switch-option:visible',
   );
   const undersizedCorners = await faces.evaluateAll((elements) =>
     elements.flatMap((element) => {
@@ -109,7 +160,9 @@ test('dropdown corners stay capped, count buttons are circular, and the other bu
   await page.keyboard.press('Enter');
   await expect(popup).toBeHidden();
   await expect(trigger).toBeFocused();
-  expect(new URL(page.url()).searchParams.get('tuning')).toBe(choice);
+  expect(new URL(page.url()).searchParams.get('tuning')).toBe(
+    choice.replace(/^guitar-/, ''),
+  );
 });
 
 async function expectCircularCounts(page) {
@@ -141,16 +194,14 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto(url({ root: '6' }));
+  await page.locator('#instrument-toggle').click();
   await expectCircularCounts(page);
   const list = page.getByRole('listbox');
   for (const [id, label] of [
+    ['tuning', 'Tuning'],
     ['language', 'Language'],
     ['scale-family', 'Scale family'],
-    ['tuning', 'Tuning'],
     ['key-tonic', 'Write key as'],
-    ['backing-style', 'Style'],
-    ['backing-tempo', 'Tempo'],
-    ['scope', 'PDF contents'],
   ]) {
     const trigger = page.locator(id === 'tuning' ? '#tuning' : `#${id}-trigger`);
     await trigger.click();
@@ -163,8 +214,30 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
   }
-  await page.locator('#language-trigger').click();
-  await list.getByRole('option', { name: 'Português' }).click();
+  const language = page.locator('#language-trigger');
+  async function expectFlag(control, country) {
+    const image = control.locator('img[alt=""]');
+    await expect(image).toHaveAttribute(
+      'src',
+      new RegExp(`/flags/${country}\\.svg(?:\\?|$)`),
+    );
+    await expect(image).toBeVisible();
+    await expect.poll(() => image.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
+  }
+  await expectFlag(language, 'us');
+  await language.click();
+  for (const [label, country] of [
+    ['English', 'us'],
+    ['Português', 'br'],
+    ['Español', 'es'],
+    ['Italiano', 'it'],
+    ['Français', 'fr'],
+    ['Deutsch', 'de'],
+  ]) {
+    await expectFlag(list.getByRole('option', { name: label, exact: true }), country);
+  }
+  await list.getByRole('option', { name: 'Português', exact: true }).click();
+  await expectFlag(language, 'br');
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   const roots = page.getByRole('group', { name: 'Tônica', exact: true });
   await expect(roots.getByRole('radio')).toHaveCount(12);
@@ -172,10 +245,32 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   const nextRoot = roots.getByRole('radio', { name: 'C♯ / D♭', exact: true });
   await expect(nextRoot).toBeChecked();
   await expect(nextRoot).toBeFocused();
-  await page.locator('#scope-trigger').click();
-  await page.keyboard.press('End');
+  await expect(page.locator('[data-export="catalog"]')).toContainText(
+    'Catálogo completo',
+  );
+  await language.press('ArrowDown');
+  await page.keyboard.press('e');
+  await expect(list.getByRole('option', { name: 'Español', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.locator('#scope')).toHaveValue('catalog');
+  await expect(language).toBeFocused();
+  await expectFlag(language, 'es');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'es-ES');
+  for (const [name, code, tag, catalog, download] of [
+    ['Italiano', 'it', 'it-IT', 'Catalogo completo', 'Scarica PDF'],
+    ['Français', 'fr', 'fr-FR', 'Catalogue complet', 'Télécharger le PDF'],
+    ['Deutsch', 'de', 'de-DE', 'Gesamter Katalog', 'PDF herunterladen'],
+  ]) {
+    await language.click();
+    await list.getByRole('option', { name, exact: true }).click();
+    await expectFlag(language, code);
+    await expect(language).toContainText(name);
+    await expect(page.locator('html')).toHaveAttribute('lang', tag);
+    expect(new URL(page.url()).searchParams.get('lang')).toBe(code);
+    const exportButton = page.locator('[data-export="catalog"]');
+    await expect(exportButton).toBeEnabled();
+    await expect(exportButton).toContainText(catalog);
+    await expect(exportButton).toContainText(download);
+  }
 });
 
 test('a fresh visit starts in light mode before the app loads, even on a dark device', async ({
@@ -197,9 +292,12 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   }
   await expect(page.locator('#board .fretboard-map')).toBeVisible();
   const toggle = page.locator('#theme-toggle');
-  const icon = page.locator('#theme-icon');
-  await expect(icon).toHaveClass(/fa-sun/);
-  await expect(toggle).toHaveText('Light');
+  const sun = toggle.locator('.fa-sun');
+  const moon = toggle.locator('.fa-moon');
+  await expect(toggle).toHaveRole('switch');
+  await expect(toggle).not.toBeChecked();
+  await expect(sun).toBeHidden();
+  await expect(moon).toBeVisible();
   await expect(toggle).toHaveAccessibleName('Theme: Light. Switch to Dark.');
   expect(
     await page.evaluate(async () => {
@@ -208,14 +306,62 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
     }),
   ).toBe(true);
 
+  const logos = page.locator('header .brand, footer .brand');
+  await expect(logos).toHaveCount(2);
+  const desktopViewport = page.viewportSize();
+  const checkLogos = async () => {
+    const sizes = [];
+    for (const viewport of [{ width: 390, height: 844 }, desktopViewport]) {
+      await page.setViewportSize(viewport);
+      const measurements = await logos.evaluateAll((brands) =>
+        brands.map((brand) => {
+          const link = brand.getBoundingClientRect();
+          const icon = brand.querySelector('.brand-icon').getBoundingClientRect();
+          const wordmark = brand.querySelector('.brand-wordmark').getBoundingClientRect();
+          // The capital T ends at 73% of the SVG height; the y descends below it.
+          const baseline = wordmark.top + wordmark.height * 0.73;
+          return {
+            iconHeight: icon.height,
+            iconWidth: icon.width,
+            wordmarkHeight: wordmark.height,
+            wordmarkWidth: wordmark.width,
+            baselineError: Math.abs(icon.bottom - baseline),
+            insideLink: [icon, wordmark].every(
+              (part) =>
+                part.top >= link.top &&
+                part.bottom <= link.bottom &&
+                part.left >= link.left &&
+                part.right <= link.right,
+            ),
+          };
+        }),
+      );
+      for (const logo of measurements) {
+        expect(logo.wordmarkHeight).toBeGreaterThan(0);
+        expect(logo.iconHeight).toBeCloseTo(logo.wordmarkHeight, 0);
+        expect(logo.baselineError).toBeLessThanOrEqual(1);
+        expect(logo.insideLink).toBe(true);
+        sizes.push([
+          logo.iconHeight,
+          logo.iconWidth,
+          logo.wordmarkHeight,
+          logo.wordmarkWidth,
+        ]);
+      }
+    }
+    return sizes;
+  };
+  const lightLogoSizes = await checkLogos();
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(icon).toHaveClass(/fa-moon/);
-  await expect(toggle).toHaveText('Dark');
+  expect(await checkLogos()).toEqual(lightLogoSizes);
+  await expect(toggle).toBeChecked();
+  await expect(sun).toBeVisible();
+  await expect(moon).toBeHidden();
   await expect(toggle).toHaveAccessibleName('Theme: Dark. Switch to Light.');
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(icon).toHaveClass(/fa-moon/);
+  await expect(toggle).toBeChecked();
   expect(new URL(page.url()).searchParams.has('theme')).toBe(false);
 });
 
@@ -225,7 +371,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(url());
   await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
-  await expect(page.locator('#scale-selection')).toHaveCSS(
+  await expect(page.locator('#fretboard-heading')).toHaveCSS(
     'font-family',
     /^"?IBM Plex Sans"?,/,
   );
@@ -253,7 +399,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
       notes.map((note) => {
         const pitch = Number(note.dataset.midi) % 12;
         const dot = document.querySelector(
-          `#notes-strip [data-pitch="${pitch}"] .color-dot`,
+          `#formula-degrees [data-pitch="${pitch}"] .color-dot`,
         );
         return {
           fill: getComputedStyle(note).backgroundColor,
@@ -270,7 +416,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await toggle.focus();
   await toggle.press('Enter');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('#theme-icon')).toHaveClass(/fa-moon/);
+  await expect(page.locator('#theme-toggle')).toBeChecked();
   await expect(toggle).toBeFocused();
   expect(
     await page.evaluate(
@@ -300,7 +446,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
     'content',
     '#ffffff',
   );
-  await expect(page.locator('#scale-selection')).toHaveCSS(
+  await expect(page.locator('#fretboard-heading')).toHaveCSS(
     'font-family',
     /^"?IBM Plex Sans"?,/,
   );
@@ -312,7 +458,7 @@ test('keyboard theme changes persist without replacing the selected fretboard', 
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await toggle.press('Enter');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await expect(page.locator('#theme-icon')).toHaveClass(/fa-sun/);
+  await expect(page.locator('#theme-toggle')).not.toBeChecked();
 });
 
 test('an explicit theme survives music and language changes with localized control names', async ({
@@ -320,23 +466,23 @@ test('an explicit theme survives music and language changes with localized contr
 }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(url());
-  await page.locator('#theme-toggle').click();
-  const names = [];
-  for (const [lang, mode] of [
-    ['en', 'Dark'],
-    ['pt', 'Escuro'],
-    ['es', 'Oscuro'],
+  const toggle = page.locator('#theme-toggle');
+  await toggle.click();
+  for (const [lang, label] of [
+    ['en', 'Theme: Dark. Switch to Light.'],
+    ['pt', 'Tema: Escuro. Mudar para Claro.'],
+    ['es', 'Tema: Oscuro. Cambiar a Claro.'],
+    ['it', 'Tema scuro. Passa al tema chiaro.'],
+    ['fr', 'Thème actuel : sombre. Passer au thème clair.'],
+    ['de', 'Darstellung: Dunkel. Zu „Hell“ wechseln.'],
   ]) {
     await page.locator('#language').selectOption(lang);
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(page.locator('#theme-toggle')).toHaveText(mode);
-    const name = await page.locator('#theme-toggle').getAttribute('aria-label');
-    expect(name).toBeTruthy();
-    expect(name).not.toMatch(/undefined|\{.*\}/);
-    names.push(name);
+    await expect(toggle).toHaveAccessibleName(label);
+    await expect(toggle).toHaveAttribute('title', label);
   }
-  expect(new Set(names).size).toBe(3);
   await page.getByRole('radio', { name: 'A', exact: true }).check();
+  await page.locator('#instrument-toggle').click();
   await page
     .locator('#instrument label')
     .filter({ has: page.locator('[value="bass"]') })
@@ -378,10 +524,10 @@ test('legacy and invalid saved preferences fall back to light on a dark device',
     await page.evaluate((value) => localStorage.setItem('scales.theme', value), saved);
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await expect(page.locator('#theme-icon')).toHaveClass(/fa-sun/);
+    await expect(page.locator('#theme-toggle')).not.toBeChecked();
     await page.locator('#theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await expect(page.locator('#theme-icon')).toHaveClass(/fa-moon/);
+    await expect(page.locator('#theme-toggle')).toBeChecked();
   }
 });
 
@@ -402,7 +548,7 @@ test('a second explorer tab receives theme changes and clearing the preference r
   await expect(secondTab.locator('html')).toHaveAttribute('data-theme', 'dark');
   await secondTab.evaluate(() => localStorage.removeItem('scales.theme'));
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await expect(page.locator('#theme-icon')).toHaveClass(/fa-sun/);
+  await expect(page.locator('#theme-toggle')).not.toBeChecked();
 });
 
 test('dark appearance keeps controls contained and preserves mirrored pattern geometry', async ({
@@ -413,40 +559,53 @@ test('dark appearance keeps controls contained and preserves mirrored pattern ge
     { width: 320, lang: 'en', hand: 'right' },
     { width: 390, lang: 'pt', hand: 'left' },
     { width: 1360, lang: 'es', hand: 'left' },
+    { width: 320, lang: 'de', hand: 'right' },
+    { width: 390, lang: 'fr', hand: 'left' },
+    { width: 390, lang: 'it', hand: 'right' },
   ]) {
     await page.setViewportSize({ width: state.width, height: 900 });
     await page.goto(url({ lang: state.lang, hand: state.hand }));
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
       'content',
-      '#0a140e',
+      '#323e3a',
     );
-    await expect(page.locator('body')).toHaveCSS(
-      'background-image',
-      /repeating-linear-gradient/,
-    );
-    await expect(page.locator('#scale-selection')).toHaveCSS(
+    await expect(page.locator('body')).toHaveCSS('background-image', 'none');
+    await expect(page.locator('#fretboard-heading')).toHaveCSS(
       'font-family',
-      /^"?IBM Plex Mono"?,/,
+      /^"?IBM Plex Sans"?,/,
     );
-    await expect(page.locator('#instrument-form')).toHaveCSS(
-      'font-family',
-      /^"?IBM Plex Mono"?,/,
-    );
+    await page.locator('#instrument-toggle').click();
     await expectSwitchLabelsCentered(page);
     await expect(page.locator('#board .note:not(.muted)')).toHaveCount(17);
-    await expect(page.locator('#neck-octave-label')).toHaveText(
-      state.hand === 'left' ? '12–0' : '0–12',
-    );
-    expect(
-      await page
-        .locator('#board .fretboard-map')
-        .evaluate((board) => board.getBoundingClientRect().width),
-    ).toBe(657);
+    // Colors can change while type metrics and component geometry stay identical.
+    const dimensions = () =>
+      page
+        .locator(
+          'main, .panel, .board-scroll, .fretboard-map, .export-card, .site-footer',
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const { x, width, height } = element.getBoundingClientRect();
+            return [
+              Math.round(x),
+              Math.round(width),
+              Math.round(height),
+              getComputedStyle(element).font,
+            ];
+          }),
+        );
+    await page.evaluate(() => document.fonts.ready);
+    const dark = await dimensions();
+    await page.locator('#theme-toggle').click();
+    expect(await dimensions()).toEqual(dark);
+    await page.locator('#theme-toggle').click();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     ).toBe(true);
     const toggle = await page.locator('#theme-toggle').boundingBox();
+    expect(toggle.width).toBeCloseTo(44, 3);
+    expect(toggle.height).toBeCloseTo(44, 3);
     expect(toggle.x).toBeGreaterThanOrEqual(0);
     expect(toggle.x + toggle.width).toBeLessThanOrEqual(state.width);
     const surfaces = await page.evaluate(() => [
@@ -483,7 +642,6 @@ test('reduced motion disables control and fretboard animations during interactio
       document.querySelector('.note.sounding'),
       document.querySelector('.scale-choice[aria-pressed="true"]'),
     ].map((element) => getComputedStyle(element));
-    targets.push(getComputedStyle(document.querySelector('#neck-view'), '::before'));
     targets.push(getComputedStyle(document.querySelector('.note.sounding'), '::after'));
     return targets.map((style) => ({
       animation: style.animationName,
@@ -496,15 +654,16 @@ test('reduced motion disables control and fretboard animations during interactio
   }
 });
 
-test('root notes are circles, scale choices share a height, and key-aware names fit', async ({
+test('scale names, formulas, and selection marks fit on desktop and phones', async ({
   page,
 }) => {
   const sizes = (buttons) =>
     buttons.evaluateAll((elements) =>
       elements.map((element) => {
-        const { width, height } = element.getBoundingClientRect();
+        const { x, width, height } = element.getBoundingClientRect();
         return {
           label: element.textContent.trim(),
+          x,
           width,
           height,
           fits:
@@ -513,9 +672,9 @@ test('root notes are circles, scale choices share a height, and key-aware names 
         };
       }),
     );
-  for (const [width, lang] of [
-    [1360, 'en'],
-    [320, 'es'],
+  for (const [width, lang, columns] of [
+    [1360, 'en', 2],
+    [320, 'es', 1],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(url({ lang, scale: 'chromatic' }));
@@ -527,27 +686,42 @@ test('root notes are circles, scale choices share a height, and key-aware names 
       expect(root.height, root.label).toBeGreaterThanOrEqual(44);
       expect(root.fits, root.label).toBe(true);
     }
-    const choices = await sizes(page.locator('#scale-results button'));
+    const results = page.locator('#scale-results');
+    const rows = results.locator('[data-scale]');
+    const selected = results.locator('[data-scale][aria-pressed="true"]');
+    await expect(results).toHaveCSS('border-top-width', '0px');
+    await expect(rows.first()).toHaveCSS('text-align', /^(start|left)$/);
+    await expect(selected).toHaveAccessibleName(
+      lang === 'en' ? 'Chromatic' : 'Cromática',
+    );
+    const choices = await sizes(rows);
     expect(choices.length).toBeGreaterThan(1);
+    expect(new Set(choices.map((choice) => choice.x)).size).toBe(columns);
+    await expect(results.getByRole('button')).toHaveCount(choices.length);
+    await expect(selected.locator('.scale-choice-check')).toBeVisible();
+    await expect(results.locator('.scale-choice-formula:visible')).toHaveCount(
+      choices.length,
+    );
     for (const choice of choices) {
-      expect(choice.height, choice.label).toBeCloseTo(choices[0].height, 0);
+      expect(choice.height, choice.label).toBeGreaterThanOrEqual(44);
+      expect(choice.width, choice.label).toBeGreaterThanOrEqual(44);
       expect(choice.fits, choice.label).toBe(true);
     }
-    const tones = page.locator('#notes-strip button');
+    const tones = page.locator('#formula-degrees button');
     await expect(tones).toHaveCount(12);
     for (const tone of await sizes(tones)) {
       expect(tone.label).not.toContain('/');
-      expect(tone.width, tone.label).toBeCloseTo(tone.height, 0);
+      expect(tone.width, tone.label).toBeGreaterThanOrEqual(24);
       expect(tone.fits, tone.label).toBe(true);
     }
+    const formula = await tones.allTextContents();
+    const degrees = await tones.locator('.formula-degree').allTextContents();
+    await expect(selected.locator('.scale-choice-formula')).toHaveText(degrees.join(' '));
     await page
       .locator('#labels label')
       .filter({ has: page.locator('[value="degrees"]') })
       .click();
-    for (const degree of await sizes(tones)) {
-      expect(degree.width, degree.label).toBeCloseTo(degree.height, 0);
-      expect(degree.fits, degree.label).toBe(true);
-    }
+    expect(await tones.allTextContents()).toEqual(formula);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     ).toBe(true);

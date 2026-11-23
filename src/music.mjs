@@ -1,5 +1,5 @@
 import { SCALES, TUNINGS, mod } from './catalog.mjs';
-import { normalizeLanguage } from './locales.mjs';
+import { normalizeLanguage, tuningName } from './locales.mjs';
 export { SCALES, TUNINGS, mod };
 export const PALETTE = {
   0: '#cf3039',
@@ -14,21 +14,25 @@ export const SHARPS = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 
 export const FLATS = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 const LETTERS = 'CDEFGAB';
 const NATURALS = [0, 2, 4, 5, 7, 9, 11];
-function spellingParts(value) {
-  const match = /^([A-G])((?:#{1,2}|b{1,2})?)$/.exec(
+export function parseTonic(value) {
+  const match = /^([A-Ga-g])((?:#{1,2}|b{1,2})?)$/.exec(
     String(value).trim().replaceAll('♯', '#').replaceAll('♭', 'b'),
   );
   if (!match) return null;
+  const note = match[1].toUpperCase();
+  const letter = LETTERS.indexOf(note);
+  const accidental = match[2].length * (match[2].startsWith('b') ? -1 : 1);
   return {
-    letter: LETTERS.indexOf(match[1]),
-    accidental: match[2].length * (match[2].startsWith('b') ? -1 : 1),
-    tonic: match[1] + match[2],
+    letter,
+    accidental,
+    pitch: mod(NATURALS[letter] + accidental),
+    tonic: note + match[2],
   };
 }
 // A degree fixes its letter as well as its pitch. For example, the seventh of
 // F# is E#, and the diminished seventh of C is Bbb rather than A.
 export function spellDegree(tonic, degree) {
-  const root = spellingParts(tonic);
+  const root = parseTonic(tonic);
   const match = /^([b#]{0,2})([1-7])$/.exec(
     String(degree).replaceAll('♯', '#').replaceAll('♭', 'b'),
   );
@@ -42,9 +46,9 @@ export function spellDegree(tonic, degree) {
   return `${LETTERS[letter]}${(accidental < 0 ? '♭' : '♯').repeat(Math.abs(accidental))}`;
 }
 function keySpellings(state) {
-  const explicit = spellingParts(state.tonic);
+  const explicit = parseTonic(state.tonic);
   const candidates =
-    explicit && mod(NATURALS[explicit.letter] + explicit.accidental) === state.root
+    explicit && explicit.pitch === state.root
       ? [explicit.tonic]
       : [...new Set([SHARPS[state.root], FLATS[state.root]])];
   // Prefer fewer and simpler accidentals when a shared numeric root does not
@@ -127,7 +131,14 @@ export function parseFormula(value) {
     throw new Error('Start with 1 and list distinct degrees in ascending pitch order');
   return {
     id: 'custom',
-    name: { en: 'Custom scale', pt: 'Escala personalizada', es: 'Escala personalizada' },
+    name: {
+      en: 'Custom scale',
+      pt: 'Escala personalizada',
+      es: 'Escala personalizada',
+      it: 'Scala personalizzata',
+      fr: 'Gamme personnalisée',
+      de: 'Eigene Tonleiter',
+    },
     family: 'custom',
     intervals,
     formula,
@@ -146,9 +157,8 @@ export function normalizeState(input = {}) {
     : DEFAULTS.spelling;
   s.root = Number(s.root);
   if (!Number.isInteger(s.root) || s.root < 0 || s.root > 11) s.root = 0;
-  const tonic = spellingParts(s.tonic);
-  if (tonic && mod(NATURALS[tonic.letter] + tonic.accidental) === s.root)
-    s.tonic = tonic.tonic;
+  const tonic = parseTonic(s.tonic);
+  if (tonic && tonic.pitch === s.root) s.tonic = tonic.tonic;
   else delete s.tonic;
   s.frets = FRET_COUNTS.includes(Number(input.frets))
     ? Number(input.frets)
@@ -188,7 +198,7 @@ export function selection(input) {
     s.tuning === 'custom'
       ? {
           id: 'custom',
-          name: { en: 'Custom', pt: 'Personalizada', es: 'Personalizada' }[s.lang],
+          name: tuningName({ id: 'custom' }, s.lang),
           notes: s.customNotes,
           instrument: s.instrument,
           strings: s.strings,
@@ -322,6 +332,8 @@ export function layoutBoard(model, { width = 1100, height = 270, small = false }
     labelX: state.hand === 'left' ? right + 20 : left - 20,
   };
 }
+// Full model serialization for existing consumers and the fingering cache.
+// The browser's portable link format is defined in practice-link.mjs.
 export function sharedState(s) {
   const clean = normalizeState(s);
   const params = new URLSearchParams();

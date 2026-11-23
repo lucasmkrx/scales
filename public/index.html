@@ -1,8 +1,12 @@
 <!doctype html>
-<html lang="en-US">
+<html lang="en-US" data-page-language="en">
   <head>
     <!-- page-metadata -->
-    <link rel="icon" href="./assets/icon.png" type="image/png" sizes="64x64" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="mask-icon" href="./assets/pinned-tab.svg" color="#ff5a1f" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="./site.webmanifest" />
     <script src="./theme.js"></script>
     <link rel="stylesheet" href="./vendor/fontawesome.min.css" />
     <link rel="stylesheet" href="./styles.css" />
@@ -24,6 +28,9 @@
           margin: 1em 0;
           white-space: normal;
         }
+        main .script-instruction {
+          display: block;
+        }
       </style></noscript
     >
   </head>
@@ -32,38 +39,77 @@
 
     <header class="site-header">
       <div class="masthead">
-        <a class="wordmark" href="#top"
-          ><span class="brand-mark"
-            ><i class="icon fa-solid fa-guitar" aria-hidden="true"></i></span
-          >Tukany</a
-        >
-        <div class="language select-control">
-          <i class="icon fa-solid fa-globe" aria-hidden="true"></i
-          ><label for="language" class="sr-only" data-i18n="language">Language</label>
-          <span class="select-field"
-            ><select id="language">
-              <option value="en" lang="en-US">English</option>
-              <option value="pt" lang="pt-BR">Português</option>
-              <option value="es" lang="es-419">Español</option></select
-            ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-          ></span>
+        <a class="brand" href="#top">
+          <img
+            class="brand-icon"
+            src="./assets/tukany-logo.svg"
+            alt=""
+            width="879"
+            height="705"
+          />
+          <img
+            class="brand-wordmark"
+            src="./assets/tukany-wordmark.svg"
+            alt="Tukany"
+            width="1359"
+            height="619"
+          />
+        </a>
+        <div class="masthead-actions">
+          <button
+            type="button"
+            id="theme-toggle"
+            role="switch"
+            aria-checked="false"
+            aria-label="Theme: Light. Switch to Dark."
+            title="Theme: Light. Switch to Dark."
+          >
+            <i class="icon fa-solid fa-sun" aria-hidden="true"></i>
+            <i class="icon fa-solid fa-moon" aria-hidden="true"></i>
+          </button>
+          <div class="language select-control">
+            <label for="language" class="sr-only" data-i18n="language">Language</label>
+            <span class="select-field"
+              ><select id="language">
+                <option value="en" lang="en-US" data-flag="./assets/flags/us.svg">
+                  English
+                </option>
+                <option value="pt" lang="pt-BR" data-flag="./assets/flags/br.svg">
+                  Português
+                </option>
+                <option value="es" lang="es-ES" data-flag="./assets/flags/es.svg">
+                  Español
+                </option>
+                <option value="it" lang="it-IT" data-flag="./assets/flags/it.svg">
+                  Italiano
+                </option>
+                <option value="fr" lang="fr-FR" data-flag="./assets/flags/fr.svg">
+                  Français
+                </option>
+                <option value="de" lang="de-DE" data-flag="./assets/flags/de.svg">
+                  Deutsch
+                </option></select
+              ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
+            ></span>
+          </div>
+          <a
+            id="coffee-link"
+            class="coffee-link"
+            href="https://buymeacoffee.com/lucasmkrx?l=en"
+          >
+            <img src="./assets/buy-me-a-coffee.svg" alt="" width="884" height="1279" />
+            <span data-i18n="buyMeACoffee">Buy me a coffee</span>
+          </a>
         </div>
-        <button
-          type="button"
-          class="theme-toggle"
-          id="theme-toggle"
-          aria-label="Theme: Light. Switch to Dark."
-          title="Theme: Light. Switch to Dark."
-        >
-          <i id="theme-icon" class="icon fa-solid fa-sun" aria-hidden="true"></i>
-          <span id="theme-mode">Light</span>
-        </button>
       </div>
     </header>
     <main>
       <h1 class="sr-only" id="page-title" data-i18n="explorerTitle">
         Interactive scale diagrams for guitar and bass
       </h1>
+      <p class="script-instruction" data-i18n="noScript">
+        Enable JavaScript to play notes and customize your fretboard.
+      </p>
       <nav
         class="mobile-shortcut"
         data-i18n-aria="quickNavigation"
@@ -76,101 +122,88 @@
         ></a>
       </nav>
       <div class="workspace" id="explorer" tabindex="-1">
-        <div class="scale-selection-area">
-          <section
-            class="panel settings-card scale-settings-card"
-            aria-labelledby="scale-heading"
-          >
-            <header class="scale-card-header">
-              <h2 id="scale-heading">
-                <i class="icon fa-solid fa-music" aria-hidden="true"></i>
-                <span data-i18n="scaleSettings">Scale</span>
-              </h2>
-              <p id="scale-selection"></p>
-            </header>
-            <fieldset id="root-picker" aria-describedby="root-hint">
-              <legend id="root-caption" data-i18n="root">Root note</legend>
-              <p id="root-hint" data-i18n="rootHint">The note your scale is built on.</p>
-              <div class="root-notes" id="root-notes"></div>
-            </fieldset>
-            <div id="scale-catalog">
-              <div class="family-control select-control">
-                <label for="scale-family" data-i18n="scaleFamily">Scale family</label>
-                <span class="select-field">
-                  <select id="scale-family" aria-controls="scale-results"></select>
-                  <i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i>
-                </span>
-              </div>
-              <div
-                id="scale-results"
-                class="scale-results"
-                role="group"
-                aria-label="Scale choices"
-              ></div>
+        <section
+          class="panel settings-card scale-settings-card"
+          aria-labelledby="scale-heading"
+        >
+          <h2 class="settings-heading scale-card-header" id="scale-heading">
+            <i class="icon fa-solid fa-music" aria-hidden="true"></i>
+            <span data-i18n="scaleSettings">Scale</span>
+          </h2>
+          <fieldset id="root-picker" aria-describedby="root-hint">
+            <legend id="root-caption" data-i18n="root">Root note</legend>
+            <p id="root-hint" data-i18n="rootHint">The note your scale is built on.</p>
+            <div class="root-notes" id="root-notes"></div>
+            <div id="key-tonic-control" class="spelling-control select-control" hidden>
+              <label for="key-tonic" data-i18n="keyTonic">Write key as</label
+              ><span class="select-field"
+                ><select id="key-tonic"></select
+                ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
+              ></span>
             </div>
-            <div id="custom-scale" class="custom-scale">
-              <div class="formula-overview" id="formula-overview">
-                <div>
-                  <p class="formula-label" id="formula-label" data-i18n="formula">
-                    Formula
-                  </p>
-                  <div
-                    id="formula-degrees"
-                    role="group"
-                    aria-labelledby="formula-label"
-                  ></div>
-                </div>
-                <button
-                  type="button"
-                  id="edit-formula"
-                  aria-controls="formula-editor"
-                  aria-expanded="false"
-                  data-i18n-aria="editFormula"
-                  aria-label="Edit formula"
-                >
-                  <i class="icon fa-solid fa-pen" aria-hidden="true"></i>
-                  <span data-i18n="edit">Edit</span>
-                </button>
-              </div>
-              <form id="formula-editor" hidden>
-                <label for="formula-input" class="formula-label" data-i18n="editFormula"
-                  >Edit formula</label
-                >
-                <input
-                  id="formula-input"
-                  autocomplete="off"
-                  autocapitalize="off"
-                  spellcheck="false"
-                  aria-describedby="formula-hint formula-error"
-                />
-                <p class="hint" id="formula-hint" data-i18n="formulaHint"></p>
-                <p id="formula-error" class="hint error" role="alert"></p>
-                <div class="formula-actions">
-                  <button
-                    type="submit"
-                    class="primary"
-                    id="apply-scale"
-                    data-i18n="applyScale"
-                  >
-                    Use custom scale
-                  </button>
-                  <button type="button" id="cancel-formula" data-i18n="cancelEdit">
-                    Cancel edit
-                  </button>
-                </div>
-              </form>
+          </fieldset>
+          <div id="scale-catalog">
+            <div class="family-control select-control">
+              <label for="scale-family" data-i18n="scaleFamily">Scale family</label>
+              <span class="select-field">
+                <select id="scale-family" aria-controls="scale-results"></select>
+                <i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </span>
             </div>
-          </section>
-          <section
-            class="panel settings-card instrument-card"
+            <div
+              id="scale-results"
+              class="scale-results"
+              role="group"
+              data-i18n-aria="scale"
+              aria-label="Scale choices"
+            ></div>
+          </div>
+          <div class="scale-formula">
+            <p class="formula-label" id="formula-label" data-i18n="formula">Formula</p>
+            <div id="formula-degrees" role="group" aria-labelledby="formula-label"></div>
+          </div>
+        </section>
+        <section
+          class="scale-panel panel"
+          id="fretboard"
+          aria-labelledby="fretboard-heading"
+        >
+          <header class="scale-header">
+            <div class="scale-heading">
+              <h2 id="fretboard-heading" tabindex="-1"></h2>
+              <p id="scale-meta" class="sr-only">
+                <span id="family-label"></span
+                ><span class="meta-dot" aria-hidden="true">·</span
+                ><span id="note-count"></span>
+              </p>
+            </div>
+            <button
+              type="button"
+              class="primary"
+              id="instrument-toggle"
+              popovertarget="instrument-settings"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-controls="instrument-settings"
+            >
+              <i class="icon fa-solid fa-pen" aria-hidden="true"></i>
+              <span class="instrument-button-label">
+                <span id="instrument-caption" data-i18n="editInstrument"
+                  >Edit instrument</span
+                >
+                <span id="setup-summary"></span>
+              </span>
+              <i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+          </header>
+          <div
+            class="instrument-settings"
             id="instrument-settings"
+            popover
+            role="dialog"
             tabindex="-1"
-            aria-labelledby="instrument-heading"
+            aria-labelledby="instrument-caption"
           >
-            <h2 class="settings-heading" id="instrument-heading">
-              <i class="icon fa-solid fa-sliders" aria-hidden="true"></i
-              ><span data-i18n="yourInstrument">Your instrument</span>
-            </h2>
             <form id="instrument-form">
               <fieldset class="setup-switch" id="instrument">
                 <legend class="sr-only" data-i18n="instrument">Instrument</legend>
@@ -300,41 +333,7 @@
               </div>
               <p id="setup-status" class="hint" role="status" aria-live="polite"></p>
             </form>
-          </section>
-        </div>
-        <section
-          class="scale-panel panel"
-          id="fretboard"
-          aria-labelledby="fretboard-heading"
-        >
-          <header class="scale-header">
-            <div class="scale-heading">
-              <h2 id="fretboard-heading" tabindex="-1" data-i18n="fretboard">
-                Fretboard
-              </h2>
-              <span id="setup-summary" class="sr-only"></span>
-              <p id="scale-meta" class="sr-only">
-                <span id="family-label"></span
-                ><span class="meta-dot" aria-hidden="true">·</span
-                ><span id="note-count"></span>
-              </p>
-            </div>
-            <fieldset class="neck-view-switch" id="neck-view">
-              <legend class="sr-only" data-i18n="neckView">Fretboard view</legend>
-              <label
-                ><input type="radio" name="neck-view" value="octave" checked /><span
-                  id="neck-octave-label"
-                  >0–12</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="neck-view" value="full" /><span
-                  data-i18n="fullNeck"
-                  >Full neck</span
-                ></label
-              >
-            </fieldset>
-          </header>
+          </div>
           <div class="diagram">
             <div class="board-toolbar">
               <p id="pattern-info" class="sr-only"></p>
@@ -346,7 +345,6 @@
                 aria-live="polite"
                 hidden
               ></p>
-              <span id="pattern-more" class="pattern-more" hidden></span>
             </div>
             <div class="board-scroll" id="board" tabindex="-1"></div>
             <div class="board-foot">
@@ -358,6 +356,29 @@
                 <i class="icon fa-solid fa-volume-high" aria-hidden="true"></i
                 ><span id="note-readout-text"></span>
               </p>
+              <div class="fretboard-options">
+                <fieldset class="segmented" id="labels" aria-describedby="degrees-hint">
+                  <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
+                  <label
+                    ><input type="radio" name="labels" value="notes" checked /><span
+                      data-i18n="notes"
+                      >Notes</span
+                    ></label
+                  >
+                  <label
+                    ><input type="radio" name="labels" value="degrees" /><span
+                      data-i18n="degrees"
+                      >Degrees</span
+                    ></label
+                  >
+                </fieldset>
+                <label class="check outside-control"
+                  ><input id="allNotes" type="checkbox" /><span data-i18n="showAll"
+                    >Show other notes</span
+                  ></label
+                >
+              </div>
+              <p id="degrees-hint" class="sr-only" hidden data-i18n="degreesHint"></p>
               <div class="toolbar">
                 <button type="button" class="text-button" id="share">
                   <i class="icon fa-solid fa-link" aria-hidden="true"></i
@@ -373,7 +394,7 @@
             aria-labelledby="staff-heading"
           >
             <header class="staff-heading">
-              <h3 id="staff-heading">Treble staff</h3>
+              <h3 id="staff-heading" data-i18n="trebleStaff">Treble staff</h3>
               <p class="staff-caption">
                 <span data-i18n="writtenPitch">Written pitch</span>
                 <span id="staff-range"></span>
@@ -387,54 +408,50 @@
             aria-labelledby="backing-heading"
           >
             <header class="backing-heading">
-              <h3 id="backing-heading">
-                <i class="icon fa-solid fa-headphones" aria-hidden="true"></i
-                ><span data-i18n="backingTracks">Backing tracks</span>
-              </h3>
-              <p id="backing-context"></p>
-            </header>
-            <form
-              id="backing-form"
-              action="https://www.youtube.com/results"
-              method="get"
-              target="_blank"
-              rel="noopener noreferrer"
-              autocomplete="off"
-            >
-              <input id="backing-query" type="hidden" name="search_query" />
-              <div class="select-control">
-                <label for="backing-style" data-i18n="backingStyle">Style</label
-                ><span class="select-field">
-                  <select id="backing-style">
-                    <option value="any" data-i18n="anyStyle">Any style</option>
-                    <option value="blues">Blues</option>
-                    <option value="rock">Rock</option>
-                    <option value="funk">Funk</option>
-                    <option value="jazz">Jazz</option>
-                    <option value="metal">Metal</option></select
-                  ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-                ></span>
+              <div>
+                <h3 id="backing-heading">
+                  <i class="icon fa-solid fa-headphones" aria-hidden="true"></i
+                  ><span data-i18n="backingTracks">Backing tracks</span>
+                </h3>
+                <p id="backing-context"></p>
               </div>
-              <div class="select-control">
-                <label for="backing-tempo" data-i18n="backingTempo">Tempo</label
-                ><span class="select-field">
-                  <select id="backing-tempo">
-                    <option value="any" data-i18n="anyTempo">Any tempo</option>
-                    <option value="slow" data-i18n="slowTempo">Slow</option>
-                    <option value="medium" data-i18n="mediumTempo">Medium</option>
-                    <option value="fast" data-i18n="fastTempo">Fast</option></select
-                  ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-                ></span>
-              </div>
-              <button class="primary" id="backing-find" type="submit">
-                <span data-i18n="findBacking">Search YouTube</span>
+              <a
+                id="backing-search"
+                href="https://www.youtube.com/results?search_query=C+major+guitar+backing+track"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-describedby="backing-search-hint"
+              >
+                <span data-i18n="searchYouTube">Search YouTube</span>
                 <i
                   class="icon fa-solid fa-arrow-up-right-from-square"
                   aria-hidden="true"
                 ></i>
-                <span class="sr-only" data-i18n="opensNewTab">(opens in a new tab)</span>
-              </button>
-            </form>
+              </a>
+              <span hidden id="backing-search-hint" data-i18n="opensNewTab"
+                >Opens in a new tab</span
+              >
+            </header>
+            <p id="backing-fallback" role="status" hidden data-i18n="backingFallback">
+              No arrangement matches this selection. Play along with the sustained root.
+            </p>
+            <ul id="backing-list" aria-labelledby="backing-heading"></ul>
+            <div id="backing-playback" hidden>
+              <div class="backing-player-heading">
+                <strong id="backing-current"></strong>
+                <button
+                  type="button"
+                  id="backing-close"
+                  class="text-button"
+                  data-i18n-aria="closeBacking"
+                  aria-label="Close player"
+                >
+                  <i class="icon fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div id="backing-screen"></div>
+              <p id="backing-player-status" role="status" hidden></p>
+            </div>
           </section>
           <span class="sr-only" id="keyboard-notes" data-i18n="keyboardNotes"></span>
           <p id="status" class="status" role="status" aria-live="polite"></p>
@@ -442,44 +459,6 @@
             ><span data-i18n="manualCopy">Copy this link</span
             ><input type="url" id="share-url" readonly
           /></label>
-          <div class="fretboard-options">
-            <fieldset class="segmented" id="labels" aria-describedby="degrees-hint">
-              <legend class="sr-only" data-i18n="labels">Diagram labels</legend>
-              <label
-                ><input type="radio" name="labels" value="notes" checked /><span
-                  data-i18n="notes"
-                  >Notes</span
-                ></label
-              >
-              <label
-                ><input type="radio" name="labels" value="degrees" /><span
-                  data-i18n="degrees"
-                  >Degrees</span
-                ></label
-              >
-            </fieldset>
-            <div id="key-tonic-control" class="spelling-control select-control" hidden>
-              <label for="key-tonic" data-i18n="keyTonic">Write key as</label
-              ><span class="select-field"
-                ><select id="key-tonic"></select
-                ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-              ></span>
-            </div>
-            <label class="check outside-control"
-              ><input id="allNotes" type="checkbox" /><span data-i18n="showAll"
-                >Show other notes</span
-              ></label
-            >
-          </div>
-          <p id="degrees-hint" class="sr-only" hidden data-i18n="degreesHint"></p>
-          <div class="scale-reference">
-            <div
-              class="tone-table"
-              id="notes-strip"
-              role="group"
-              aria-label="Notes"
-            ></div>
-          </div>
         </section>
 
         <section
@@ -487,91 +466,101 @@
           id="pdf-export"
           aria-labelledby="export-heading"
         >
-          <div class="settings-card-heading">
-            <h2 class="settings-heading" id="export-heading">
-              <i class="icon fa-solid fa-file-pdf" aria-hidden="true"></i
-              ><span data-i18n="customizePdf">Customize PDF</span>
-            </h2>
-          </div>
-          <div class="export-layout">
-            <div class="select-control">
-              <label for="scope" data-i18n="scope">PDF contents</label
-              ><span class="select-field"
-                ><select id="scope">
-                  <option value="selected" data-i18n="selected">Selected scale</option>
-                  <option value="family" data-i18n="familyScope">Current family</option>
-                  <option value="catalog" data-i18n="catalogScope">
-                    Full named catalog
-                  </option></select
-                ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
+          <h2 class="settings-heading" id="export-heading">
+            <i class="icon fa-solid fa-file-pdf" aria-hidden="true"></i>
+            <span data-i18n="pdfDownloads">PDF downloads</span>
+          </h2>
+          <div class="export-cards">
+            <button type="button" class="export-card" data-export="family">
+              <span class="export-scope"
+                ><i class="icon fa-solid fa-book-open" aria-hidden="true"></i
+                ><span data-i18n="familyScope">Current family</span></span
+              >
+              <strong class="export-title"></strong>
+              <span class="export-estimate"></span>
+              <span class="export-setup"></span>
+              <span class="export-action"
+                ><span data-i18n="pdf">Download PDF</span
+                ><i class="icon fa-solid fa-download" aria-hidden="true"></i
               ></span>
-            </div>
-            <label class="check" id="all-keys-control"
-              ><input type="checkbox" id="all-keys" /><span data-i18n="allKeys"
-                >Include all 12 keys</span
-              ></label
-            >
-            <p class="hint" id="export-keys-hint" hidden data-i18n="currentKeyExport">
-              Family and catalog PDFs use the current root note.
-            </p>
-            <p
-              class="export-estimate"
-              id="export-estimate"
-              role="status"
-              aria-live="polite"
-            ></p>
-            <p id="export-status" class="hint" role="status" aria-live="polite"></p>
-          </div>
-          <div class="export-actions">
-            <button class="primary" id="export" type="button">
-              <i class="icon fa-solid fa-download" aria-hidden="true"></i
-              ><span data-i18n="pdf">Download PDF</span></button
-            ><button
-              id="cancel-export"
-              type="button"
-              class="secondary"
-              hidden
-              data-i18n="cancel"
-            >
-              Cancel export
+            </button>
+            <button type="button" class="export-card" data-export="catalog">
+              <span class="export-scope"
+                ><i class="icon fa-solid fa-book" aria-hidden="true"></i
+                ><span data-i18n="catalogScope">Full catalog</span></span
+              >
+              <strong class="export-title" data-i18n="scalesAndArpeggios"
+                >Scales and arpeggios</strong
+              >
+              <span class="export-estimate"></span>
+              <span class="export-setup"></span>
+              <span class="export-action"
+                ><span data-i18n="pdf">Download PDF</span
+                ><i class="icon fa-solid fa-download" aria-hidden="true"></i
+              ></span>
             </button>
           </div>
+          <p id="export-status" class="hint" role="status" aria-live="polite"></p>
         </section>
       </div>
-      <aside class="practice-invitation">
-        <p data-i18n="practiceIntro">
-          Tukany maps scales and arpeggios on your guitar or bass. Pick a root and tuning,
-          then tap a note on the fretboard to hear it.
-        </p>
-        <a href="./scales/" data-reference-link data-i18n="referenceLink"
-          >Browse scale formulas and notes</a
-        >
-        <a href="./practice/" data-guide-link data-i18n="practiceLink"
-          >Try three fretboard exercises</a
-        >
-      </aside>
     </main>
     <footer class="site-footer">
-      <img
-        src="./assets/marques-and-co.png"
-        alt="Marques & Co."
-        width="120"
-        height="17"
-      />
-      <p data-i18n="license"></p>
-      <a href="./assets/instruments/credits.html" data-i18n="iconCredits">Icon credits</a>
-      <a href="https://github.com/lucasmkrx/tukany" data-i18n="source"
-        >Source &amp; contributions</a
-      >
+      <div class="footer-inner">
+        <div class="footer-resources">
+          <p data-discovery="intro"></p>
+          <a
+            id="practice-example"
+            href="./?key=A&amp;scale=minor-pentatonic"
+            data-discovery="example"
+          ></a>
+          <details id="practice-guides">
+            <summary data-discovery="guides"></summary>
+            <ul>
+              <!-- guide-links -->
+            </ul>
+          </details>
+          <nav class="edition-links" aria-labelledby="edition-heading">
+            <span id="edition-heading" data-discovery="languages"></span>
+            <!-- edition-links -->
+          </nav>
+        </div>
+        <div class="footer-main">
+          <a class="brand" href="#top">
+            <img
+              class="brand-icon"
+              src="./assets/tukany-logo.svg"
+              alt=""
+              width="879"
+              height="705"
+            />
+            <img
+              class="brand-wordmark"
+              src="./assets/tukany-wordmark.svg"
+              alt="Tukany"
+              width="1359"
+              height="619"
+            />
+          </a>
+          <div class="footer-links">
+            <a href="https://github.com/lucasmkrx/tukany" data-i18n="source"
+              >Source &amp; contributions</a
+            >
+            <a
+              href="https://github.com/lucasmkrx/tukany/blob/main/THIRD-PARTY-NOTICES.md#instrument-selector-icons"
+              data-i18n="iconCredits"
+              >Icon credits</a
+            >
+            <a href="#top" data-i18n="backToTop">Back to top</a>
+          </div>
+        </div>
+        <div class="footer-credits">
+          <a href="https://lucasgmarques.com/" data-i18n="credits"
+            >Made by Lucas Marques</a
+          >
+          <p data-i18n="license"></p>
+        </div>
+      </div>
     </footer>
-    <noscript>
-      <p data-i18n="noScript">
-        Enable JavaScript to play notes and customize your fretboard. The practice guide
-        and printable lessons also work without it.
-      </p>
-      <!-- language-links -->
-    </noscript>
-
     <script type="module" src="./src/app.mjs"></script>
   </body>
 </html>

@@ -1,8 +1,7 @@
-import { routes } from '../src/site.mjs';
-import { metadata, explorerPage } from './search-pages.mjs';
-import { guidePage, guideMarkdown } from './practice-pages.mjs';
-import { referencePage, referenceMarkdown } from './reference-pages.mjs';
+import { explorerPage } from './homepage.mjs';
 import { sitemap } from './sitemap.mjs';
+import { explorerPath } from '../src/site.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
 import { cp, mkdir, rm, writeFile, readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 const root = new URL('../', import.meta.url),
@@ -15,24 +14,40 @@ const modules = await Promise.all(
 );
 const css = await readFile(new URL('public/styles.css', root), 'utf8');
 const theme = await readFile(new URL('public/theme.js', root), 'utf8');
+const manifest = await readFile(new URL('public/site.webmanifest', root), 'utf8');
 const visualAssets = [
-  './vendor/fontawesome.min.css',
-  './assets/fonts/fa-solid-900.woff2',
-  './assets/fonts/ibm-plex-sans.woff2',
-  './assets/fonts/ibm-plex-mono.woff2',
-  './assets/fonts/ibm-plex-mono-semibold.woff2',
-  './assets/fonts/ibm-plex-mono-bold.woff2',
-  './assets/icon.png',
-  './assets/marques-and-co.png',
-  './assets/instruments/telecaster-headstock.png',
-  './assets/instruments/bass-headstock.png',
+  'vendor/fontawesome.min.css',
+  'assets/fonts/fa-solid-900.woff2',
+  'assets/fonts/cookie.woff2',
+  'assets/fonts/ibm-plex-sans.woff2',
+  'assets/fonts/ibm-plex-mono.woff2',
+  'assets/fonts/ibm-plex-mono-semibold.woff2',
+  'assets/fonts/ibm-plex-mono-bold.woff2',
+  'favicon.ico',
+  'assets/favicon.svg',
+  'assets/pinned-tab.svg',
+  'assets/icon.png',
+  'assets/icon-192.png',
+  'assets/apple-touch-icon.png',
+  'assets/tukany-wordmark.svg',
+  'assets/tukany-logo.svg',
+  'assets/buy-me-a-coffee.svg',
+  'assets/flags/us.svg',
+  'assets/flags/br.svg',
+  'assets/flags/es.svg',
+  'assets/flags/it.svg',
+  'assets/flags/fr.svg',
+  'assets/flags/de.svg',
+  'assets/tukany-social.jpg',
+  'assets/marques-and-co.png',
+  'assets/instruments/telecaster-headstock.png',
+  'assets/instruments/bass-headstock.png',
 ];
 const revisionHash = createHash('sha256')
   .update(JSON.stringify(modules))
   .update(css)
-  .update(await readFile(new URL('public/practice.css', root)))
-  .update(await readFile(new URL('public/reference.css', root)))
-  .update(theme);
+  .update(theme)
+  .update(manifest);
 for (const path of visualAssets) {
   revisionHash.update(await readFile(new URL(`public/${path}`, root)));
 }
@@ -54,31 +69,18 @@ for (const [name, source] of modules) {
   );
   await writeFile(new URL(`src/${name}`, dist), versioned);
 }
-const html = versionVisualAssets(
-  await readFile(new URL('public/index.html', root), 'utf8'),
-)
+const template = (await readFile(new URL('public/index.html', root), 'utf8'))
   .replace('./src/app.mjs', `./src/app.mjs?v=${revision}`)
   .replace('theme.js"', `theme.js?v=${revision}"`)
+  .replace('./site.webmanifest', `./site.webmanifest?v=${revision}`)
   .replace('./styles.css', `./styles.css?v=${revision}`);
-for (const [lang, route] of Object.entries(routes)) {
-  const home = new URL('.' + route.home, dist);
-  await mkdir(home, { recursive: true });
-  const base = route.home === '/' ? './' : '../';
-  await writeFile(new URL('index.html', home), explorerPage(html, lang, base));
-  for (const [kind, renderPage, renderMarkdown] of [
-    ['guide', guidePage, guideMarkdown],
-    ['reference', referencePage, referenceMarkdown],
-  ]) {
-    const directory = new URL('.' + route[kind], dist);
-    await mkdir(directory, { recursive: true });
-    const assetBase = '../'.repeat(route[kind].split('/').filter(Boolean).length);
-    await writeFile(
-      new URL('index.html', directory),
-      renderPage(lang, metadata(lang, kind), assetBase, revision),
-    );
-    await writeFile(new URL('index.md', directory), renderMarkdown(lang));
-  }
+for (const lang of Object.keys(LANGUAGES)) {
+  const directory = new URL(explorerPath(lang), dist);
+  await mkdir(directory, { recursive: true });
+  const html = versionVisualAssets(explorerPage(template, lang));
+  await writeFile(new URL('index.html', directory), html);
 }
+await writeFile(new URL('site.webmanifest', dist), versionVisualAssets(manifest));
 await writeFile(new URL('sitemap.xml', dist), sitemap());
 await writeFile(new URL('styles.css', dist), versionVisualAssets(css));
 await writeFile(new URL('.nojekyll', dist), '');

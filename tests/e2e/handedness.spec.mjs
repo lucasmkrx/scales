@@ -12,7 +12,6 @@ const url = (changes = {}) =>
     lang: 'en',
     labels: 'notes',
     range: 'caged-major-1',
-    neck: 'octave',
     ...changes,
   })}`;
 const points = (page) =>
@@ -54,6 +53,7 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   page,
 }) => {
   await page.goto(url());
+  await page.locator('#instrument-toggle').click();
   const hand = page.getByRole('group', { name: 'Orientation', exact: true });
   const right = hand.getByRole('radio', { name: 'Right-handed' });
   const left = hand.getByRole('radio', { name: 'Left-handed' });
@@ -80,7 +80,7 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   await expectHeadstocksFacing(page, 'left');
   expect(await fretX(12)).toBeLessThan(await fretX(0));
   expect((await board.boundingBox()).width).toBe(originalWidth);
-  await expect(page.locator('#neck-octave-label')).toHaveText('12–0');
+  await expect(page.locator('#board')).toHaveAttribute('dir', 'rtl');
   const pattern = page.locator('[data-pattern="caged-major-1"]');
   await expect(pattern).toHaveText('Pattern 1');
   await expect(pattern).toHaveAccessibleDescription(/Frets 10–7/);
@@ -89,15 +89,19 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   await page.evaluate(() =>
     Object.defineProperty(navigator, 'clipboard', { value: undefined }),
   );
+  await page.keyboard.press('Escape');
   await page.locator('#share').click();
   const shared = await page.locator('#share-url').inputValue();
   expect(new URL(shared).searchParams.get('hand')).toBe('left');
   await page.goto('/');
+  await page.locator('#instrument-toggle').click();
   await expect(left).toBeChecked();
   await page.goto(url({ hand: 'right' }));
+  await page.locator('#instrument-toggle').click();
   await expect(right).toBeChecked();
-  await expect(page.locator('#neck-octave-label')).toHaveText('0–12');
+  await expect(page.locator('#board')).toHaveAttribute('dir', 'ltr');
   await page.goto(shared);
+  await page.locator('#instrument-toggle').click();
   await expect(left).toBeChecked();
   expect(await points(page)).toEqual(selected);
 });
@@ -106,6 +110,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   page,
 }) => {
   await page.goto('/');
+  await page.locator('#instrument-toggle').click();
   const guitar = page.getByRole('radio', { name: 'Guitar', exact: true });
   const bass = page.getByRole('radio', { name: 'Bass', exact: true });
   const right = page.getByRole('radio', { name: 'Right-handed' });
@@ -129,7 +134,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await expect(bass).toBeFocused();
   await expect(bass).toBeChecked();
   await expect(left).toBeChecked();
-  await expect(page.locator('#neck-octave-label')).toHaveText('12–0');
+  await expect(page.locator('#board')).toHaveAttribute('dir', 'rtl');
   await expectHeadstocksFacing(page, 'left');
   await expect(strings.getByRole('radio', { disabled: false })).toHaveCount(3);
   await expect(stringCount(4)).toBeChecked();
@@ -143,7 +148,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await tuning.click();
   await page.getByRole('option', { name: /^Drop A\b/i }).click();
   await expect(page.locator('#tuning-name')).toHaveText('Drop A');
-  expect(new URL(page.url()).searchParams.get('tuning')).toBe('bass-5-drop-a');
+  expect(new URL(page.url()).searchParams.get('tuning')).toBe('drop-a');
   await tuning.press('Enter');
   await expect(tuning).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('End');
@@ -154,7 +159,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await pitches.first().fill('G0');
   await page.locator('#apply-tuning').click();
   await expect(page.locator('#tuning-name')).toHaveText('Custom');
-  expect(new URL(page.url()).searchParams.get('customTuning')).toBe('G0 E1 A1 D2 G2');
+  expect(new URL(page.url()).searchParams.get('pitches')).toBe('G0 E1 A1 D2 G2');
   await expect(page.locator('#open-string-pitches > span')).toHaveCount(5);
   await expect(page.locator('#board .board-string')).toHaveCount(5);
 
@@ -164,7 +169,7 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await bass.press('ArrowLeft');
   await expect(guitar).toBeChecked();
   await expect(right).toBeChecked();
-  await expect(page.locator('#neck-octave-label')).toHaveText('0–12');
+  await expect(page.locator('#board')).toHaveAttribute('dir', 'ltr');
   await expect(stringCount(6)).toBeChecked();
   await expect(fretCount(21)).toBeChecked();
   await expect(page.locator('#tuning-name')).toHaveText('Drop D');
@@ -172,8 +177,10 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await right.press('ArrowRight');
   await guitar.press('ArrowRight');
   await page.reload();
+  await page.locator('#instrument-toggle').click();
   await expect(left).toBeChecked();
   await page.goto('/');
+  await page.locator('#instrument-toggle').click();
   await expect(bass).toBeChecked();
   await expect(left).toBeChecked();
   await expectHeadstocksFacing(page, 'left');
@@ -193,6 +200,7 @@ test('the highlighted segment and check follow clicks and drags in both themes',
   for (const theme of ['light', 'dark']) {
     if (theme === 'dark') await page.locator('#theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    await page.locator('#instrument-toggle').click();
     for (const [group, initial, other] of [
       ['instrument', 'guitar', 'bass'],
       ['hand', 'right', 'left'],
@@ -232,6 +240,7 @@ test('the highlighted segment and check follow clicks and drags in both themes',
       await selected(initial);
       await expect(label(initial).getByRole('radio')).toBeFocused();
     }
+    await page.keyboard.press('Escape');
   }
 });
 
@@ -242,6 +251,7 @@ test.describe('phone instrument setup', () => {
   }) => {
     await page.setViewportSize({ width: 320, height: 844 });
     await page.goto(url({ range: 'full' }));
+    await page.locator('#instrument-toggle').click();
     const tuning = page.getByRole('button', { name: /Tuning.*E standard/i });
     const list = page.locator('#choice-list');
     await expect(tuning).toHaveAttribute('aria-haspopup', 'listbox');
@@ -286,7 +296,7 @@ test.describe('phone instrument setup', () => {
     await expect(
       page.locator('#board .note[data-row="5"][data-fret="0"]'),
     ).toHaveAttribute('data-midi', '38');
-    expect(new URL(page.url()).searchParams.get('tuning')).toBe('guitar-drop-d');
+    expect(new URL(page.url()).searchParams.get('tuning')).toBe('drop-d');
 
     await chosen.press('Enter');
     await expect(list.getByRole('option', { name: /^Drop D\b/i })).toHaveAttribute(
@@ -301,7 +311,7 @@ test.describe('phone instrument setup', () => {
     const menu = await list.boundingBox();
     await page.touchscreen.tap(menu.x / 2, menu.y + menu.height / 2);
     await expect(list).toBeHidden();
-    expect(new URL(page.url()).searchParams.get('tuning')).toBe('guitar-drop-d');
+    expect(new URL(page.url()).searchParams.get('tuning')).toBe('drop-d');
   });
   test('localized choices and numeric controls respond to taps at 320px', async ({
     page,
@@ -330,6 +340,7 @@ test.describe('phone instrument setup', () => {
           range: 'full',
         }),
       );
+      await page.locator('#instrument-toggle').tap();
       const instruments = page.getByRole('group', { name: instrument, exact: true });
       const hands = page.getByRole('group', { name: orientation, exact: true });
       await expect(

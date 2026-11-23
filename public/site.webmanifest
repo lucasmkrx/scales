@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "Tukany",
+  "short_name": "Tukany",
+  "lang": "en-US",
+  "description": "Explore guitar and bass scales on an interactive fretboard and print diagrams for your tuning.",
+  "categories": ["education", "music"],
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#f1f5f3",
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

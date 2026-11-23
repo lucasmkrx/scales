@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { staffLayout, staffMarkup, staffPitchName } from '../src/staff.mjs';
+import {
+  practiceStaffPoints,
+  staffLayout,
+  staffMarkup,
+  staffPitchName,
+} from '../src/staff.mjs';
 import { boardModel, PALETTE, selection } from '../src/music.mjs';
 import { scalePatterns } from '../src/patterns.mjs';
 
@@ -15,54 +20,77 @@ function layoutFor(midis, input = {}) {
   });
 }
 
-test('the staff uses every visible sounding pitch once in ascending order, in either hand', () => {
-  const input = { allNotes: true };
-  const model = boardModel(input, { hi: 12 });
-  const pattern = scalePatterns(input, { hi: 12 }).patterns[0];
-  const layout = staffLayout(model, pattern);
-  const { notes } = layout;
-  const midis = [...new Set(model.points.map(({ midi }) => midi))].sort((a, b) => a - b);
+test('the staff uses only distinct pitches used by the available or selected fingerings', () => {
+  for (const instrument of ['guitar', 'bass']) {
+    const input = { instrument, frets: 24, allNotes: true };
+    const model = boardModel(input);
+    const { patterns } = scalePatterns(input);
+    const selected = patterns[0];
+    function layout(patterns, selected, board = model) {
+      const points = practiceStaffPoints(board, patterns);
+      return staffLayout({ state: board.state, points }, selected);
+    }
+    function soundingPitches(patterns) {
+      return [
+        ...new Set(patterns.flatMap((pattern) => pattern.points.map(({ midi }) => midi))),
+      ].sort((a, b) => a - b);
+    }
+    const overview = layout(patterns);
+    assert.deepEqual(
+      overview.notes.map(({ midi }) => midi),
+      soundingPitches(patterns),
+    );
+    assert.ok(overview.notes.length < new Set(model.points.map(({ midi }) => midi)).size);
+    assert.doesNotMatch(
+      staffMarkup(overview, 'en'),
+      /is-muted|is-outside|is-in-pattern|staff-pitch-letter/,
+    );
+    const focus = layout([selected], selected);
+    assert.deepEqual(
+      focus.notes.map(({ midi }) => midi),
+      soundingPitches([selected]),
+    );
+    assert.ok(focus.notes.every((note) => note.inPattern && !note.muted));
+    assert.deepEqual(
+      layout(
+        patterns,
+        undefined,
+        boardModel({ ...input, hand: 'left', allNotes: false }),
+      ),
+      overview,
+    );
+    const markup = staffMarkup(focus, 'es');
+    assert.match(markup, new RegExp(`Patrón ${selected.number}"`));
+    assert.deepEqual(
+      [...markup.matchAll(/class="staff-pitch-letter"[^>]*>([A-G])<\/text>/g)].map(
+        ([, letter]) => letter,
+      ),
+      focus.notes.map((note) => note.name[0]),
+    );
+    assert.equal(
+      (markup.match(/class="staff-selection-marker"/g) ?? []).length,
+      focus.notes.length,
+    );
+  }
+});
+
+test('setups without fingerings show one playable scale, even in a restricted custom tuning', () => {
+  const model = boardModel({ tuning: 'guitar-drop-d', root: 2, allNotes: true });
+  const points = practiceStaffPoints(model, []);
+  const pitches = [...new Set(points.map(({ midi }) => midi))].sort((a, b) => a - b);
+  assert.deepEqual(pitches, [38, 40, 42, 43, 45, 47, 49, 50]);
+  const restricted = boardModel({
+    tuning: 'custom',
+    customTuning: 'C-1 C1 C3 C5 C7 C9',
+    frets: 20,
+    root: 11,
+    allNotes: true,
+  });
+  const fallback = practiceStaffPoints(restricted, []);
+  assert.ok(fallback.every((point) => point.inScale));
   assert.deepEqual(
-    notes.map(({ midi }) => midi),
-    midis,
-  );
-  assert.ok(notes.length < model.points.length);
-  assert.deepEqual(
-    notes.filter((note) => !note.muted).map(({ midi }) => midi),
-    [...new Set(pattern.points.map(({ midi }) => midi))].sort((a, b) => a - b),
-  );
-  assert.ok(notes.some((note) => note.muted && note.inScale));
-  assert.ok(notes.some((note) => note.muted && !note.inScale));
-  assert.deepEqual(
-    staffLayout(boardModel({ ...input, hand: 'left' }, { hi: 12 }), pattern).notes,
-    notes,
-  );
-  const markup = staffMarkup(layout, model.state.lang);
-  const marked = [
-    ...markup.matchAll(/class="staff-note is-in-pattern" data-staff-midi="(\d+)"/g),
-  ];
-  assert.deepEqual(
-    marked.map((match) => Number(match[1])),
-    [...new Set(pattern.points.map(({ midi }) => midi))].sort((a, b) => a - b),
-  );
-  const patternNames = notes.filter((note) => note.inPattern).map(({ name }) => name);
-  const headLetters = [
-    ...markup.matchAll(/class="staff-pitch-letter"[^>]*>([A-G])<\/text>/g),
-  ];
-  assert.deepEqual(
-    headLetters.map(([, letter]) => letter),
-    patternNames.map((name) => name[0]),
-  );
-  assert.ok(staffMarkup(layout, 'es').includes(`Patrón ${pattern.number}"`));
-  assert.equal(
-    (markup.match(/class="staff-selection-marker"/g) ?? []).length,
-    midis.length,
-  );
-  assert.match(markup, /class="staff-note is-muted is-outside" data-staff-midi=/);
-  assert.match(markup, /<title>E3<\/title>/);
-  assert.doesNotMatch(
-    staffMarkup(staffLayout(boardModel({})), 'en'),
-    /is-muted|is-outside|is-in-pattern|staff-pitch-letter/,
+    [...new Set(fallback.map(({ midi }) => midi))].sort((a, b) => a - b),
+    [1, 3, 4, 6, 8, 10, 11],
   );
 });
 

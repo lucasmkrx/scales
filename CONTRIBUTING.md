@@ -27,7 +27,7 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
   formulas for scales, plus a reliable musical reference.
 - Keep existing IDs stable so shared links keep working. Document aliases rather
   than duplicating the same scale under different names.
-- Include American English, Brazilian Portuguese, and Latin American Spanish names
+- Include names in all supported languages, including Spanish from Spain,
   or explain which translation needs review. Keep musical facts separate from generated drawing coordinates.
 - Check altered tunings, extended string counts, both orientations, and labels.
   Changes to the music model must also be checked in an exported PDF.
@@ -47,6 +47,9 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
 - Update screenshots when a visible change makes them inaccurate. The README
   walkthrough is assembled from actual app captures; it is a demonstration,
   not an automated test or a recording of audio.
+- When adding a public language edition or lesson PDF, update its entry in the
+  discovery files and README. Verify its links against the built site using
+  the [search discovery guide](docs/discovery.md).
 
 ## Licensing and attribution
 

@@ -1,3 +1,107 @@
+const gap = 8;
+
+function visibleViewport() {
+  const root = document.documentElement;
+  const viewport = window.visualViewport;
+  return new DOMRect(
+    viewport?.offsetLeft ?? 0,
+    viewport?.offsetTop ?? 0,
+    Math.min(root.clientWidth, viewport?.width ?? root.clientWidth),
+    Math.min(root.clientHeight, viewport?.height ?? root.clientHeight),
+  );
+}
+
+function placeDropdown(popup, rect, wantedHeight, viewport, alignEnd = false) {
+  const width = popup.offsetWidth;
+  const maxLeft = viewport.right - gap - width;
+  const left = alignEnd || rect.left > maxLeft ? rect.right - width : rect.left;
+  popup.style.left = `${Math.max(viewport.left + gap, Math.min(left, maxLeft))}px`;
+  const header =
+    parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+  const top = Math.max(viewport.top + gap, header);
+  const bottom = viewport.bottom - gap;
+  const aboveEnd = Math.min(rect.top - gap, bottom);
+  const belowStart = Math.max(rect.bottom + gap, top);
+  const above = aboveEnd - top;
+  const below = bottom - belowStart;
+  const opensAbove = wantedHeight > below && above > below;
+  const available = opensAbove ? above : below;
+  // When the keyboard leaves less than two touch rows on either side, use the visible area.
+  if (available < Math.min(88, wantedHeight)) {
+    popup.style.maxHeight = `${Math.max(0, Math.min(wantedHeight, viewport.height - 2 * gap))}px`;
+    popup.style.top = `${viewport.top + gap}px`;
+    return;
+  }
+  popup.style.maxHeight = `${Math.max(0, Math.min(wantedHeight, available))}px`;
+  popup.style.top = `${opensAbove ? aboveEnd - popup.offsetHeight : belowStart}px`;
+}
+
+export function enableInstrumentDropdown(trigger, panel) {
+  let layoutWidth;
+  function place() {
+    if (!panel.matches(':popover-open')) return;
+    const root = document.documentElement;
+    let rect = trigger.getBoundingClientRect();
+    const field = panel.querySelector('[data-string-pitch]:focus');
+    const reflowed = layoutWidth !== root.clientWidth;
+    layoutWidth = root.clientWidth;
+    // Rotating a phone can move the entire fretboard header above the viewport.
+    if (!field && reflowed && (rect.top < 0 || rect.bottom > root.clientHeight)) {
+      trigger.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+      rect = trigger.getBoundingClientRect();
+    }
+    if (!field && (rect.bottom <= 0 || rect.top >= root.clientHeight)) {
+      panel.hidePopover();
+      return;
+    }
+    const viewport = visibleViewport();
+    panel.style.maxWidth = `${Math.max(0, viewport.width - 2 * gap)}px`;
+    const height = panel.scrollHeight + panel.offsetHeight - panel.clientHeight;
+    placeDropdown(panel, rect, height, viewport, true);
+    // A phone keyboard can cover the focused pitch without resizing the page.
+    if (field) {
+      const input = field.getBoundingClientRect();
+      const bounds = panel.getBoundingClientRect();
+      if (input.bottom > bounds.bottom - gap)
+        panel.scrollTop += input.bottom - bounds.bottom + gap;
+      else if (input.top < bounds.top + gap)
+        panel.scrollTop += input.top - bounds.top - gap;
+    }
+  }
+  panel.addEventListener('beforetoggle', (event) => {
+    if (event.newState === 'open') layoutWidth = document.documentElement.clientWidth;
+  });
+  panel.addEventListener('toggle', () => {
+    const open = panel.matches(':popover-open');
+    trigger.setAttribute('aria-expanded', String(open));
+    if (open) {
+      place();
+      if (document.activeElement === panel || !panel.contains(document.activeElement))
+        panel.querySelector('input:checked').focus({ preventScroll: true });
+    }
+  });
+  panel.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    event.preventDefault();
+    panel.hidePopover();
+    trigger.focus({ preventScroll: true });
+  });
+  document.addEventListener('focusin', ({ target }) => {
+    // Safari can focus the workspace ancestor while activating the toggle by touch.
+    if (
+      panel.matches(':popover-open') &&
+      !panel.contains(target) &&
+      !target.contains(trigger)
+    )
+      panel.hidePopover();
+  });
+  new ResizeObserver(place).observe(panel.querySelector('form'));
+  window.addEventListener('resize', place);
+  window.addEventListener('scroll', place, { passive: true });
+  window.visualViewport?.addEventListener('resize', place);
+  window.visualViewport?.addEventListener('scroll', place);
+}
+
 /** One listbox for settings throughout the explorer, including the tuning presets. */
 export function createDropdowns() {
   const popup = document.createElement('div');
@@ -27,26 +131,20 @@ export function createDropdowns() {
 
   function place() {
     if (!active) return;
-    const viewport = document.documentElement;
+    const viewport = visibleViewport();
     const rect = active.trigger.getBoundingClientRect();
-    if (rect.bottom <= 0 || rect.top >= viewport.clientHeight) {
+    const panel = active.trigger.closest('[popover]')?.getBoundingClientRect();
+    const top = panel?.top ?? 0;
+    const bottom = panel?.bottom ?? document.documentElement.clientHeight;
+    if (rect.bottom <= top || rect.top >= bottom) {
       close();
       return;
     }
-    const edge = 8;
-    const width = Math.min(viewport.clientWidth - 2 * edge, Math.max(208, rect.width));
-    const left =
-      rect.left + width <= viewport.clientWidth - edge ? rect.left : rect.right - width;
+    const width = Math.min(viewport.width - 2 * gap, Math.max(208, rect.width));
     popup.style.width = `${width}px`;
-    popup.style.left = `${Math.max(edge, Math.min(left, viewport.clientWidth - width - edge))}px`;
-    const safeTop = parseFloat(getComputedStyle(viewport).scrollPaddingTop) || 0;
-    const above = rect.top - Math.max(edge, safeTop) - edge;
-    const below = viewport.clientHeight - rect.bottom - 2 * edge;
     const frame = popup.offsetHeight - list.clientHeight;
     const wanted = Math.min(304, list.scrollHeight + frame);
-    const opensAbove = wanted > below && above > below;
-    popup.style.maxHeight = `${Math.max(frame, Math.min(wanted, opensAbove ? above : below))}px`;
-    popup.style.top = `${opensAbove ? rect.top - edge - popup.offsetHeight : rect.bottom + edge}px`;
+    placeDropdown(popup, rect, wanted, viewport);
   }
 
   function focusOption(option) {
@@ -58,7 +156,23 @@ export function createDropdowns() {
       list.scrollTop = bottom - list.clientHeight;
   }
 
-  function row({ value, label, detail, lang, disabled, selected }) {
+  function setChoiceLabel(name, label, flag) {
+    if (
+      name.textContent === label &&
+      name.firstElementChild?.getAttribute('src') === flag
+    )
+      return;
+    name.textContent = label;
+    if (flag) {
+      const image = document.createElement('img');
+      image.className = 'language-flag';
+      image.alt = '';
+      image.src = flag;
+      name.prepend(image);
+    }
+  }
+
+  function row({ value, label, detail, lang, flag, disabled, selected }) {
     const option = document.createElement('button');
     option.type = 'button';
     option.tabIndex = -1;
@@ -68,7 +182,7 @@ export function createDropdowns() {
     option.setAttribute('aria-selected', String(selected));
     if (lang) option.lang = lang;
     const name = document.createElement('span');
-    name.textContent = label;
+    setChoiceLabel(name, label, flag);
     const check = document.createElement('i');
     check.className = 'choice-check icon fa-solid fa-check';
     check.setAttribute('aria-hidden', 'true');
@@ -85,6 +199,8 @@ export function createDropdowns() {
     close();
     active = picker;
     const { trigger, getChoices, labelId } = picker;
+    // A nested tuning list belongs to the settings popover's focus and dismissal scope.
+    (trigger.closest('[popover]') ?? document.body).append(popup);
     list.setAttribute('aria-labelledby', labelId);
     list.replaceChildren(...getChoices().map(row));
     popup.hidden = false;
@@ -132,7 +248,8 @@ export function createDropdowns() {
     select.classList.add('select-model');
     select.after(trigger);
     const sync = () => {
-      caption.textContent = select.selectedOptions[0]?.label ?? '';
+      const selected = select.selectedOptions[0];
+      setChoiceLabel(caption, selected?.label ?? '', selected?.dataset.flag);
       trigger.disabled = select.disabled;
       if (active?.trigger === trigger) close();
     };
@@ -147,6 +264,7 @@ export function createDropdowns() {
           value: item.value,
           label: item.label,
           lang: item.lang,
+          flag: item.dataset.flag,
           selected: item.selected,
           disabled: item.disabled,
         })),
@@ -220,8 +338,28 @@ export function createDropdowns() {
   }
   document.addEventListener('pointerdown', dismissOutside);
   document.addEventListener('focusin', dismissOutside);
-  window.addEventListener('resize', place);
-  window.addEventListener('scroll', place, { passive: true });
+  document.addEventListener(
+    'beforetoggle',
+    (event) => {
+      if (event.newState === 'closed' && active && event.target.contains(active.trigger))
+        close();
+    },
+    true,
+  );
+  // Measure after the outer instrument dropdown has moved with its button.
+  const schedulePlacement = () => {
+    if (active) requestAnimationFrame(place);
+  };
+  window.addEventListener('resize', schedulePlacement);
+  window.visualViewport?.addEventListener('resize', schedulePlacement);
+  window.visualViewport?.addEventListener('scroll', schedulePlacement);
+  document.addEventListener(
+    'scroll',
+    (event) => {
+      if (active && event.target.contains(active.trigger)) schedulePlacement();
+    },
+    { capture: true, passive: true },
+  );
   document.querySelectorAll('select:not([multiple])').forEach(enhance);
   return { register, refresh: () => nativeTriggers.forEach((sync) => sync()) };
 }

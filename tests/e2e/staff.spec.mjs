@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const url =
-  '/?instrument=guitar&strings=6&tuning=guitar-standard&frets=24&root=0&scale=major&neck=octave&range=full';
+  '/?instrument=guitar&strings=6&tuning=guitar-standard&frets=24&root=0&scale=major&range=full';
 const black = 'rgb(0, 0, 0)';
 const white = 'rgb(255, 255, 255)';
 const boardPitches = (page, filter = '') =>
@@ -24,6 +24,7 @@ function luminance(rgb) {
 }
 
 async function expectStaffColors(page, monochromeInk) {
+  const dark = (await page.locator('html').getAttribute('data-theme')) === 'dark';
   const staffInk = await page
     .locator('.staff-score')
     .evaluate((score) => getComputedStyle(score).color);
@@ -42,6 +43,9 @@ async function expectStaffColors(page, monochromeInk) {
           midi,
           fill: head.fill,
           headStroke: head.stroke,
+          accidental: note
+            .querySelector('.staff-notehead')
+            .classList.contains('accidental-pitch'),
           stemColor: stem.fill,
           stemStroke: stem.stroke,
           writtenLetter: note.querySelector('title').textContent[0],
@@ -59,7 +63,7 @@ async function expectStaffColors(page, monochromeInk) {
     const active = !monochromeInk && pitch.fretColor;
     const expectedInk = monochromeInk ?? pitch.fretColor;
     expect(pitch.headStroke, `notehead border at MIDI ${pitch.midi}`).toBe(
-      active && expectedInk === white ? black : 'none',
+      active && pitch.accidental ? (dark ? 'rgb(35, 49, 43)' : black) : 'none',
     );
     expect(pitch.letters, `pitch label at MIDI ${pitch.midi}`).toEqual(
       active ? [pitch.writtenLetter] : [],
@@ -86,40 +90,37 @@ async function expectStaffColors(page, monochromeInk) {
   }
 }
 
-test('the staff shows each sounding pitch once and retains the whole neck view when a pattern is selected', async ({
+test('staff covers the available fingerings and narrows to the selected pattern', async ({
   page,
 }) => {
   await page.goto(url);
   await expect(page.locator('#staff-notation').getByRole('toolbar')).toBeVisible();
-  const initial = await boardPitches(page);
-  expect(await staffPitches(page)).toEqual(initial);
-  expect(await page.locator('#board [data-midi="64"]').count()).toBeGreaterThan(1);
-  expect(initial).toEqual(expect.arrayContaining([40, 52, 64, 76]));
+  const overview = await staffPitches(page);
+  expect(overview.length).toBeLessThan((await boardPitches(page)).length);
   await expectStaffColors(page, black);
 
-  const bracket = page.locator('#board [data-pattern="caged-major-1"]');
-  await bracket.click();
-  const pattern = await boardPitches(page, ':not(.muted)');
-  expect(pattern.length).toBeLessThan(initial.length);
-  expect(await staffPitches(page)).toEqual(initial);
-  expect(await staffPitches(page, ':not(.is-muted)')).toEqual(pattern);
-  expect(await staffPitches(page, '.is-in-pattern')).toEqual(pattern);
-  await expect(page.locator('#staff-notation .staff-pattern-halo')).toHaveCount(0);
-  await expectStaffColors(page);
-  await bracket.click();
-  expect(await staffPitches(page)).toEqual(initial);
-  await expectStaffColors(page, black);
+  const union = new Set();
+  const brackets = page.locator('#board [data-pattern]');
+  for (let i = 0; i < (await brackets.count()); i++) {
+    await brackets.nth(i).click();
+    const pitches = await boardPitches(page, ':not(.muted)');
+    expect(await staffPitches(page)).toEqual(pitches);
+    expect(await staffPitches(page, '.is-in-pattern')).toEqual(pitches);
+    pitches.forEach((midi) => union.add(midi));
+    await expectStaffColors(page);
+    await brackets.nth(i).click();
+  }
+  expect(overview).toEqual([...union].sort((a, b) => a - b));
+  expect(await staffPitches(page)).toEqual(overview);
 
   await page.locator('#allNotes').check();
-  expect(await staffPitches(page)).toEqual(await boardPitches(page));
-  expect(await staffPitches(page, '.is-outside')).toEqual(
-    await boardPitches(page, '.outside'),
-  );
-  expect(await staffPitches(page)).toContain(42);
-  await expectStaffColors(page, black);
-  await page.locator('#neck-view label:has(input[value="full"])').click();
-  expect(await staffPitches(page)).toEqual(await boardPitches(page));
-  expect((await staffPitches(page)).at(-1)).toBe(88);
+  expect(await staffPitches(page)).toEqual(overview);
+  const extra = page.locator('#board [data-midi="42"]').first();
+  await extra.click();
+  expect(await staffPitches(page, '.is-outside.is-selected')).toEqual([42]);
+  expect(await staffPitches(page)).toHaveLength(overview.length + 1);
+  await page.locator('#board [data-midi="43"]').first().click();
+  expect(await staffPitches(page)).toEqual(overview);
 });
 
 test('selected patterns outline white notes and keep stems neutral in either theme', async ({
@@ -132,7 +133,7 @@ test('selected patterns outline white notes and keep stems neutral in either the
   const sharpNote = page.locator('#staff-notation [data-staff-midi="42"]');
   const sharp = sharpNote.locator('.staff-notehead');
   const sharpFret = page.locator('#board [data-midi="42"]:not(.muted)').first();
-  const sharpDot = page.locator('#notes-strip [data-pitch="6"] .color-dot');
+  const sharpDot = page.locator('#formula-degrees [data-pitch="6"] .color-dot');
   for (const theme of ['light', 'dark']) {
     if (theme === 'dark') await page.locator('#theme-toggle').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -145,7 +146,7 @@ test('selected patterns outline white notes and keep stems neutral in either the
             .evaluate((lines) => getComputedStyle(lines).stroke);
     await expectStaffColors(page, ink);
     await bracket.click();
-    const sharpColor = theme === 'light' ? white : 'rgb(182, 233, 196)';
+    const sharpColor = theme === 'light' ? white : 'rgb(228, 234, 231)';
     await expect(sharp).toHaveCSS('fill', sharpColor);
     await expect(sharpFret).toHaveCSS('background-color', sharpColor);
     await expect(sharpDot).toHaveCSS('background-color', sharpColor);
@@ -160,10 +161,8 @@ test('selected patterns outline white notes and keep stems neutral in either the
       );
     }
     await expect(sharpNote.locator('.staff-pitch-letter')).toHaveText('F');
-    await expect(sharpNote.locator('.staff-accidental')).toBeVisible();
-    await expect(
-      page.locator('#staff-notation [data-staff-midi="40"] .staff-notehead'),
-    ).toBeAttached();
+    await expect(sharpNote.locator('.staff-accidental')).toHaveCount(0);
+    await expect(page.locator('#staff-notation [data-staff-midi="40"]')).toHaveCount(0);
     await expectStaffColors(page);
     await bracket.click();
     await expectStaffColors(page, ink);
@@ -211,6 +210,7 @@ test('the instrument clef aligns with its written pitch and carries the key sign
   await expectSignature('F♯');
   await expect(inline(42)).toHaveCount(0);
   await page.locator('#allNotes').check();
+  await page.locator('#board [data-midi="41"]').first().click();
   await expect(inline(41)).toHaveAttribute('data-sign', '♮');
   await expect(inline(42)).toHaveAttribute('data-sign', '♯');
 
@@ -227,6 +227,7 @@ test('the instrument clef aligns with its written pitch and carries the key sign
   );
   await expectSignature('B♭');
   await expect(inline(49)).toHaveAttribute('data-sign', '♯');
+  await page.locator('#instrument-toggle').click();
   await page.locator('#instrument label:has(input[value="bass"])').click();
   await expect(staff.getByRole('toolbar')).toHaveAccessibleName(
     /Pentagrama en clave de fa/,
@@ -259,7 +260,7 @@ test('inspecting or playing a note marks its exact octave on the staff', async (
   await expect(selected.locator('.staff-selection-marker')).toBeVisible();
   await expect(page.locator('#staff-range')).toHaveText('F5');
 
-  await page.locator('#notes-strip [data-pitch="4"]').click();
+  await page.locator('#formula-degrees [data-pitch="4"]').click();
   await expect(selected).toHaveAttribute('data-staff-midi', '40');
   await expect(page.locator('#staff-range')).toHaveText('E3');
 });
@@ -269,11 +270,12 @@ test('the staff follows bass tuning and scrolls within a phone viewport', async 
 }) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto(url);
+  await page.locator('#instrument-toggle').click();
   await page.locator('#instrument label:has(input[value="bass"])').click();
-  expect(await staffPitches(page)).toEqual(await boardPitches(page));
-  expect((await staffPitches(page))[0]).toBe(28);
+  expect(await staffPitches(page)).toEqual([36, 38, 40, 41, 43, 45, 47, 48]);
   await expect(page.locator('#staff-heading')).toHaveText('Bass staff');
-  await expect(page.locator('[data-staff-midi="28"] title')).toHaveText('E2');
+  await expect(page.locator('[data-staff-midi="36"] title')).toHaveText('C3');
+  await page.keyboard.press('Escape');
   await page.locator('#allNotes').check();
   await expect(page.locator('#staff-notation')).toBeVisible();
   expect(
@@ -319,7 +321,7 @@ test('staff notes play their sounding octave and sync the fretboard with pointer
   await expect(c4).toHaveClass(/\bsounding\b/);
   await expect(page.locator('#board [data-midi="48"].sounding').first()).toBeVisible();
   await expect(page.locator('#board [data-midi="60"].sounding')).toHaveCount(0);
-  await expect(page.locator('#notes-strip [data-pitch="0"]')).toHaveAttribute(
+  await expect(page.locator('#formula-degrees [data-pitch="0"]')).toHaveAttribute(
     'aria-pressed',
     'true',
   );

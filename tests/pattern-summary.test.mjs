@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scalePatterns } from '../src/patterns.mjs';
 import { patternSummary } from '../src/pattern-summary.mjs';
+import { LANGUAGES } from '../src/locales.mjs';
+import { copy } from '../src/i18n.mjs';
 
 test('a CAGED summary shows the lowest note and its degree', () => {
   const state = { root: 0, scale: 'major' };
@@ -13,7 +15,7 @@ test('a CAGED summary shows the lowest note and its degree', () => {
 });
 
 test('pattern summaries preserve key spelling in every language', () => {
-  for (const lang of ['en', 'pt', 'es']) {
+  for (const lang of Object.keys(LANGUAGES)) {
     const state = {
       root: 6,
       tonic: 'F#',
@@ -24,12 +26,11 @@ test('pattern summaries preserve key spelling in every language', () => {
     };
     const pattern = scalePatterns(state).patterns[0];
     const summary = patternSummary(state, pattern);
+    assert.equal(summary.title, `${copy[lang].pattern} 1`);
     assert.equal(
-      summary.title,
-      { en: 'Pattern 1', pt: 'Desenho 1', es: 'Patrón 1' }[lang],
+      summary.detail,
+      copy[lang].patternDetails.replace('{note}', 'E♯').replace('{degree}', '7'),
     );
-    assert.ok(summary.detail.includes('E♯ (7)'));
-    assert.ok(!summary.detail.includes('{'));
   }
 });
 
