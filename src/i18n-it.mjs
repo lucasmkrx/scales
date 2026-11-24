@@ -9,8 +9,6 @@ export default {
   themeModes: { light: 'chiaro', dark: 'scuro' },
   quickNavigation: 'Navigazione rapida',
   goToBoard: 'Vai alla tastiera',
-  keyTonic: 'Scrivi la tonica come',
-  automaticTonic: 'Automatico',
   patternShape: 'Forma di {shape}',
   patternDetails: 'Nota più grave: {note} ({degree})',
   patternLabels: {
@@ -178,7 +176,7 @@ export default {
   outsideChord: 'Estranea all’accordo',
   editInstrument: 'Modifica strumento',
   fretboard: 'Tastiera',
-  rootHint: 'La nota su cui si costruisce la scala.',
+  circleOfFifths: 'Circolo delle quinte',
   degreesHint:
     '1 indica la tonica. I gradi esprimono gli intervalli rispetto alla tonica. Rispetto alla scala maggiore, un bemolle abbassa il grado di un semitono e un diesis lo alza di un semitono.',
   tuningFieldsHint:
@@ -210,7 +208,6 @@ export default {
   fret: 'Tasto',
   chordRoot: 'Fondamentale',
   chordRootMarker: 'F',
-  chordRootHint: 'La nota su cui si costruisce l’arpeggio.',
   chordDegreesHint:
     '1 indica la fondamentale dell’accordo. I gradi esprimono gli intervalli rispetto alla fondamentale. Rispetto alla scala maggiore, un bemolle abbassa il grado di un semitono e un diesis lo alza di un semitono.',
 };

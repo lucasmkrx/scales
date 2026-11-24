@@ -94,10 +94,10 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
 - Select a scale and play a formula degree. Check that its spelled pitch matches
   the highlighted notes. Open a saved custom-formula link and confirm its degrees
   still display after switching languages.
-- Use Write key as to compare F♯ major (seventh degree E♯) with G♭ major
-  (fourth degree C♭). Check that the same 12 circles remain in the Scale card
-  and the selected root keeps its position. Open an older link with `spelling=both`
-  and confirm the same key-based spelling appears.
+- Tap the 12 roots on a phone and use the arrow keys on a desktop. Check that
+  focus moves in circle-of-fifths order and that the ring center and fretboard
+  show the same root. Open an older link to G♭ major with `spelling=both` and
+  confirm that the F♯ / G♭ button stays selected and the fourth degree is C♭.
   Switch between notes and degrees, then toggle Show other notes. Check that the
   fretboard retains its horizontal scroll position and that the formula continues
   to show each degree with its spelled note.

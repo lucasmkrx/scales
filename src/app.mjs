@@ -96,28 +96,19 @@ function numberKeys(name, counts) {
     )
     .join('');
 }
-$('root-notes').innerHTML = SHARPS.map((sharp, pitch) => {
-  const flat = FLATS[pitch];
-  const name = sharp === flat ? sharp : `${sharp} / ${flat}`;
-  return `<label><input type="radio" name="root" value="${pitch}" aria-label="${name}"><span>${sharp}${sharp === flat ? '' : `<small>${flat}</small>`}</span></label>`;
-}).join('');
-
-function renderKeyTonic(s) {
-  const control = $('key-tonic-control');
-  const names = new Set([SHARPS[s.root], FLATS[s.root]]);
-  // Keep uncommon enharmonic spellings from shared links and saved practice.
-  if (s.tonic) names.add(prettyDegree(s.tonic));
-  const show = names.size > 1;
-  if (!show && control.contains(document.activeElement))
-    $('root-notes').querySelector('input:checked')?.focus({ preventScroll: true });
-  control.hidden = !show;
-  if (show) {
-    $('key-tonic').innerHTML = options(
-      [['', copy[s.lang].automaticTonic], ...Array.from(names, (name) => [name, name])],
-      s.tonic ? prettyDegree(s.tonic) : '',
-    );
-  }
-}
+const fifths = SHARPS.map((_, step) => (step * 7) % SHARPS.length);
+$('root-notes').innerHTML = fifths
+  .map((pitch, step) => {
+    const sharp = SHARPS[pitch],
+      flat = FLATS[pitch];
+    const [primary, alternate] = step > 6 ? [flat, sharp] : [sharp, flat];
+    const name = primary === alternate ? primary : `${primary} / ${alternate}`;
+    const angle = (step * 2 * Math.PI) / fifths.length;
+    const x = 50 + 37 * Math.sin(angle),
+      y = 50 - 37 * Math.cos(angle);
+    return `<label style="--root-x:${x}%;--root-y:${y}%"><input type="radio" name="root" value="${pitch}" aria-label="${name}"><span>${primary}${primary === alternate ? '' : `<small>${alternate}</small>`}</span></label>`;
+  })
+  .join('');
 $('fret-counts').innerHTML = numberKeys('frets', FRET_COUNTS);
 const tuningName = (tuning) => localizedTuningName(tuning, state.lang);
 function tuningSummary(s) {
@@ -508,7 +499,6 @@ function render() {
   document.querySelectorAll('[data-i18n="root"]').forEach((el) => {
     el.textContent = arpeggio ? t.chordRoot : t.root;
   });
-  $('root-hint').textContent = arpeggio ? t.chordRootHint : t.rootHint;
   $('degrees-hint').textContent = arpeggio ? t.chordDegreesHint : t.degreesHint;
   $('language').value = state.lang;
   const families = [
@@ -533,13 +523,22 @@ function render() {
   $('open-string-pitches').innerHTML = s.tuningData.notes
     .map((midi) => `<span>${midiName(midi, preference)}</span>`)
     .join(' ');
-  renderKeyTonic(s);
   $('allNotes').checked = state.allNotes;
   $('custom-tuning').hidden = !tuningDraft;
   if (tuningDraft) renderTuningLabels();
   $('edit-pitches').hidden = tuningDraft || state.tuning !== 'custom';
   $('preset-notes').hidden = tuningDraft;
-  const scaleTitle = `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
+  const note = rootName(s),
+    scale = scaleName(s.scaleData, s.lang);
+  const wheelNote = $('root-wheel-note'),
+    wheelScale = $('root-wheel-scale');
+  if (wheelNote.textContent !== note) wheelNote.textContent = note;
+  if (wheelScale.textContent !== scale) wheelScale.textContent = scale;
+  $('root-wheel').style.setProperty(
+    '--root-angle',
+    `${(fifths.indexOf(s.root) * 360) / fifths.length}deg`,
+  );
+  const scaleTitle = `${note} ${scale}`;
   $('fretboard-heading').textContent = scaleTitle;
   $('mobile-scale-title').textContent = scaleTitle;
   renderBackingTracks();
@@ -790,9 +789,6 @@ $('hand').addEventListener('change', (event) => update({ hand: event.target.valu
 $('frets').addEventListener('change', (event) => update({ frets: event.target.value }));
 $('root-notes').addEventListener('change', ({ target }) =>
   update({ root: target.value }),
-);
-$('key-tonic').addEventListener('change', ({ target }) =>
-  update({ tonic: target.value }),
 );
 $('labels').addEventListener('change', (event) => update({ labels: event.target.value }));
 function tuningChoices() {

@@ -203,7 +203,6 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
     ['tuning', 'Tuning'],
     ['language', 'Language'],
     ['scale-family', 'Scale family'],
-    ['key-tonic', 'Write key as'],
   ]) {
     const trigger = page.locator(id === 'tuning' ? '#tuning' : `#${id}-trigger`);
     await trigger.click();
@@ -243,8 +242,9 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   const roots = page.getByRole('group', { name: 'Tônica', exact: true });
   await expect(roots.getByRole('radio')).toHaveCount(12);
+  await expect(roots.locator('#root-hint')).toHaveText('Círculo das quintas');
   await roots.getByRole('radio', { name: 'C', exact: true }).press('ArrowRight');
-  const nextRoot = roots.getByRole('radio', { name: 'C♯ / D♭', exact: true });
+  const nextRoot = roots.getByRole('radio', { name: 'G', exact: true });
   await expect(nextRoot).toBeChecked();
   await expect(nextRoot).toBeFocused();
   await expect(page.locator('[data-export="catalog"]')).toContainText(
@@ -662,10 +662,11 @@ test('scale names, formulas, and selection marks fit on desktop and phones', asy
   const sizes = (buttons) =>
     buttons.evaluateAll((elements) =>
       elements.map((element) => {
-        const { x, width, height } = element.getBoundingClientRect();
+        const { x, y, width, height } = element.getBoundingClientRect();
         return {
           label: element.textContent.trim(),
           x,
+          y,
           width,
           height,
           fits:
@@ -683,10 +684,18 @@ test('scale names, formulas, and selection marks fit on desktop and phones', asy
     const roots = page.locator('#root-notes label > span');
     await expect(roots).toHaveCount(12);
     await page.evaluate(() => document.fonts.ready);
-    for (const root of await sizes(roots)) {
+    const wheel = await page.locator('#root-wheel').boundingBox();
+    const rootSizes = await sizes(roots);
+    for (const [index, root] of rootSizes.entries()) {
       expect(root.width, root.label).toBeCloseTo(root.height, 0);
       expect(root.height, root.label).toBeGreaterThanOrEqual(44);
       expect(root.fits, root.label).toBe(true);
+      expect(root.x).toBeGreaterThanOrEqual(wheel.x);
+      expect(root.x + root.width).toBeLessThanOrEqual(wheel.x + wheel.width);
+      expect(root.y).toBeGreaterThanOrEqual(wheel.y);
+      expect(root.y + root.height).toBeLessThanOrEqual(wheel.y + wheel.height);
+      const next = rootSizes[(index + 1) % rootSizes.length];
+      expect(Math.hypot(root.x - next.x, root.y - next.y)).toBeGreaterThan(root.width);
     }
     const results = page.locator('#scale-results');
     const rows = results.locator('[data-scale]');

@@ -9,8 +9,6 @@ export default {
   themeModes: { light: 'clair', dark: 'sombre' },
   quickNavigation: 'Navigation rapide',
   goToBoard: 'Aller au manche',
-  keyTonic: 'Notation de la tonique',
-  automaticTonic: 'Automatique',
   patternShape: 'Forme de {shape}',
   patternDetails: 'Note la plus grave : {note} ({degree})',
   patternLabels: {
@@ -176,7 +174,7 @@ export default {
   outsideChord: 'Hors accord',
   editInstrument: 'Modifier l’instrument',
   fretboard: 'Manche',
-  rootHint: 'La note qui sert de point de départ à la gamme.',
+  circleOfFifths: 'Cycle des quintes',
   degreesHint:
     'Le degré 1 est la tonique. Chaque degré indique un intervalle à partir de cette note. Le bémol abaisse d’un demi-ton le degré correspondant de la gamme majeure, le dièse l’élève d’un demi-ton.',
   tuningFieldsHint:
@@ -206,7 +204,6 @@ export default {
   fret: 'Case',
   chordRoot: 'Fondamentale',
   chordRootMarker: 'F',
-  chordRootHint: 'La note qui sert de base à l’arpège.',
   chordDegreesHint:
     'Le degré 1 est la fondamentale de l’accord. Les degrés indiquent les intervalles à partir de cette note. Le bémol abaisse d’un demi-ton le degré correspondant de la gamme majeure, le dièse l’élève d’un demi-ton.',
 };

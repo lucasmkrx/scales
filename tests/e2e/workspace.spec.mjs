@@ -238,8 +238,26 @@ test('the tuning list stays anchored on resize and Escape dismisses one dropdown
   await expect(setup).toBeFocused();
 });
 
-test.describe('touch instrument settings', () => {
+test.describe('touch workspace', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 675 } });
+
+  test('all twelve roots can be tapped on the phone ring', async ({ page }) => {
+    await page.goto(url());
+    const wheel = page.locator('#root-wheel');
+    const buttons = wheel.locator('label');
+    const firstNotes = ['C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'D♭', 'A♭', 'E♭', 'B♭', 'F'];
+    await expect(buttons).toHaveCount(firstNotes.length);
+    for (const [index, note] of firstNotes.entries()) {
+      const button = buttons.nth(index);
+      await button.tap();
+      await expect(button.getByRole('radio')).toBeChecked();
+      await expect(wheel.locator('#root-wheel-note')).toHaveText(note);
+      await expect(page.locator('#mobile-scale-title')).toHaveText(`${note} Major`);
+    }
+    await page.setViewportSize({ width: 667, height: 320 });
+    await buttons.first().tap();
+    await expect(wheel.locator('#root-wheel-note')).toHaveText('C');
+  });
 
   test('a phone can rotate with settings open, change tuning and play the retuned string', async ({
     page,
@@ -474,60 +492,66 @@ test('key spelling is automatic and keeps all twelve root choices stable', async
   await expect(
     page.locator('#formula-degrees button[data-pitch="5"] .formula-note'),
   ).toHaveText('E♯');
+  const before = await points(page);
   await page.goto(url({ root: '6', tonic: 'Gb', spelling: 'sharp' }));
-  await expect(page.locator('#spelling, #spelling-trigger')).toHaveCount(0);
+  await expect(page.locator('#spelling, #spelling-trigger, #key-tonic')).toHaveCount(0);
   expect(new URL(page.url()).searchParams.has('spelling')).toBe(false);
   const roots = page.getByRole('group', { name: 'Root note', exact: true });
   const names = roots.getByRole('radio');
+  const wheelNote = roots.locator('#root-wheel-note');
+  const wheelScale = roots.locator('#root-wheel-scale');
   await expect(names).toHaveCount(12);
   const rootLabels = page.locator('#root-notes label');
   const rootNames = [
     'C',
-    'C♯D♭',
-    'D',
-    'D♯E♭',
-    'E',
-    'F',
-    'F♯G♭',
     'G',
-    'G♯A♭',
+    'D',
     'A',
-    'A♯B♭',
+    'E',
     'B',
+    'F♯G♭',
+    'D♭C♯',
+    'A♭G♯',
+    'E♭D♯',
+    'B♭A♯',
+    'F',
   ];
   const chosen = roots.getByRole('radio', { name: 'F♯ / G♭', exact: true });
   const tones = page.locator('#formula-degrees');
-  const keyMenu = page.locator('#key-tonic-trigger');
-  const before = await points(page);
   await expect(rootLabels).toHaveText(rootNames);
   await expect(chosen).toBeChecked();
+  await expect(wheelNote).toHaveText('G♭');
+  await expect(wheelScale).toHaveText('Major');
   await expect(page.locator('#fretboard-heading')).toHaveText('G♭ Major');
   expect(new URL(page.url()).searchParams.get('key')).toBe('Gb');
   await expect(tones.locator('button[data-pitch="6"] .formula-note')).toHaveText('G♭');
   await expect(tones.locator('button[data-pitch="11"] .formula-note')).toHaveText('C♭');
-  await keyMenu.click();
-  await page.getByRole('option', { name: 'F♯', exact: true }).click();
-  await expect(keyMenu).toBeFocused();
-  await expect(page.locator('#fretboard-heading')).toHaveText('F♯ Major');
-  await expect(tones).toContainText('E♯');
   expect(await points(page)).toEqual(before);
   await page.reload();
   await expect(chosen).toBeChecked();
-  await expect(keyMenu).toHaveText('F♯');
-  await roots.getByRole('radio', { name: 'C♯ / D♭', exact: true }).check();
-  await expect(keyMenu).toHaveText('Automatic');
+  await expect(wheelNote).toHaveText('G♭');
+  await roots.getByRole('radio', { name: 'D♭ / C♯', exact: true }).check();
+  await expect(wheelNote).toHaveText('D♭');
   await expect(page.locator('#fretboard-heading')).toHaveText('D♭ Major');
   expect(new URL(page.url()).searchParams.get('key')).toBe('Db');
+  await page.locator('#scale-results [data-scale="natural-minor"]').click();
+  await expect(wheelNote).toHaveText('C♯');
+  await expect(wheelScale).toHaveText('Natural minor');
+  await expect(page.locator('#fretboard-heading')).toHaveText('C♯ Natural minor');
 
   await page.goto(url({ root: '11', tonic: 'Cb' }));
   await expect(names).toHaveCount(12);
-  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeChecked();
+  const b = roots.getByRole('radio', { name: 'B', exact: true });
+  await expect(b).toBeChecked();
+  await expect(wheelNote).toHaveText('C♭');
   await expect(page.locator('#fretboard-heading')).toHaveText('C♭ Major');
-  await expect(keyMenu).toHaveText('C♭');
-  await keyMenu.click();
-  await page.getByRole('option', { name: 'Automatic', exact: true }).click();
-  await expect(keyMenu).toBeHidden();
-  await expect(roots.getByRole('radio', { name: 'B', exact: true })).toBeFocused();
+  await b.press('ArrowRight');
+  await expect(chosen).toBeFocused();
+  await expect(chosen).toBeChecked();
+  await expect(wheelNote).toHaveText('F♯');
+  await chosen.press('ArrowLeft');
+  await expect(b).toBeFocused();
+  await expect(wheelNote).toHaveText('B');
   await expect(page.locator('#fretboard-heading')).toHaveText('B Major');
 });
 

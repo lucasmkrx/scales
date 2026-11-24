@@ -9,8 +9,6 @@ export default {
   themeModes: { light: 'Hell', dark: 'Dunkel' },
   quickNavigation: 'Schnellnavigation',
   goToBoard: 'Zum Griffbrett',
-  keyTonic: 'Schreibweise des Grundtons',
-  automaticTonic: 'Automatisch',
   patternShape: '{shape}-Form',
   patternDetails: 'Tiefster Ton: {note} (Stufe {degree})',
   patternLabels: {
@@ -174,7 +172,7 @@ export default {
   outsideChord: 'Akkordfremd',
   editInstrument: 'Instrument bearbeiten',
   fretboard: 'Griffbrett',
-  rootHint: 'Der Ton, auf dem deine Tonleiter aufbaut.',
+  circleOfFifths: 'Quintenzirkel',
   degreesHint:
     'Die 1 bezeichnet den Grundton. Die Stufen geben die Intervalle zum Grundton an. Ein ♭ erniedrigt die entsprechende Stufe der Durtonleiter um einen Halbton, ein ♯ erhöht sie um einen Halbton.',
   tuningFieldsHint:
@@ -204,7 +202,6 @@ export default {
   fret: 'Bund',
   chordRoot: 'Akkordgrundton',
   chordRootMarker: 'G',
-  chordRootHint: 'Der Grundton des Akkords, auf dem dein Arpeggio aufbaut.',
   chordDegreesHint:
     'Die 1 bezeichnet den Akkordgrundton. Die Stufen geben die Intervalle zum Grundton an. Ein ♭ erniedrigt die entsprechende Stufe der Durtonleiter um einen Halbton, ein ♯ erhöht sie um einen Halbton.',
 };

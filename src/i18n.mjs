@@ -30,8 +30,6 @@ export const copy = {
     themeModes: { light: 'Light', dark: 'Dark' },
     quickNavigation: 'Quick navigation',
     goToBoard: 'Go to fretboard',
-    keyTonic: 'Write key as',
-    automaticTonic: 'Automatic',
     patternShape: '{shape} shape',
     patternDetails: 'Lowest note: {note} ({degree})',
     patternLabels: {
@@ -184,7 +182,7 @@ export const copy = {
     outsideChord: 'Outside the chord',
     editInstrument: 'Edit instrument',
     fretboard: 'Fretboard',
-    rootHint: 'The note your scale is built on.',
+    circleOfFifths: 'Circle of fifths',
     degreesHint:
       '1 is the reference note. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
     tuningFieldsHint:
@@ -214,7 +212,6 @@ export const copy = {
     fret: 'Fret',
     chordRoot: 'Chord root',
     chordRootMarker: 'R',
-    chordRootHint: 'The note your arpeggio is built on.',
     chordDegreesHint:
       '1 is the chord root. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
   },
@@ -227,8 +224,6 @@ export const copy = {
     themeModes: { light: 'Claro', dark: 'Escuro' },
     quickNavigation: 'Navegação rápida',
     goToBoard: 'Ir ao braço',
-    keyTonic: 'Escrever a tônica como',
-    automaticTonic: 'Automático',
     patternShape: 'Forma de {shape}',
     patternDetails: 'Nota mais grave: {note} ({degree})',
     patternLabels: {
@@ -382,7 +377,7 @@ export const copy = {
     outsideChord: 'Fora do acorde',
     editInstrument: 'Editar instrumento',
     fretboard: 'Braço',
-    rootHint: 'A nota que serve de base para a escala.',
+    circleOfFifths: 'Círculo das quintas',
     degreesHint:
       '1 é a nota de referência. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
     tuningFieldsHint:
@@ -412,7 +407,6 @@ export const copy = {
     fret: 'Casa',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',
-    chordRootHint: 'A nota que serve de base para o arpejo.',
     chordDegreesHint:
       '1 é a fundamental do acorde. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
   },
@@ -425,8 +419,6 @@ export const copy = {
     themeModes: { light: 'Claro', dark: 'Oscuro' },
     quickNavigation: 'Navegación rápida',
     goToBoard: 'Ir al diapasón',
-    keyTonic: 'Escribir la tónica como',
-    automaticTonic: 'Automático',
     patternShape: 'Forma de {shape}',
     patternDetails: 'Nota más grave: {note} ({degree})',
     patternLabels: {
@@ -583,7 +575,7 @@ export const copy = {
     outsideChord: 'Fuera del acorde',
     editInstrument: 'Editar instrumento',
     fretboard: 'Diapasón',
-    rootHint: 'La nota que sirve de base a la escala.',
+    circleOfFifths: 'Círculo de quintas',
     degreesHint:
       '1 es la nota de referencia. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
     tuningFieldsHint:
@@ -613,7 +605,6 @@ export const copy = {
     fret: 'Traste',
     chordRoot: 'Fundamental',
     chordRootMarker: 'F',
-    chordRootHint: 'La nota que sirve de base al arpegio.',
     chordDegreesHint:
       '1 es la fundamental del acorde. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
   },

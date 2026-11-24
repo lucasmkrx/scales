@@ -31,7 +31,7 @@ a practice query resumes the instrument and scale saved on that device.
 
 ### Find notes and fingering patterns
 
-Choose a root note directly on the card, then pick a scale. Common scales appear
+Choose a root note on the circle of fifths, then pick a scale. Common scales appear
 first on a fresh visit. To find Dorian, for example, open **Scale family**, choose
 **Major & modes**, then select **Dorian**. Browsing families keeps the current
 scale on the fretboard. The formula pairs each degree with its note name.
@@ -80,9 +80,10 @@ marks its exact pitch on the staff, temporarily adding that note when necessary.
 The key signature appears after the clef. In D harmonic minor, for example, the
 signature supplies B♭ and the staff writes C♯ beside the raised seventh.
 See the [staff notation conventions](docs/references.md#staff-notation).
-Note names follow the scale’s written degrees. When a key has two common names,
-use **Write key as** to choose between them, such as F♯ major or G♭ major.
-The Scale card always offers the same 12 root notes.
+Note names follow the scale’s written degrees. The circle of fifths offers 12
+roots and shows alternate names on the same button, such as F♯ and G♭. Tukany
+chooses a spelling for the selected scale and honors spellings specified in
+practice links.
 
 Tukany opens in Light on first visit, even on a device set to dark mode. Use the
 sun-and-moon button in the header to switch themes. Tukany remembers your choice

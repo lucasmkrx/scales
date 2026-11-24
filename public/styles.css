@@ -1231,11 +1231,12 @@ input[aria-invalid='true'] {
 }
 #root-picker {
   min-inline-size: 0;
-  margin: 16px var(--scale-inset) 0;
+  margin: 16px var(--scale-inset) 12px;
   padding: 0;
   border: 0;
 }
 #root-caption {
+  margin-inline: auto;
   padding: 0;
   color: var(--ink);
   font-size: 15px;
@@ -1244,19 +1245,79 @@ input[aria-invalid='true'] {
 #root-hint {
   color: var(--muted);
   font-size: 12px;
+  text-align: center;
 }
-.root-notes {
-  --root-size: clamp(44px, 7cqi, 50px);
-  --root-columns: 12;
-  display: grid;
-  grid-template-columns: repeat(var(--root-columns), var(--root-size));
-  justify-content: space-between;
+.root-wheel {
+  --root-size: 46px;
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 312px);
+  aspect-ratio: 1;
+  margin: 10px auto 0;
+}
+.root-wheel::before {
+  content: '';
+  position: absolute;
+  inset: 13%;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.root-wheel-pointer {
+  position: absolute;
+  inset: 14.5%;
+  transform: rotate(var(--root-angle, 0deg));
+  pointer-events: none;
+}
+.root-wheel-pointer::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto calc(50% - 1px);
+  width: 2px;
+  height: 24%;
+  border-radius: 2px;
+  background: var(--accent-solid);
+}
+.root-wheel-current {
+  position: absolute;
+  inset: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 5px;
-  margin-top: 8px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--subtle);
+  box-shadow: 0 7px 18px var(--shadow-soft);
+  color: var(--accent);
+  text-align: center;
+}
+#root-wheel-note {
+  font: 600 clamp(36px, 13cqi, 47px)/1 var(--mono);
+  letter-spacing: -0.065em;
+}
+#root-wheel-scale {
+  display: -webkit-box;
+  max-width: 80%;
+  overflow: hidden;
+  color: var(--muted);
+  font: 600 11px/1.2 var(--type);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 .root-notes label {
-  position: relative;
+  position: absolute;
+  left: var(--root-x);
+  top: var(--root-y);
+  width: var(--root-size);
   margin: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+.root-notes input {
+  clip-path: circle(50%);
 }
 .root-notes label > span {
   display: flex;
@@ -1269,6 +1330,7 @@ input[aria-invalid='true'] {
   border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--paper);
+  box-shadow: 0 2px 4px var(--shadow-soft);
   color: var(--ink);
   font: 600 15px/1 var(--mono);
 }
@@ -1283,6 +1345,9 @@ input[aria-invalid='true'] {
 .root-notes input:checked + span {
   background: var(--accent-solid);
   border-color: var(--accent-solid);
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 0 0 4px var(--accent-solid);
   color: var(--accent-contrast);
 }
 .root-notes input:checked + span small {
@@ -1290,21 +1355,11 @@ input[aria-invalid='true'] {
 }
 .root-notes input:focus-visible + span {
   outline: 3px solid var(--focus);
-  outline-offset: 2px;
+  outline-offset: 5px;
 }
 @media (forced-colors: active) {
   .root-notes input:checked + span {
     border: 3px solid Highlight;
-  }
-}
-@container (max-width: 625px) {
-  .root-notes {
-    --root-columns: 6;
-  }
-}
-@container (max-width: 320px) {
-  .root-notes {
-    --root-columns: 4;
   }
 }
 #scale-catalog {
@@ -1882,22 +1937,6 @@ input[aria-invalid='true'] {
 .fretboard-options .segmented label > span {
   padding: 5px 10px;
 }
-.spelling-control {
-  margin-block: 10px 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.spelling-control > label {
-  margin: 0;
-  font-size: 12px;
-}
-.spelling-control :is(select, .select-trigger) {
-  width: auto;
-  min-height: 35px;
-  padding-block: 6px;
-  font-size: 12px;
-}
 .outside-control {
   margin: 0;
   min-height: 32px;
@@ -2216,12 +2255,6 @@ button:not(:disabled):active,
   .scale-formula {
     grid-column: 1 / -1;
   }
-  .root-notes {
-    --root-size: 44px;
-    --root-columns: 6;
-    justify-content: start;
-    gap: 7px;
-  }
   #scale-catalog {
     border-left: 1px solid var(--rule);
   }
@@ -2347,15 +2380,6 @@ button:not(:disabled):active,
     order: 3;
     flex-basis: 100%;
   }
-  .spelling-control {
-    gap: 6px;
-  }
-  .spelling-control > label {
-    font-size: 11px;
-  }
-  .spelling-control :is(select, .select-trigger) {
-    max-width: 108px;
-  }
   .toolbar {
     margin-left: auto;
   }
@@ -2382,10 +2406,5 @@ button:not(:disabled):active,
   .language .select-trigger > span {
     gap: 0;
     font-size: 0;
-  }
-}
-@media (max-width: 370px) {
-  .spelling-control {
-    flex-wrap: wrap;
   }
 }

@@ -132,14 +132,14 @@
           </h2>
           <fieldset id="root-picker" aria-describedby="root-hint">
             <legend id="root-caption" data-i18n="root">Root note</legend>
-            <p id="root-hint" data-i18n="rootHint">The note your scale is built on.</p>
-            <div class="root-notes" id="root-notes"></div>
-            <div id="key-tonic-control" class="spelling-control select-control" hidden>
-              <label for="key-tonic" data-i18n="keyTonic">Write key as</label
-              ><span class="select-field"
-                ><select id="key-tonic"></select
-                ><i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i
-              ></span>
+            <p id="root-hint" data-i18n="circleOfFifths">Circle of fifths</p>
+            <div class="root-wheel" id="root-wheel">
+              <span class="root-wheel-pointer" aria-hidden="true"></span>
+              <output class="root-wheel-current" aria-live="polite" aria-atomic="true">
+                <strong id="root-wheel-note"></strong>
+                <span id="root-wheel-scale"></span>
+              </output>
+              <div class="root-notes" id="root-notes"></div>
             </div>
           </fieldset>
           <div id="scale-catalog">

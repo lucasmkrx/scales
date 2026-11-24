@@ -48,8 +48,9 @@ and the full catalog PDF.
 
 The Scale card has a music note icon. The PDF downloads card uses the same
 heading style with a PDF icon. The larger fretboard heading shows the selected
-root and scale name. Players can transpose the diagram using 12 circular root
-buttons. Accidentals show both names in one circle, such as F♯ and G♭. Common scales are
+root and scale name. Players can transpose the diagram using 12 buttons arranged
+in a circle of fifths. The center shows the current root and scale. Accidentals
+show both names on one button, such as F♯ and G♭. Common scales are
 available on a fresh visit. A family menu brings related choices such as blues
 scales or arpeggios into view. Each name has its degree formula underneath.
 Selecting a name applies it to the fretboard. A solid green background and a
@@ -61,8 +62,8 @@ Pressing it sounds the note and highlights that pitch on the fretboard.
 On phones, a sticky current-scale shortcut gives a direct route to the fretboard
 and focuses its heading. A caption identifies the selected pattern and its
 lowest note and degree. The bracket supplies its fret span.
-The fretboard spells pitches according to the scale formula. The Write key as
-menu offers a choice of tonic spelling when a pitch has alternative names.
+The fretboard and circle center use the tonic spelling chosen for the scale
+formula or supplied by a practice link.
 The Notes/Degrees switch and Show other notes checkbox sit alongside the root legend
 at the foot of the fretboard. They control the diagram labels and visibility
 of pitches outside the scale.

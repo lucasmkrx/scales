@@ -6,8 +6,8 @@ the tuning or handedness recalculates the fretboard and any PDF you export.
 
 ## Current homepage
 
-- [Light desktop](desktop.png) shows C major on a right-handed, six-string guitar in E standard. The formula pairs the seven degrees with their notes. The 21-fret neck shows all five CAGED patterns, and the treble staff covers the pitches they use. The PDF cards show the 9-page Major & modes family and the 70-page full catalog.
-- [Dark desktop](desktop-dark.png) shows the same setup and layout after switching themes. Both full-page captures measure 1360 × 2047 pixels.
+- [Light desktop](desktop.png) shows C major on a right-handed, six-string guitar in E standard. C is selected on the circle of fifths. The formula pairs the seven degrees with their notes. The 21-fret neck shows all five CAGED patterns, and the treble staff covers the pitches they use. The PDF cards show the 9-page Major & modes family and the 70-page full catalog.
+- [Dark desktop](desktop-dark.png) shows the same setup and layout after switching themes. Both full-page captures measure 1360 × 2223 pixels.
 
 ## Printable output
 
