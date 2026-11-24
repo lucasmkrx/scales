@@ -200,7 +200,7 @@ export default {
   metaDescription:
     'Trova scale e arpeggi sulla tastiera della chitarra o del basso con la tua accordatura. Ascolta le note e stampa i diagrammi per mancini o destrimani.',
   socialImageAlt:
-    'Il tucano nero e arancione e la scritta Tukany accanto a una chitarra elettrica',
+    'Il tucano grigio scuro e arancione e la scritta Tukany accanto a una chitarra elettrica',
   noScript:
     'Attiva JavaScript per ascoltare le note e personalizzare la tastiera dello strumento.',
   fret: 'Tasto',

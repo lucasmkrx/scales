@@ -197,7 +197,7 @@ export default {
   metaDescription:
     'Explorez les gammes et les arpèges sur le manche de votre guitare ou de votre basse. Choisissez votre accordage et imprimez des diagrammes pour gauchers ou droitiers.',
   socialImageAlt:
-    'Le toucan noir et orange et le nom Tukany à côté d’une guitare électrique',
+    'Le toucan gris foncé et orange et le nom Tukany à côté d’une guitare électrique',
   noScript: 'Activez JavaScript pour écouter les notes et personnaliser le manche.',
   fret: 'Case',
   chordRoot: 'Fondamentale',

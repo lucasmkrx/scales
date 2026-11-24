@@ -79,11 +79,6 @@ export async function createAtlas(
   ]);
   const body = await doc.embedFont(bodyBytes, { subset: true }),
     bold = await doc.embedFont(boldBytes, { subset: true });
-  // Use the site's original two vector marks so they stay sharp in print.
-  const svg = new TextDecoder().decode(wordmarkBytes);
-  const wordmarkPath = svg.match(/<path\b[^>]*?\sd="([^"]+)"/)?.[1];
-  const viewBox = (source) => source.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
-  const wordmarkHeight = Number(viewBox(svg)?.[2]);
   const color = (hex) =>
     rgb(
       ...hex
@@ -105,25 +100,35 @@ export async function createAtlas(
     upper: '#eff4f1',
     lower: '#fbfcfb',
   };
-  const birdSvg = new TextDecoder().decode(birdBytes);
-  const birdPaths = [...birdSvg.matchAll(/<path fill="([^"]+)" d="([^"]+)"/g)];
-  const birdBounds = viewBox(birdSvg);
-  if (!wordmarkPath || !wordmarkHeight || !birdPaths.length || !birdBounds)
-    throw new Error('Cannot read the Tukany logo');
-  function brand(page, x, top, height) {
-    for (const [, fill, d] of birdPaths)
+  // Use the original vector artwork and its light-mode fills for print.
+  function readMark(bytes) {
+    const svg = new TextDecoder().decode(bytes);
+    const bounds = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    const paths = [...svg.matchAll(/<path fill="(#[\da-fA-F]{6})" d="([^"]+)"/g)];
+    if (!bounds || !paths.length) throw new Error('Cannot read the Tukany logo');
+    return {
+      width: Number(bounds[1]),
+      height: Number(bounds[2]),
+      paths: paths.map(([, fill, d]) => ({ d, fill: color(fill) })),
+    };
+  }
+  const bird = readMark(birdBytes);
+  const wordmark = readMark(wordmarkBytes);
+  function drawMark(page, mark, x, top, height) {
+    for (const { d, fill } of mark.paths)
       page.drawSvgPath(d, {
         x,
         y: H - top,
-        scale: height / Number(birdBounds[2]),
-        color: fill === '#000' ? rgb(0, 0, 0) : color(fill),
+        scale: height / mark.height,
+        color: fill,
       });
-    page.drawSvgPath(wordmarkPath, {
-      x: x + height * (Number(birdBounds[1]) / Number(birdBounds[2]) + 0.12),
-      y: H - top - height * 0.27,
-      scale: height / wordmarkHeight,
-      color: rgb(0, 0, 0),
-    });
+  }
+  function brand(page, x, top, height) {
+    const birdHeight = height * 0.75;
+    const birdWidth = birdHeight * (bird.width / bird.height);
+    // Match the spacing and capital T alignment of the website lockup.
+    drawMark(page, bird, x, top, birdHeight);
+    drawMark(page, wordmark, x + birdWidth + height * 0.12, top + height * 0.02, height);
   }
   const selected =
     scope === 'catalog'

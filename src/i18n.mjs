@@ -205,7 +205,7 @@ export const copy = {
     metaDescription:
       'Find scales and arpeggios on a guitar or bass fretboard in your tuning. Hear each note and print left- or right-handed diagrams for practice.',
     socialImageAlt:
-      'Tukany’s black and orange toucan logo and wordmark beside an electric guitar',
+      'Tukany’s charcoal and orange toucan logo and wordmark beside an electric guitar',
     noScript: 'Enable JavaScript to play notes and customize your fretboard.',
     fret: 'Fret',
     chordRoot: 'Chord root',
@@ -398,7 +398,7 @@ export const copy = {
     metaDescription:
       'Explore escalas e arpejos no braço da guitarra ou do baixo com a afinação que você usa. Ouça as notas e imprima diagramas para destros ou canhotos.',
     socialImageAlt:
-      'Um tucano preto e laranja e o nome Tukany ao lado de uma guitarra elétrica',
+      'Um tucano cinza-escuro e laranja e o nome Tukany ao lado de uma guitarra elétrica',
     noScript: 'Ative o JavaScript para ouvir as notas e personalizar o diagrama.',
     fret: 'Casa',
     chordRoot: 'Fundamental',
@@ -594,7 +594,7 @@ export const copy = {
     metaDescription:
       'Busca escalas y arpegios en el diapasón de la guitarra o del bajo con tu afinación. Escucha las notas e imprime diagramas para zurdos o diestros.',
     socialImageAlt:
-      'Un tucán negro y naranja y el nombre Tukany junto a una guitarra eléctrica',
+      'Un tucán gris oscuro y naranja y el nombre Tukany junto a una guitarra eléctrica',
     noScript: 'Activa JavaScript para escuchar las notas y personalizar el diapasón.',
     fret: 'Traste',
     chordRoot: 'Fundamental',

@@ -369,7 +369,7 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
       );
       for (const logo of measurements) {
         expect(logo.wordmarkHeight).toBeGreaterThan(0);
-        expect(logo.iconHeight).toBeCloseTo(logo.wordmarkHeight, 0);
+        expect(logo.iconHeight).toBeCloseTo(logo.wordmarkHeight * 0.75, 0);
         expect(logo.baselineError).toBeLessThanOrEqual(1);
         expect(logo.insideLink).toBe(true);
         sizes.push([
@@ -385,6 +385,8 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   const lightLogoSizes = await checkLogos();
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  for (const icon of await logos.locator('.brand-icon').all())
+    await expect(icon).toHaveCSS('content', /tukany-logo-dark\.svg/);
   expect(await checkLogos()).toEqual(lightLogoSizes);
   await expect(toggle).toBeChecked();
   await expect(sun).toBeVisible();

@@ -195,7 +195,7 @@ export default {
   metaDescription:
     'Erkunde Tonleitern und Arpeggien auf dem Griffbrett deiner Gitarre oder deines Basses. Wähle eine Stimmung und drucke Griffbilder für Links- oder Rechtshänder aus.',
   socialImageAlt:
-    'Das schwarz-orange Tukan-Logo und der Tukany-Schriftzug neben einer E-Gitarre',
+    'Das dunkelgraue und orange Tukan-Logo und der Tukany-Schriftzug neben einer E-Gitarre',
   noScript: 'Aktiviere JavaScript, um Töne abzuspielen und dein Griffbrett anzupassen.',
   fret: 'Bund',
   chordRoot: 'Akkordgrundton',
