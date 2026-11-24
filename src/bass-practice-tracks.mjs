@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // These are separate original bass play-alongs for each tonic, in chromatic order
 // from C through B. A missing video leaves its slot empty.
 const modalBass = 'Bass Backing Tracks - Topic';

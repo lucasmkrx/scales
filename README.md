@@ -7,7 +7,7 @@ tuning and handedness.
 [**Open the explorer**](https://tukany.com/) · [Português (Brasil)](https://tukany.com/pt/) · [Español (España)](https://tukany.com/es/) · [Italiano](https://tukany.com/it/) · [Français](https://tukany.com/fr/) · [Deutsch](https://tukany.com/de/)
 
 [![Tests, formatting, and deployment](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml)
-[![Code license: MIT](https://img.shields.io/badge/code-MIT-20343f)](LICENSE)
+[![Code license: MPL 2.0](https://img.shields.io/badge/code-MPL--2.0-20343f)](LICENSE)
 
 ![C major on a 21-fret guitar, with its interactive formula, treble staff, and PDF downloads](docs/assets/desktop.png)
 
@@ -214,7 +214,9 @@ If Tukany helps you practice, you can [buy me a coffee](https://buymeacoffee.com
 
 ## Licenses
 
-- Code: [MIT](LICENSE).
+Copyright © 2026 Lucas Marques.
+
+- Code: [Mozilla Public License 2.0](LICENSE).
 - Original educational content and guides: [CC BY 4.0](CONTENT-LICENSE.md).
 - Marques & Co. logo: [separate branding terms](BRANDING.md).
 - Icons, fonts, and vendored libraries have their own [third-party notices](THIRD-PARTY-NOTICES.md).

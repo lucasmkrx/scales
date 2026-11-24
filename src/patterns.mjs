@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { boardModel, mod, prettyDegree, SCALES } from './music.mjs';
 import { bassRoute } from './guide-layout.mjs';
 

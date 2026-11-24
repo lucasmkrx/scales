@@ -53,8 +53,8 @@ are excluded from formatting. CI checks formatting, tests, and the static build.
 
 ## Licensing and attribution
 
-Use original educational prose. Code contributions are MIT-licensed; original
-educational content uses CC BY 4.0. Follow [BRANDING.md](BRANDING.md) for the logo
+Use original educational prose. Code contributions use [MPL 2.0](LICENSE).
+Original educational content uses CC BY 4.0. Follow [BRANDING.md](BRANDING.md) for the logo
 and preserve [third-party notices](THIRD-PARTY-NOTICES.md). Do not add instrument
 samples or other assets without documenting their source and license.
 

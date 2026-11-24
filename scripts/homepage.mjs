@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { copy } from '../src/i18n.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 import {

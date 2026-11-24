@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Musical facts and original educational labels: CC BY 4.0. See CONTENT-LICENSE.md.
 const major = [0, 2, 4, 5, 7, 9, 11];
 export const mod = (n, d = 12) => ((n % d) + d) % d;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Each entry is a single-chord recording on one tonic. IDs are ordered C through B.
 const piano = {
   creator: 'Chord progressions for everyone',

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 export default {
   pdfDownloads: 'Téléchargements PDF',
   scalesAndArpeggios: 'Gammes et arpèges',
@@ -162,7 +164,8 @@ export default {
   source: 'Code source et contributions',
   buyMeACoffee: 'Offrez-moi un café',
   iconCredits: 'Crédits des icônes',
-  license: 'Code : MIT · Contenu pédagogique : CC BY 4.0 · Droits réservés sur le logo',
+  license:
+    'Code : MPL 2.0 · Contenu pédagogique : CC BY 4.0 · Droits réservés sur le logo',
   cancel: 'Annuler l’exportation',
   selectFamily: 'Choisissez une famille dans la liste pour exporter son atlas.',
   open: 'À vide',

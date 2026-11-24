@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Rectangles follow DOM order; rows come from the current responsive layout.
 export function chooseNextIndex(rects, index, key) {
   if (!Number.isInteger(index) || index < 0 || index >= rects.length) return;

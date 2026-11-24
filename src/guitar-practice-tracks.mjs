@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Each row is an individual fixed-key recording. The original videos show the
 // chord chart or scale diagram, including the notes that distinguish each mode.
 function guitarSeries(creator, style, rows) {

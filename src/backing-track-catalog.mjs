@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Static YouTube video IDs. See docs/backing-tracks.md for sources and selection criteria.
 import { bassPracticeTracks } from './bass-practice-tracks.mjs';
 import { guitarPracticeTracks } from './guitar-practice-tracks.mjs';

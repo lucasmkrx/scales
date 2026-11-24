@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Original extended Karplus–Strong string model. A shaped pluck supplies stable
 // low harmonics, while a little filtered pick noise gives the attack texture.
 // Background: Julius O. Smith, Physical Audio Signal Processing, String Excitation.

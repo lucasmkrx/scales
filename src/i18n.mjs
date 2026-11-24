@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Interface copy, grouped by locale.
 import it from './i18n-it.mjs';
 import fr from './i18n-fr.mjs';
@@ -170,7 +172,7 @@ export const copy = {
     source: 'Source & contributions',
     buyMeACoffee: 'Buy me a coffee',
     iconCredits: 'Icon credits',
-    license: 'Code: MIT · Educational content: CC BY 4.0 · Logo rights reserved',
+    license: 'Code: MPL 2.0 · Educational content: CC BY 4.0 · Logo rights reserved',
     cancel: 'Cancel export',
     selectFamily: 'Select a named family to export a family atlas.',
     open: 'Open',
@@ -368,7 +370,7 @@ export const copy = {
     source: 'Código e contribuições',
     buyMeACoffee: 'Me pague um café',
     iconCredits: 'Créditos dos ícones',
-    license: 'Código: MIT · Conteúdo: CC BY 4.0 · Direitos do logo reservados',
+    license: 'Código: MPL 2.0 · Conteúdo: CC BY 4.0 · Direitos do logo reservados',
     cancel: 'Cancelar PDF',
     selectFamily: 'Selecione uma família do catálogo para gerar seu PDF.',
     open: 'Solta',
@@ -569,7 +571,7 @@ export const copy = {
     buyMeACoffee: 'Invítame a un café',
     iconCredits: 'Créditos de los iconos',
     license:
-      'Código MIT · Contenido educativo CC BY 4.0 · Derechos del logotipo reservados',
+      'Código MPL 2.0 · Contenido educativo CC BY 4.0 · Derechos del logotipo reservados',
     cancel: 'Cancelar exportación',
     selectFamily: 'Selecciona una familia del catálogo para generar su PDF.',
     open: 'Al aire',

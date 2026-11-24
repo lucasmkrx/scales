@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { isAccidentalPitch, pitchColor, pitchLabelColor } from './board.mjs';
 import { copy } from './i18n.mjs';
 import { midiName, mod, spelledMidiName } from './music.mjs';

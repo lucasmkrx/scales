@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 

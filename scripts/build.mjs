@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { explorerPage } from './homepage.mjs';
 import { sitemap } from './sitemap.mjs';
 import { explorerPath } from '../src/site.mjs';
@@ -59,6 +61,7 @@ function versionVisualAssets(source) {
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(new URL('public/', root), dist, { recursive: true });
+await cp(new URL('LICENSE', root), new URL('LICENSE', dist));
 await mkdir(new URL('src/', dist), { recursive: true });
 // Version the whole module graph, so an updated entry point cannot load stale dependencies.
 for (const [name, source] of modules) {

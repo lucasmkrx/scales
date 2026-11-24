@@ -28,7 +28,7 @@ over the center of the lettering. Both marks fit within the central square crop.
 ## Marques & Co. publisher mark
 
 The Marques & Co. logo in `public/assets/marques-and-co.png` is supplied by
-Lucas Marques. It is excluded from the MIT and CC BY licenses.
+Lucas Marques. Its use is governed by the terms below.
 
 You may retain the embedded logo when redistributing unmodified Tukany
 guides or running an unmodified copy of Tukany. This does not grant permission

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import test from 'node:test';
 import { siteOrigin } from '../src/site.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
@@ -8,6 +10,10 @@ import { readFile, readdir } from 'node:fs/promises';
 test('published assets use one revision across the entry point, module graph, and styles', async () => {
   await import('../scripts/build.mjs');
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
+  assert.deepEqual(
+    await readFile(new URL('../dist/LICENSE', import.meta.url)),
+    await readFile(new URL('../LICENSE', import.meta.url)),
+  );
   const version = html.match(/src\/app\.mjs\?v=([a-f0-9]{12})/)[1];
   assert.ok(html.includes(`styles.css?v=${version}`));
   assert.ok(html.includes(`theme.js?v=${version}`));
@@ -97,6 +103,7 @@ test('every localized explorer ships reciprocal alternates, content, and working
       file,
     );
     assert.ok(html.includes(escape(copy[lang].explorerTitle)), file);
+    assert.ok(html.includes(escape(copy[lang].license)), file);
     assert.doesNotMatch(html, />undefined<|<!-- page-metadata -->/);
     assert.doesNotMatch(
       html,

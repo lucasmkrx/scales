@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { setTimeout as delay } from 'node:timers/promises';
 import { backingCatalog, rootDrones } from '../src/backing-track-catalog.mjs';
 

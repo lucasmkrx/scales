@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { prettyDegree } from './music.mjs';
 import { normalizeLanguage } from './locales.mjs';
 

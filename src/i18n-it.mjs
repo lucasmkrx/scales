@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 export default {
   pdfDownloads: 'Scarica i PDF',
   scalesAndArpeggios: 'Scale e arpeggi',
@@ -163,7 +165,8 @@ export default {
   source: 'Codice sorgente e contributi',
   buyMeACoffee: 'Offrimi un caffè',
   iconCredits: 'Crediti delle icone',
-  license: 'Codice: MIT · Contenuti didattici: CC BY 4.0 · Diritti sul logo riservati',
+  license:
+    'Codice: MPL 2.0 · Contenuti didattici: CC BY 4.0 · Diritti sul logo riservati',
   cancel: 'Annulla esportazione',
   selectFamily: 'Scegli una famiglia dal catalogo per esportarne l’atlante.',
   open: 'A vuoto',

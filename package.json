@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/lucasmkrx/tukany.git"
   },
-  "license": "MIT",
+  "license": "MPL-2.0",
   "engines": {
     "node": ">=22"
   },

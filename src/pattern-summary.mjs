@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { selection, prettyDegree } from './music.mjs';
 import { copy } from './i18n.mjs';
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 export default {
   pdfDownloads: 'PDF-Downloads',
   scalesAndArpeggios: 'Tonleitern und Arpeggien',
@@ -160,7 +162,7 @@ export default {
   source: 'Quellcode und Mitarbeit',
   buyMeACoffee: 'Kaffee spendieren',
   iconCredits: 'Bildnachweise für Symbole',
-  license: 'Code: MIT · Lernmaterial: CC BY 4.0 · Alle Rechte am Logo vorbehalten',
+  license: 'Code: MPL 2.0 · Lernmaterial: CC BY 4.0 · Alle Rechte am Logo vorbehalten',
   cancel: 'Export abbrechen',
   selectFamily: 'Wähle eine Tonleiterfamilie aus, um ihren Atlas zu exportieren.',
   open: 'Leer',

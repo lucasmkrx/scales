@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Move in screen coordinates. Sparse scales may skip frets or entire strings.
 export function adjacentNote(notes, current, key, hand) {
   const horizontal = key === 'ArrowLeft' || key === 'ArrowRight';

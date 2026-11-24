@@ -38,7 +38,7 @@ match the switch labels in both themes.
 
 ## Sharing image
 
-The [guitar photograph](public/assets/guitar-banner.webp) was generated for Tukany using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under the [MIT license](LICENSE). The [sharing image](public/assets/tukany-social.jpg) pairs a crop of that photograph with the supplied Tukany toucan and wordmark.
+The [guitar photograph](public/assets/guitar-banner.webp) was generated for Tukany using the built-in OpenAI image generation tool and encoded locally as WebP. It is distributed with the project under its [MIT license](public/assets/LICENSE-guitar-banner.txt). The [sharing image](public/assets/tukany-social.jpg) pairs a crop of that photograph with the supplied Tukany toucan and wordmark.
 
 <details>
 <summary>Image prompt</summary>

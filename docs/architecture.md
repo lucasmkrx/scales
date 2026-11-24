@@ -286,7 +286,7 @@ revision. CI verifies the published references and tests/builds before deploymen
 
 ## Licensing boundaries
 
-Code uses MIT; original educational content uses CC BY 4.0. Logo rights and
+Code uses MPL 2.0. Original educational content uses CC BY 4.0. Logo rights and
 third-party font/library licenses are documented separately. No recorded samples
 are bundled. YouTube hosts the backing tracks and serves the embedded player
 when the user plays a track in Tukany.

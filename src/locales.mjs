@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Short keys keep existing shared URLs compatible. Tags identify the regional content.
 export const LANGUAGES = Object.freeze({
   en: Object.freeze({ tag: 'en-US', label: 'English' }),

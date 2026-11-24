@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { expect, test } from '@playwright/test';
 
 const workspace = '/?lang=en&instrument=guitar&root=9&scale=minor-pentatonic';

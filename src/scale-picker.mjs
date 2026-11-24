@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { SCALES } from './catalog.mjs';
 
 const COMMON_SCALES = Object.freeze([

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { SCALES, noteName, rootName, selection, spellDegree } from './music.mjs';
 
 // Each letter's position on the circle of fifths, measured from C major.

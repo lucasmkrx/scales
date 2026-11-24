@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { backingSearchUrl, backingTrackChoices } from './backing-tracks.mjs';
 import { copy } from './i18n.mjs';
 import { rootName, selection } from './music.mjs';

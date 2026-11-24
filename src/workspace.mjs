@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { DEFAULTS, normalizeState, selection, SCALES } from './music.mjs';
 import { guidePlan } from './guide-layout.mjs';
 

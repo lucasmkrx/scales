@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { explorerPath, siteOrigin } from '../src/site.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
 

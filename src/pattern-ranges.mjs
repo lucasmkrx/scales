@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 const markerGap = 8;
 // Compare positions at the same precision in both hands. Mirroring the same fret
 // edge can otherwise yield slightly different floating-point values for tied starts.

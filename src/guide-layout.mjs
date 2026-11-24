@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { selection, mod } from './music.mjs';
 
 // The books use a continuous tapered neck; the open-string lane stays rectangular.

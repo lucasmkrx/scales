@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { defineConfig, devices } from '@playwright/test';
 
 const port = 4187;

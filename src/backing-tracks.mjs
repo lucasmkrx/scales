@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { backingCatalog, rootDrones } from './backing-track-catalog.mjs';
 import { SCALES, rootName, selection } from './music.mjs';
 import { scaleName } from './workspace.mjs';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Apply the saved theme before styles paint. New sessions start in light mode.
 (() => {
   const root = document.documentElement;

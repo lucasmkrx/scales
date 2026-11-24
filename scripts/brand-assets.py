@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+
 """Rebuild the website's icon and share images from its two original SVGs."""
 
 from io import BytesIO

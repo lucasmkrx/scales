@@ -23,4 +23,5 @@ The explorer maps 67 named scales, modes, and arpeggios to all 12 roots. It supp
 ## Optional
 
 - [Musical references for tunings, fingering systems, pitch spelling, and staff notation](https://raw.githubusercontent.com/lucasmkrx/tukany/main/docs/references.md)
+- [Mozilla Public License 2.0 for Tukany's source code](https://raw.githubusercontent.com/lucasmkrx/tukany/main/LICENSE)
 - [CC BY 4.0 terms and attribution for original educational content and guides](https://raw.githubusercontent.com/lucasmkrx/tukany/main/CONTENT-LICENSE.md)

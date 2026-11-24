@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Keep the native radios for keyboard input. A horizontal drag previews the
 // destination, and releasing commits it through the same radio change handler.
 export function enableSlideSwitch(group) {

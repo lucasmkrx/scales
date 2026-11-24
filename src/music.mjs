@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import { SCALES, TUNINGS, mod } from './catalog.mjs';
 import { normalizeLanguage, tuningName } from './locales.mjs';
 export { SCALES, TUNINGS, mod };
