@@ -127,6 +127,7 @@ export const copy = {
     audioUnavailable: 'Audio is not available in this browser.',
     customScaleTitle: 'Custom scale',
     editPitches: 'Edit pitches',
+    customizeTuning: 'Customize tuning',
     scaleFamily: 'Scale family',
     commonScales: 'Common scales',
     noteCount: 'notes',
@@ -158,8 +159,10 @@ export const copy = {
     nutRight: 'Nut on the right · higher frets to the left',
     nutLeft: 'Nut on the left · higher frets to the right',
     custom: 'Custom',
-    customTuning: 'Open-string pitches, low to high',
-    tuningExample: 'Enter one pitch per string, low to high, including octaves.',
+    customTuning: 'Custom tuning',
+    tuningPitchError: 'Enter a note and octave for string {string}, for example E2.',
+    lowerString: 'Lower string {string} by a semitone',
+    raiseString: 'Raise string {string} by a semitone',
     selected: 'Selected scale',
     familyScope: 'Current family',
     catalogScope: 'Full catalog',
@@ -184,7 +187,7 @@ export const copy = {
     degreesHint:
       '1 is the reference note. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
     tuningFieldsHint:
-      'One pitch per string, lowest to highest. The number is the octave (for example, E2).',
+      'Use − or + to change a pitch by one semitone, or type a pitch like E2.',
     applyTuning: 'Apply tuning',
     cancelEdit: 'Cancel edit',
     string: 'String',
@@ -197,8 +200,7 @@ export const copy = {
     cancelled: 'Export canceled.',
     scaleMap: 'scale map',
     skip: 'Skip to fretboard',
-    tuningOrder:
-      'List distinct pitches from lowest to highest. Check the octave numbers.',
+    tuningOrder: 'String {string} must be higher than string {previous}.',
     exportFailed: 'The PDF could not be created. Please try again.',
     pageTitle: 'Tukany · Guitar and bass scale finder',
     explorerTitle: 'Interactive scale diagrams for guitar and bass',
@@ -319,6 +321,7 @@ export const copy = {
     audioUnavailable: 'O áudio não está disponível neste navegador.',
     customScaleTitle: 'Escala personalizada',
     editPitches: 'Editar notas',
+    customizeTuning: 'Personalizar afinação',
     scaleFamily: 'Família de escalas',
     commonScales: 'Escalas comuns',
     noteCount: 'notas',
@@ -350,9 +353,11 @@ export const copy = {
     nutRight: 'Pestana à direita · casas de numeração maior à esquerda',
     nutLeft: 'Pestana à esquerda · casas de numeração maior à direita',
     custom: 'Personalizada',
-    customTuning: 'Alturas das cordas soltas, da mais grave à mais aguda',
-    tuningExample:
-      'Insira uma nota por corda, da mais grave à mais aguda, incluindo as oitavas.',
+    customTuning: 'Afinação personalizada',
+    tuningPitchError:
+      'Digite uma nota e uma oitava para a corda {string}, por exemplo E2.',
+    lowerString: 'Abaixar a corda {string} em um semitom',
+    raiseString: 'Subir a corda {string} em um semitom',
     selected: 'Escala selecionada',
     familyScope: 'Família atual',
     catalogScope: 'Catálogo completo',
@@ -377,7 +382,7 @@ export const copy = {
     degreesHint:
       '1 é a nota de referência. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
     tuningFieldsHint:
-      'Uma nota por corda, da mais grave à mais aguda. O número indica a oitava (por exemplo, E2).',
+      'Use − ou + para mudar a nota em um semitom ou digite uma nota como E2.',
     applyTuning: 'Aplicar afinação',
     cancelEdit: 'Cancelar edição',
     string: 'Corda',
@@ -390,8 +395,7 @@ export const copy = {
     cancelled: 'Geração do PDF cancelada.',
     scaleMap: 'mapa de escala',
     skip: 'Ir para o braço',
-    tuningOrder:
-      'Liste notas distintas da mais grave à mais aguda. Confira os números das oitavas.',
+    tuningOrder: 'A corda {string} deve soar mais aguda que a corda {previous}.',
     exportFailed: 'Não foi possível gerar o PDF. Tente novamente.',
     pageTitle: 'Tukany · Escalas para guitarra e baixo',
     explorerTitle: 'Diagramas interativos de escalas para guitarra e baixo',
@@ -514,6 +518,7 @@ export const copy = {
     audioUnavailable: 'El audio no está disponible en este navegador.',
     customScaleTitle: 'Escala personalizada',
     editPitches: 'Editar notas',
+    customizeTuning: 'Personalizar afinación',
     scaleFamily: 'Familia de escalas',
     commonScales: 'Escalas comunes',
     noteCount: 'notas',
@@ -545,9 +550,10 @@ export const copy = {
     nutRight: 'Cejuela a la derecha · trastes de mayor número a la izquierda',
     nutLeft: 'Cejuela a la izquierda · trastes de mayor número a la derecha',
     custom: 'Personalizada',
-    customTuning: 'Alturas de las cuerdas al aire, de la más grave a la más aguda',
-    tuningExample:
-      'Introduce una nota por cuerda con su número de octava, de la más grave a la más aguda.',
+    customTuning: 'Afinación personalizada',
+    tuningPitchError: 'Introduce una nota y una octava para la cuerda {string}, como E2.',
+    lowerString: 'Bajar la cuerda {string} un semitono',
+    raiseString: 'Subir la cuerda {string} un semitono',
     selected: 'Escala seleccionada',
     familyScope: 'Familia actual',
     catalogScope: 'Catálogo completo',
@@ -573,7 +579,7 @@ export const copy = {
     degreesHint:
       '1 es la nota de referencia. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
     tuningFieldsHint:
-      'Una nota por cuerda, de la más grave a la más aguda. El número indica la octava, por ejemplo E2.',
+      'Usa − o + para cambiar la nota un semitono o escribe una nota como E2.',
     applyTuning: 'Aplicar afinación',
     cancelEdit: 'Cancelar edición',
     string: 'Cuerda',
@@ -586,8 +592,7 @@ export const copy = {
     cancelled: 'Exportación cancelada.',
     scaleMap: 'mapa de escala',
     skip: 'Ir al diapasón',
-    tuningOrder:
-      'Ordena las notas de la más grave a la más aguda, sin repetir alturas. Revisa los números de octava.',
+    tuningOrder: 'La cuerda {string} debe sonar más aguda que la cuerda {previous}.',
     exportFailed: 'No se ha podido crear el PDF. Vuelve a intentarlo.',
     pageTitle: 'Tukany · Escalas para guitarra y bajo',
     explorerTitle: 'Diagramas interactivos de escalas para guitarra y bajo',

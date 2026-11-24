@@ -290,41 +290,42 @@
                   type="button"
                   class="secondary"
                   id="edit-pitches"
-                  data-i18n="editPitches"
                   aria-controls="custom-tuning"
-                  hidden
                 >
-                  Edit pitches
+                  <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                  <span id="edit-pitches-label" data-i18n="customizeTuning"
+                    >Customize tuning</span
+                  >
                 </button>
-                <div id="custom-tuning" class="editor" hidden>
-                  <p class="control-label" data-i18n="customTuning">
-                    Open-string pitches, low to high
-                  </p>
-                  <p class="hint" data-i18n="tuningFieldsHint">
-                    One pitch per string, lowest to highest. The number is the octave (for
-                    example, E2).
-                  </p>
-                  <div id="tuning-fields" class="tuning-fields"></div>
-                  <p id="tuning-error" class="hint error" role="alert"></p>
-                  <div class="editor-actions">
-                    <button
-                      type="button"
-                      class="secondary"
-                      id="apply-tuning"
-                      data-i18n="applyTuning"
-                    >
-                      Apply tuning</button
-                    ><button
-                      type="button"
-                      class="text-button"
-                      id="cancel-tuning"
-                      data-i18n="cancelEdit"
-                    >
-                      Cancel edit
-                    </button>
-                  </div>
-                </div>
               </div>
+              <section id="custom-tuning" aria-labelledby="custom-tuning-title" hidden>
+                <h3 id="custom-tuning-title" tabindex="-1" data-i18n="customTuning">
+                  Custom tuning
+                </h3>
+                <p class="hint" data-i18n="tuningFieldsHint">
+                  Use − or + to change a pitch by one semitone, or type a pitch like E2.
+                </p>
+                <div id="tuning-fields" class="tuning-fields"></div>
+                <span id="tuning-step-status" class="sr-only" role="status"></span>
+                <span id="tuning-error" class="sr-only" role="alert"></span>
+                <div class="editor-actions">
+                  <button
+                    type="button"
+                    class="primary"
+                    id="apply-tuning"
+                    data-i18n="applyTuning"
+                  >
+                    Apply tuning</button
+                  ><button
+                    type="button"
+                    class="text-button"
+                    id="cancel-tuning"
+                    data-i18n="cancelEdit"
+                  >
+                    Cancel edit
+                  </button>
+                </div>
+              </section>
               <p id="setup-status" class="hint" role="status" aria-live="polite"></p>
             </form>
           </div>

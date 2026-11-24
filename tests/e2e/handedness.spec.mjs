@@ -153,7 +153,9 @@ test('keyboard instrument changes keep the current orientation and restore each 
   await page.keyboard.press('Enter');
   const pitches = page.locator('#tuning-fields input');
   await expect(pitches).toHaveCount(5);
-  await expect(pitches.first()).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Custom tuning' })).toBeFocused();
+  await pitches.first().press('ArrowDown');
+  await expect(pitches.first()).toHaveValue('G♯0');
   await pitches.first().fill('G0');
   await page.locator('#apply-tuning').click();
   await expect(page.locator('#tuning-name')).toHaveText('Custom');

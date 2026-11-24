@@ -43,6 +43,10 @@ dropdown to change instrument, handedness, tuning, string count, or fret count. 
 orientation applies to both instruments. Each instrument recalls its string count
 and last tuning, including custom pitches.
 
+Choose **Customize tuning** to start from the current tuning. Use **−** or **+**
+to move a string one semitone, or type a note and octave such as `E2`. Select
+**Apply tuning** to update the fretboard and practice link.
+
 The fretboard displays the full neck. On narrow screens it starts at the nut,
 and you can scroll horizontally to reach the upper frets. The display controls
 inside the fretboard let you switch between note names and degrees or show notes

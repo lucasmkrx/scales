@@ -13,7 +13,6 @@ import {
   SHARPS,
   FLATS,
   parseNote,
-  parseTuning,
   sharedState,
   boardModel,
   boardDimensions,
@@ -408,34 +407,58 @@ new ResizeObserver(() => {
   const board = $('board');
   $('scroll-hint').hidden = board.scrollWidth <= board.clientWidth;
 }).observe($('board'));
-function validationMessage(id, key) {
-  const element = $(id);
-  element.textContent = key ? copy[state.lang][key] : '';
-  if (key) element.dataset.i18n = key;
-  else delete element.dataset.i18n;
-}
 function renderTuningLabels() {
   const t = copy[state.lang];
   $('tuning-fields')
-    .querySelectorAll('label')
-    .forEach((label, i) => {
-      const name = `${t.string} ${state.strings - i}`;
+    .querySelectorAll('.tuning-string')
+    .forEach((row, i) => {
+      const number = state.strings - i;
       const end = i === 0 ? t.lowest : i === state.strings - 1 ? t.highest : '';
-      label.querySelector('span').textContent = `${name}${end ? ` · ${end}` : ''}`;
-      label
-        .querySelector('input')
-        .setAttribute('aria-label', `${name}${end ? `, ${end}` : ''}`);
+      row.querySelector('label > span').textContent = `${t.string} ${number}`;
+      row.querySelector('small').textContent = end;
+      for (const button of row.querySelectorAll('button')) {
+        const action = button.dataset.tuningStep === '-1' ? t.lowerString : t.raiseString;
+        button.setAttribute('aria-label', action.replace('{string}', number));
+      }
     });
 }
-function renderTuningFields() {
-  const s = selection(state);
+function renderTuningFields(s) {
+  const preference = pitchPreference(s) === 'flat' ? 'flat' : 'sharp';
   $('tuning-fields').innerHTML = s.tuningData.notes
     .map(
-      (m, i) =>
-        `<label><span></span><input id="string-pitch-${i}" data-string-pitch value="${midiName(m)}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" aria-describedby="tuning-error"></label>`,
+      (midi, i) => `<div class="tuning-string">
+        <label for="string-pitch-${i}"><span></span><small></small></label>
+        <div class="pitch-stepper">
+          <button type="button" data-tuning-step="-1" aria-disabled="${midi === 0}">
+            <i class="fa-solid fa-minus" aria-hidden="true"></i>
+          </button>
+          <input type="text" id="string-pitch-${i}" data-string-pitch="${s.strings - i}"
+            data-midi="${midi}" value="${midiName(midi, preference)}" autocomplete="off"
+            autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done">
+          <button type="button" data-tuning-step="1" aria-disabled="${midi === 127}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <p id="string-pitch-error-${i}" class="tuning-field-error hint error"></p>
+      </div>`,
     )
     .join('');
-  renderTuningLabels();
+}
+function renderTuning(s) {
+  const t = copy[s.lang];
+  const preference = pitchPreference(s);
+  $('tuning-name').textContent = tuningName(s.tuningData);
+  $('open-string-pitches').innerHTML = s.tuningData.notes
+    .map((midi) => `<span>${midiName(midi, preference)}</span>`)
+    .join(' ');
+  $('custom-tuning').hidden = !tuningDraft;
+  const editLabel = $('edit-pitches-label');
+  editLabel.dataset.i18n = s.tuning === 'custom' ? 'editPitches' : 'customizeTuning';
+  editLabel.textContent = t[editLabel.dataset.i18n];
+  if (tuningDraft) {
+    renderTuningLabels();
+    if ($('tuning-error').textContent) validateTuningFields();
+  }
 }
 const exportCards = [...document.querySelectorAll('[data-export]')];
 
@@ -517,18 +540,8 @@ function render() {
     document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
       input.checked = input.value === String(state[name]);
     });
-  const preference = pitchPreference(s);
-  $('tuning').value = tuningDraft ? 'custom' : state.tuning;
-  $('tuning-name').textContent =
-    tuningDraft || state.tuning === 'custom' ? t.custom : tuningName(s.tuningData);
-  $('open-string-pitches').innerHTML = s.tuningData.notes
-    .map((midi) => `<span>${midiName(midi, preference)}</span>`)
-    .join(' ');
+  renderTuning(s);
   $('allNotes').checked = state.allNotes;
-  $('custom-tuning').hidden = !tuningDraft;
-  if (tuningDraft) renderTuningLabels();
-  $('edit-pitches').hidden = tuningDraft || state.tuning !== 'custom';
-  $('preset-notes').hidden = tuningDraft;
   const note = rootName(s),
     scale = scaleName(s.scaleData, s.lang);
   const wheelNote = $('root-wheel-note'),
@@ -564,41 +577,84 @@ function update(values, { setup = false } = {}) {
 }
 function cancelTuning() {
   tuningDraft = false;
-  validationMessage('tuning-error');
-  $('custom-tuning').hidden = true;
-  render();
-  (state.tuning === 'custom' ? $('edit-pitches') : $('tuning')).focus();
+  renderTuning(selection(state));
+  $('edit-pitches').focus();
 }
-function applyTuning() {
-  const fields = [...$('tuning-fields').querySelectorAll('input')],
-    text = fields.map((field) => field.value.trim()).join(' ');
-  fields.forEach((field) => field.removeAttribute('aria-invalid'));
-  const invalid = fields.filter((field) => {
-    try {
-      parseNote(field.value);
-      return false;
-    } catch {
-      return true;
+function readTuningPitch(field) {
+  try {
+    return parseNote(field.value);
+  } catch {
+    return null;
+  }
+}
+function validateTuningFields(
+  fields = [...$('tuning-fields').querySelectorAll('input')],
+) {
+  const t = copy[state.lang];
+  const pitches = fields.map(readTuningPitch);
+  const malformed = pitches.indexOf(null);
+  const outOfOrder =
+    malformed < 0 ? pitches.findIndex((midi, i) => i > 0 && midi <= pitches[i - 1]) : -1;
+  const invalid = malformed >= 0 ? malformed : outOfOrder;
+  let message = '';
+  if (malformed >= 0) {
+    message = t.tuningPitchError.replace(
+      '{string}',
+      fields[malformed].dataset.stringPitch,
+    );
+  } else if (outOfOrder >= 0) {
+    message = t.tuningOrder
+      .replace('{string}', fields[outOfOrder].dataset.stringPitch)
+      .replace('{previous}', fields[outOfOrder - 1].dataset.stringPitch);
+  }
+  fields.forEach((field, i) => {
+    const error = $(`string-pitch-error-${i}`);
+    const fieldMessage = i === invalid ? message : '';
+    if (error.textContent !== fieldMessage) error.textContent = fieldMessage;
+    if (i === invalid || i === outOfOrder - 1) {
+      field.setAttribute('aria-invalid', 'true');
+      field.setAttribute('aria-describedby', `string-pitch-error-${invalid}`);
+    } else {
+      field.removeAttribute('aria-invalid');
+      field.removeAttribute('aria-describedby');
     }
   });
-  if (invalid.length) {
-    invalid.forEach((field) => field.setAttribute('aria-invalid', 'true'));
-    validationMessage('tuning-error', 'tuningExample');
-    invalid[0].focus();
+  const error = $('tuning-error');
+  if (error.textContent !== message) error.textContent = message;
+  return fields[invalid];
+}
+function updateTuningPitch(field) {
+  const midi = readTuningPitch(field);
+  if (midi !== null) field.dataset.midi = midi;
+  for (const button of field.parentElement.querySelectorAll('button')) {
+    const next = Number(field.dataset.midi) + Number(button.dataset.tuningStep);
+    button.setAttribute('aria-disabled', String(next < 0 || next > 127));
+  }
+  if ($('tuning-error').textContent) validateTuningFields();
+}
+function shiftTuningPitch(field, step) {
+  const midi = Number(field.dataset.midi) + step;
+  if (midi < 0 || midi > 127) return;
+  const preference = pitchPreference(state) === 'flat' ? 'flat' : 'sharp';
+  field.value = midiName(midi, preference);
+  updateTuningPitch(field);
+  $('tuning-step-status').textContent =
+    `${copy[state.lang].string} ${field.dataset.stringPitch}, ${field.value}`;
+}
+function applyTuning() {
+  const fields = [...$('tuning-fields').querySelectorAll('input')];
+  const invalid = validateTuningFields(fields);
+  if (invalid) {
+    invalid.focus();
     return;
   }
-  try {
-    parseTuning(text, state.strings);
-    tuningDraft = false;
-    update({ tuning: 'custom', customTuning: text });
-    validationMessage('tuning-error');
-    $('setup-status').textContent = copy[state.lang].tuningApplied;
-    $('tuning').focus();
-  } catch {
-    fields.forEach((field) => field.setAttribute('aria-invalid', 'true'));
-    validationMessage('tuning-error', 'tuningOrder');
-    fields[0]?.focus();
-  }
+  tuningDraft = false;
+  update({
+    tuning: 'custom',
+    customTuning: fields.map((field) => field.value.trim()).join(' '),
+  });
+  $('setup-status').textContent = copy[state.lang].tuningApplied;
+  $('tuning').focus();
 }
 async function audioPlayer() {
   if (!instrumentAudio) {
@@ -764,12 +820,10 @@ document.addEventListener('visibilitychange', () => {
 enableBoardNavigation($('board'), playNote);
 $('instrument').addEventListener('change', (event) => {
   tuningDraft = false;
-  validationMessage('tuning-error');
   update({ instrument: event.target.value }, { setup: true });
 });
 $('strings').addEventListener('change', (event) => {
   tuningDraft = false;
-  validationMessage('tuning-error');
   update({ strings: event.target.value }, { setup: true });
 });
 $('hand').addEventListener('change', (event) => update({ hand: event.target.value }));
@@ -787,12 +841,12 @@ function tuningChoices() {
     value: tuning.id,
     label: tuningName(tuning),
     detail: tuning.notes.map((midi) => midiName(midi, preference)).join(' '),
-    selected: tuning.id === $('tuning').value,
+    selected: tuning.id === state.tuning,
   }));
   choices.push({
     value: 'custom',
     label: copy[state.lang].custom,
-    selected: $('tuning').value === 'custom',
+    selected: state.tuning === 'custom',
   });
   return choices;
 }
@@ -800,27 +854,45 @@ dropdowns.register($('tuning'), 'tuning-caption', tuningChoices, (value) => {
   if (value === 'custom') editTuning();
   else {
     tuningDraft = false;
-    validationMessage('tuning-error');
     update({ tuning: value });
   }
 });
 function editTuning() {
-  tuningDraft = true;
-  $('tuning').value = 'custom';
-  $('tuning-name').textContent = copy[state.lang].custom;
-  renderTuningFields();
-  $('custom-tuning').hidden = false;
-  $('edit-pitches').hidden = true;
-  $('preset-notes').hidden = true;
-  $('setup-status').textContent = '';
-  validationMessage('tuning-error');
-  $('tuning-fields').querySelector('input').focus();
+  if (!tuningDraft) {
+    const s = selection(state);
+    tuningDraft = true;
+    $('tuning-error').textContent = '';
+    $('tuning-step-status').textContent = '';
+    $('setup-status').textContent = '';
+    renderTuningFields(s);
+    renderTuning(s);
+  }
+  $('custom-tuning-title').focus();
 }
 $('edit-pitches').addEventListener('click', editTuning);
+$('tuning-fields').addEventListener('input', ({ target }) => updateTuningPitch(target));
+$('tuning-fields').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-tuning-step]');
+  if (button)
+    shiftTuningPitch(
+      button.parentElement.querySelector('input'),
+      Number(button.dataset.tuningStep),
+    );
+});
 $('tuning-fields').addEventListener('keydown', (event) => {
+  if (!event.target.matches('[data-string-pitch]') || event.isComposing) return;
   if (event.key === 'Enter') {
     event.preventDefault();
     applyTuning();
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    shiftTuningPitch(event.target, event.key === 'ArrowDown' ? -1 : 1);
+  }
+});
+$('custom-tuning').addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !event.isComposing) {
+    event.preventDefault();
+    cancelTuning();
   }
 });
 $('scale-results').addEventListener('click', (event) => {

@@ -239,6 +239,55 @@ test('the tuning list stays anchored on resize and Escape dismisses one dropdown
   await expect(setup).toBeFocused();
 });
 
+test('a custom tuning highlights the strings to fix and keeps changes in the editor until applied', async ({
+  page,
+}) => {
+  await page.goto(url({ strings: '7', tuning: 'guitar-7-standard' }));
+  const setup = page.locator('#instrument-toggle');
+  const customize = page.getByRole('button', { name: 'Customize tuning' });
+  const pitches = page.locator('#tuning-fields input');
+  const error = page.locator('#string-pitch-error-1');
+  const apply = page.getByRole('button', { name: 'Apply tuning' });
+  await setup.click();
+  await customize.click();
+  await expect(pitches).toHaveCount(7);
+  const lowest = page.getByRole('textbox', { name: 'String 7 lowest' });
+  const next = page.getByRole('textbox', { name: 'String 6', exact: true });
+  await expect(lowest).toHaveValue('B1');
+  const presetURL = page.url();
+
+  await lowest.press('ArrowUp');
+  await expect(lowest).toHaveValue('C2');
+  await expect(page).toHaveURL(presetURL);
+  await lowest.press('Escape');
+  await expect(lowest).toBeHidden();
+  await expect(customize).toBeFocused();
+
+  await customize.click();
+  await expect(lowest).toHaveValue('B1');
+  await next.fill('E');
+  await apply.click();
+  await expect(next).toBeFocused();
+  await expect(next).toHaveAttribute('aria-invalid', 'true');
+  await expect(error).toBeVisible();
+  await expect(error).toHaveText('Enter a note and octave for string 6, for example E2.');
+  await expect(lowest).not.toHaveAttribute('aria-invalid', 'true');
+  await next.fill('B1');
+  await expect(error).toHaveText('String 6 must be higher than string 7.');
+  await expect(lowest).toHaveAttribute('aria-invalid', 'true');
+  await expect(page).toHaveURL(presetURL);
+
+  await next.fill('E♭2');
+  await expect(error).toBeEmpty();
+  await expect(next).not.toHaveAttribute('aria-invalid', 'true');
+  await next.press('Enter');
+  await expect(page.locator('#custom-tuning')).toBeHidden();
+  await expect(setup.locator('#setup-summary')).toContainText('B1 D♯2 A2 D3 G3 B3 E4');
+  expect(new URL(page.url()).searchParams.get('pitches')).toBe('B1 Eb2 A2 D3 G3 B3 E4');
+  await page.reload();
+  await expect(setup.locator('#setup-summary')).toContainText('B1 D♯2 A2 D3 G3 B3 E4');
+});
+
 test.describe('touch workspace', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 675 } });
 
@@ -295,13 +344,22 @@ test.describe('touch workspace', () => {
     await page.goto(`${url()}#fretboard`);
     const setup = page.locator('#instrument-toggle');
     await setup.tap();
-    await page.locator('#tuning').tap();
-    await page.getByRole('option', { name: 'Custom', exact: true }).tap();
+    await page.getByRole('button', { name: 'Customize tuning' }).tap();
     const lowString = page.locator('#string-pitch-0');
+    const lower = page.getByRole('button', { name: 'Lower string 6 by a semitone' });
+    const raise = page.getByRole('button', { name: 'Raise string 6 by a semitone' });
+    await expect(lowString).not.toBeFocused();
+    await expect(page.locator('#apply-tuning')).toBeInViewport({ ratio: 1 });
+    await lower.tap();
+    await expect(lowString).toHaveValue('D♯2');
+    await raise.tap();
+    await expect(lowString).toHaveValue('E2');
     await lowString.tap();
     await expect(lowString).toHaveCSS('font-size', '16px');
     for (const control of [
       lowString,
+      lower,
+      raise,
       page.locator('#apply-tuning'),
       page.locator('#cancel-tuning'),
     ]) {

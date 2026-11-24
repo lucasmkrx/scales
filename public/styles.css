@@ -53,6 +53,9 @@
 .fa-link::before {
   content: '\f0c1';
 }
+.fa-minus::before {
+  content: '\f068';
+}
 .fa-moon::before {
   content: '\f186';
 }
@@ -64,6 +67,9 @@
 }
 .fa-play::before {
   content: '\f04b';
+}
+.fa-plus::before {
+  content: '\2b';
 }
 .fa-stop::before {
   content: '\f04d';
@@ -376,13 +382,11 @@ select {
   font-size: 10px;
   pointer-events: none;
 }
-label,
-.control-label {
+label {
   display: block;
 }
 label > span,
-.select-control > label:not(.sr-only),
-.control-label {
+.select-control > label:not(.sr-only) {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
@@ -1155,14 +1159,22 @@ button.tuning-picker {
 #edit-pitches {
   margin-top: 10px;
   min-height: 36px;
-  font-size: 12px;
+  color: var(--accent);
+  font-size: 13px;
 }
-.editor {
-  background: var(--background);
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  padding: 14px;
-  margin-top: 14px;
+#custom-tuning {
+  min-width: 0;
+}
+#instrument-form:has(#custom-tuning:not([hidden])) > :not(#custom-tuning) {
+  display: none;
+}
+#custom-tuning-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+}
+#custom-tuning-title + .hint {
+  margin-block: 4px 12px;
 }
 .editor-actions {
   display: flex;
@@ -1176,20 +1188,62 @@ button.tuning-picker {
 }
 .tuning-fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: end;
-  gap: 10px;
+  gap: 4px 16px;
 }
-.tuning-fields label > span {
-  font-size: 12px;
+.tuning-string {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding-block: 4px;
+  border-block-start: 1px solid var(--rule);
+}
+.tuning-string label > span {
+  margin: 0;
+  color: var(--ink);
+}
+.tuning-string label > small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.tuning-string label > small:empty {
+  display: none;
+}
+.pitch-stepper {
+  display: grid;
+  grid-template-columns: 36px 3.75rem 36px;
+  gap: 4px;
+}
+.pitch-stepper button {
+  min-height: 36px;
+  padding: 0;
+  color: var(--accent);
+}
+.pitch-stepper button[aria-disabled='true'] {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--control-border);
+  opacity: 0.55;
+  cursor: default;
+}
+.pitch-stepper input[type='text'] {
+  min-height: 36px;
+  padding: 4px;
+  font: 600 16px/1.3 var(--mono);
+  text-align: center;
+}
+.tuning-field-error {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 @media (pointer: coarse), (max-width: 560px) {
-  .tuning-fields {
-    grid-template-columns: repeat(auto-fit, minmax(min(4.5rem, 100%), 1fr));
+  .pitch-stepper {
+    grid-template-columns: 44px 3.75rem 44px;
   }
-  #tuning-fields input {
+  .pitch-stepper input[type='text'],
+  .pitch-stepper button {
     min-height: 44px;
-    font-size: 16px;
   }
   #edit-pitches,
   #custom-tuning .editor-actions button {
@@ -1223,11 +1277,8 @@ button.tuning-picker {
   #setup-status {
     grid-column: 1 / -1;
   }
-  #custom-tuning {
-    margin-top: 0;
-  }
   .tuning-fields {
-    grid-template-columns: repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   }
 }
 input[aria-invalid='true'] {

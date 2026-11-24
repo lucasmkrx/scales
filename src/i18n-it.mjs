@@ -119,6 +119,7 @@ export default {
   audioUnavailable: 'L’audio non è disponibile in questo browser.',
   customScaleTitle: 'Scala personalizzata',
   editPitches: 'Modifica le note',
+  customizeTuning: 'Personalizza l’accordatura',
   scaleFamily: 'Famiglia di scale',
   commonScales: 'Scale comuni',
   noteCount: 'note',
@@ -150,9 +151,11 @@ export default {
   nutRight: 'Capotasto a destra · tasti più alti a sinistra',
   nutLeft: 'Capotasto a sinistra · tasti più alti a destra',
   custom: 'Personalizzata',
-  customTuning: 'Note delle corde a vuoto, dalla più grave alla più acuta',
-  tuningExample:
-    'Inserisci una nota per corda con il numero di ottava, dalla più grave alla più acuta.',
+  customTuning: 'Accordatura personalizzata',
+  tuningPitchError:
+    'Inserisci una nota e un’ottava per la corda {string}, ad esempio E2.',
+  lowerString: 'Abbassa la corda {string} di un semitono',
+  raiseString: 'Alza la corda {string} di un semitono',
   selected: 'Scala selezionata',
   familyScope: 'Famiglia attuale',
   catalogScope: 'Catalogo completo',
@@ -178,7 +181,7 @@ export default {
   degreesHint:
     '1 indica la tonica. I gradi esprimono gli intervalli rispetto alla tonica. Rispetto alla scala maggiore, un bemolle abbassa il grado di un semitono e un diesis lo alza di un semitono.',
   tuningFieldsHint:
-    'Una nota per corda, dalla più grave alla più acuta. Il numero indica l’ottava, per esempio E2.',
+    'Usa − o + per cambiare la nota di un semitono oppure digita una nota come E2.',
   applyTuning: 'Applica accordatura',
   cancelEdit: 'Annulla modifiche',
   string: 'Corda',
@@ -192,8 +195,7 @@ export default {
   cancelled: 'Esportazione annullata.',
   scaleMap: 'diagramma di scala',
   skip: 'Vai alla tastiera',
-  tuningOrder:
-    'Elenca note di altezza diversa, dalla più grave alla più acuta. Controlla i numeri di ottava.',
+  tuningOrder: 'La corda {string} deve suonare più acuta della corda {previous}.',
   exportFailed: 'Impossibile creare il PDF. Riprova.',
   pageTitle: 'Tukany · Scale per chitarra e basso',
   explorerTitle: 'Diagrammi interattivi delle scale per chitarra e basso',

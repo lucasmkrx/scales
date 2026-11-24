@@ -117,6 +117,7 @@ export default {
   audioUnavailable: 'In diesem Browser ist keine Audiowiedergabe verfügbar.',
   customScaleTitle: 'Eigene Tonleiter',
   editPitches: 'Tonhöhen bearbeiten',
+  customizeTuning: 'Stimmung anpassen',
   scaleFamily: 'Tonleiterfamilie',
   commonScales: 'Gängige Tonleitern',
   noteCount: 'Töne',
@@ -148,8 +149,11 @@ export default {
   nutRight: 'Sattel rechts · höhere Bünde links',
   nutLeft: 'Sattel links · höhere Bünde rechts',
   custom: 'Eigene',
-  customTuning: 'Tonhöhen der Leersaiten, von tief nach hoch',
-  tuningExample: 'Gib für jede Saite einen Ton mit Oktavzahl ein, von tief nach hoch.',
+  customTuning: 'Eigene Stimmung',
+  tuningPitchError:
+    'Gib für Saite {string} einen Ton mit Oktavzahl ein, zum Beispiel E2.',
+  lowerString: 'Saite {string} um einen Halbton tiefer stimmen',
+  raiseString: 'Saite {string} um einen Halbton höher stimmen',
   selected: 'Ausgewählte Tonleiter',
   familyScope: 'Aktuelle Familie',
   catalogScope: 'Gesamter Katalog',
@@ -174,7 +178,7 @@ export default {
   degreesHint:
     'Die 1 bezeichnet den Grundton. Die Stufen geben die Intervalle zum Grundton an. Ein ♭ erniedrigt die entsprechende Stufe der Durtonleiter um einen Halbton, ein ♯ erhöht sie um einen Halbton.',
   tuningFieldsHint:
-    'Gib pro Saite einen Ton ein, von tief nach hoch. Die Zahl bezeichnet die Oktave, zum Beispiel E2.',
+    'Ändere den Ton mit − oder + um einen Halbton oder gib einen Ton wie E2 ein.',
   applyTuning: 'Stimmung übernehmen',
   cancelEdit: 'Bearbeitung abbrechen',
   string: 'Saite',
@@ -187,8 +191,7 @@ export default {
   cancelled: 'Export abgebrochen.',
   scaleMap: 'Griffbild',
   skip: 'Zum Griffbrett springen',
-  tuningOrder:
-    'Gib die Tonhöhen ohne Wiederholung von tief nach hoch an. Prüfe die Oktavzahlen.',
+  tuningOrder: 'Saite {string} muss höher klingen als Saite {previous}.',
   exportFailed: 'Das PDF konnte nicht erstellt werden. Bitte versuche es erneut.',
   pageTitle: 'Tukany · Tonleiterfinder für Gitarre und Bass',
   explorerTitle: 'Interaktive Tonleiterdiagramme für Gitarre und Bass',

@@ -72,10 +72,10 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   wrap within the list on phones. Choose a preset and
   confirm the button shows its name and open-string pitches. Reopen the list and
   press Escape to dismiss it while keeping that tuning.
-- Change handedness and tuning in the instrument dropdown, including a custom
-  tuning with octave numbers. Invalid input must remain uncommitted with an inline
-  explanation. Apply and cancel custom pitch edits and change instrument/string
-  count while editing to check that the draft state resets cleanly.
+- Choose **Customize tuning** from a preset. Step a string by a semitone and type
+  a pitch with an octave. Check that errors appear beside the affected string and
+  that **Cancel edit** restores the instrument settings. Apply a tuning and reopen
+  its practice link to verify the pitches.
 - Check that the instrument and handedness choices are visible on phones in all
   six languages. Select Guitar, Bass, Right-handed, and Left-handed by pointer
   and by keyboard. Tap and drag each switch. Check that the filled pill and checkmark move to the selected

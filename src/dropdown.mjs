@@ -13,7 +13,14 @@ function visibleViewport() {
   );
 }
 
-function placeDropdown(popup, rect, wantedHeight, viewport, alignEnd = false) {
+function placeDropdown(
+  popup,
+  rect,
+  wantedHeight,
+  viewport,
+  alignEnd = false,
+  minHeight = 88,
+) {
   const width = popup.offsetWidth;
   const maxLeft = viewport.right - gap - width;
   const left = alignEnd || rect.left > maxLeft ? rect.right - width : rect.left;
@@ -28,8 +35,8 @@ function placeDropdown(popup, rect, wantedHeight, viewport, alignEnd = false) {
   const below = bottom - belowStart;
   const opensAbove = wantedHeight > below && above > below;
   const available = opensAbove ? above : below;
-  // When the keyboard leaves less than two touch rows on either side, use the visible area.
-  if (available < Math.min(88, wantedHeight)) {
+  // Keep the tuning editor and short menus reachable within the visible area.
+  if (available < Math.min(minHeight, wantedHeight)) {
     popup.style.maxHeight = `${Math.max(0, Math.min(wantedHeight, viewport.height - 2 * gap))}px`;
     popup.style.top = `${viewport.top + gap}px`;
     return;
@@ -39,6 +46,7 @@ function placeDropdown(popup, rect, wantedHeight, viewport, alignEnd = false) {
 }
 
 export function enableInstrumentDropdown(trigger, panel) {
+  const tuningEditor = panel.querySelector('#custom-tuning');
   let layoutWidth;
   function place() {
     if (!panel.matches(':popover-open')) return;
@@ -59,7 +67,7 @@ export function enableInstrumentDropdown(trigger, panel) {
     const viewport = visibleViewport();
     panel.style.maxWidth = `${Math.max(0, viewport.width - 2 * gap)}px`;
     const height = panel.scrollHeight + panel.offsetHeight - panel.clientHeight;
-    placeDropdown(panel, rect, height, viewport, true);
+    placeDropdown(panel, rect, height, viewport, true, tuningEditor.hidden ? 88 : height);
     // A phone keyboard can cover the focused pitch without resizing the page.
     if (field) {
       const input = field.getBoundingClientRect();
@@ -78,8 +86,12 @@ export function enableInstrumentDropdown(trigger, panel) {
     trigger.setAttribute('aria-expanded', String(open));
     if (open) {
       place();
-      if (document.activeElement === panel || !panel.contains(document.activeElement))
-        panel.querySelector('input:checked').focus({ preventScroll: true });
+      if (document.activeElement === panel || !panel.contains(document.activeElement)) {
+        const focus = tuningEditor.hidden
+          ? panel.querySelector('input:checked')
+          : tuningEditor.querySelector('#custom-tuning-title');
+        focus.focus({ preventScroll: true });
+      }
     }
   });
   panel.addEventListener('keydown', (event) => {

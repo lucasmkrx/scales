@@ -118,6 +118,7 @@ export default {
   audioUnavailable: 'L’audio n’est pas disponible dans ce navigateur.',
   customScaleTitle: 'Gamme personnalisée',
   editPitches: 'Modifier les notes',
+  customizeTuning: 'Personnaliser l’accordage',
   scaleFamily: 'Famille de gammes',
   commonScales: 'Gammes courantes',
   noteCount: 'notes',
@@ -149,9 +150,11 @@ export default {
   nutRight: 'Sillet à droite · numéros de cases croissants vers la gauche',
   nutLeft: 'Sillet à gauche · numéros de cases croissants vers la droite',
   custom: 'Personnalisé',
-  customTuning: 'Notes des cordes à vide, du grave à l’aigu',
-  tuningExample:
-    'Saisissez une note et son numéro d’octave par corde, du grave à l’aigu.',
+  customTuning: 'Accordage personnalisé',
+  tuningPitchError:
+    'Saisissez une note et une octave pour la corde {string}, par exemple E2.',
+  lowerString: 'Baisser la corde {string} d’un demi-ton',
+  raiseString: 'Monter la corde {string} d’un demi-ton',
   selected: 'Gamme sélectionnée',
   familyScope: 'Famille sélectionnée',
   catalogScope: 'Catalogue complet',
@@ -176,7 +179,7 @@ export default {
   degreesHint:
     'Le degré 1 est la tonique. Chaque degré indique un intervalle à partir de cette note. Le bémol abaisse d’un demi-ton le degré correspondant de la gamme majeure, le dièse l’élève d’un demi-ton.',
   tuningFieldsHint:
-    'Indiquez une note par corde, du grave à l’aigu. Le chiffre indique l’octave (par exemple E2).',
+    'Utilisez − ou + pour changer la note d’un demi-ton, ou saisissez une note comme E2.',
   applyTuning: 'Appliquer l’accordage',
   cancelEdit: 'Annuler les modifications',
   string: 'Corde',
@@ -189,8 +192,7 @@ export default {
   cancelled: 'Exportation annulée.',
   scaleMap: 'diagramme de gamme',
   skip: 'Aller au manche',
-  tuningOrder:
-    'Indiquez des hauteurs distinctes du grave à l’aigu. Vérifiez les numéros d’octave.',
+  tuningOrder: 'La corde {string} doit être plus aiguë que la corde {previous}.',
   exportFailed: 'La création du PDF a échoué. Réessayez.',
   pageTitle: 'Tukany · Gammes pour guitare et basse',
   explorerTitle: 'Diagrammes de gammes interactifs pour guitare et basse',
