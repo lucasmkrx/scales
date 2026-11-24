@@ -3,12 +3,14 @@
 export default {
   pdfDownloads: 'Scarica i PDF',
   scalesAndArpeggios: 'Scale e arpeggi',
-  pdfFormat: 'A4 orizzontale',
+  paperSize: 'Formato carta',
+  letterPaper: 'Lettera USA',
+  practiceSheet: 'Scheda di studio',
+  page: 'pagina',
+  collectionOnRoot: '{collection} in {root}',
   backToTop: 'Torna in alto',
   themeLabel: 'Tema {current}. Passa al tema {next}.',
   themeModes: { light: 'chiaro', dark: 'scuro' },
-  quickNavigation: 'Navigazione rapida',
-  goToBoard: 'Vai alla tastiera',
   patternShape: 'Forma di {shape}',
   patternDetails: 'Nota più grave: {note} ({degree})',
   patternLabels: {
@@ -125,7 +127,6 @@ export default {
   scaleSettings: 'Scala',
   singleNote: 'nota',
   openStringsShort: 'Corde a vuoto',
-  manualCopy: 'Copia questo link',
   keyboardNotes:
     'Usa i tasti freccia per spostarti tra le note. Premi Invio o la barra spaziatrice per suonare.',
   instrument: 'Strumento',
@@ -144,7 +145,6 @@ export default {
   degrees: 'Gradi',
   showAll: 'Mostra le altre note',
   pdf: 'Scarica PDF',
-  share: 'Copia link',
   formula: 'Formula',
   openStrings: 'Corde a vuoto · dalla più grave alla più acuta',
   nutRight: 'Capotasto a destra · tasti più alti a sinistra',
@@ -157,7 +157,6 @@ export default {
   familyScope: 'Famiglia attuale',
   catalogScope: 'Catalogo completo',
   exporting: 'Creazione del PDF in corso',
-  saved: 'Link copiato. L’indirizzo contiene la tua selezione.',
   ready: 'Pronto',
   credits: 'Creato da Lucas Marques',
   source: 'Codice sorgente e contributi',
@@ -176,7 +175,6 @@ export default {
   outsideChord: 'Estranea all’accordo',
   editInstrument: 'Modifica strumento',
   fretboard: 'Tastiera',
-  circleOfFifths: 'Circolo delle quinte',
   degreesHint:
     '1 indica la tonica. I gradi esprimono gli intervalli rispetto alla tonica. Rispetto alla scala maggiore, un bemolle abbassa il grado di un semitono e un diesis lo alza di un semitono.',
   tuningFieldsHint:

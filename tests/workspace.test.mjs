@@ -203,8 +203,8 @@ test('shared ranges, older links, and malformed saved practice have predictable 
   assert.equal(restoreRange({}, malformed), 'full');
   assert.equal(rememberWorkspace(saved, restored).practice.formula, undefined);
 });
-test('export estimates include covers, reading pages, and additional contents pages', () => {
-  assert.deepEqual(exportPreview({ scale: 'major' }), { count: 1, pages: 3 });
+test('export estimates distinguish individual charts from indexed books', () => {
+  assert.deepEqual(exportPreview({ scale: 'major' }), { count: 1, pages: 1 });
   assert.deepEqual(exportPreview({ scale: 'major' }, { allKeys: true }), {
     count: 12,
     pages: 14,

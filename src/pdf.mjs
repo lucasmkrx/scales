@@ -11,23 +11,47 @@ import {
   fretFill,
   PALETTE,
   SCALES,
-  mod,
   pitchPreference,
 } from './music.mjs';
 import { FAMILIES } from './catalog.mjs';
-import { guideBoardLayout, bassRoute, guidePlan } from './guide-layout.mjs';
+import {
+  guideBoardLayout,
+  guidePatternLayout,
+  guidePlan,
+  catalogIndexCapacity,
+  catalogIndexColumns,
+} from './guide-layout.mjs';
 import { copy } from './i18n.mjs';
-import { scalePatterns } from './patterns.mjs';
+import { practicePatterns } from './patterns.mjs';
+import { scaleName } from './workspace.mjs';
+import {
+  accidentalPaths,
+  keySignaturePositions,
+  lineGap,
+  practiceStaffPoints,
+  staffLayout,
+  staffTop,
+  staffY,
+} from './staff.mjs';
 import { LANGUAGES, tuningName as localizedTuningName } from './locales.mjs';
-const W = 841.89,
-  H = 595.28,
-  M = 44,
-  R = W - M;
+const paperSizes = { a4: [841.89, 595.28], letter: [792, 612] };
 
 export async function createAtlas(
-  input,
-  { scope = 'selected', allKeys = false, asset, progress = () => {}, signal } = {},
+  input = {},
+  {
+    scope = 'selected',
+    allKeys = false,
+    paperSize = 'a4',
+    asset,
+    progress = () => {},
+    signal,
+  } = {},
 ) {
+  if (!Object.hasOwn(paperSizes, paperSize))
+    throw new Error('Paper size must be a4 or letter');
+  const [W, H] = paperSizes[paperSize],
+    M = 44,
+    R = W - M;
   const pdf = globalThis.PDFLib ?? {};
   const { PDFDocument, rgb, PDFName, PDFString, PDFHexString } = pdf;
   if (!PDFDocument || !globalThis.fontkit)
@@ -39,28 +63,27 @@ export async function createAtlas(
       if (!r.ok) throw new Error(`Cannot load ${path}`);
       return new Uint8Array(await r.arrayBuffer());
     });
-  const initial = selection({ ...input, allNotes: false }),
+  const initial = selection({
+      ...input,
+      allNotes: scope === 'selected' && !allKeys && input.allNotes,
+    }),
     t = copy[initial.lang];
   const tr = (en, pt, es, it, fr, de) => ({ en, pt, es, it, fr, de })[initial.lang],
     doc = await PDFDocument.create();
   doc.registerFontkit(globalThis.fontkit);
-  const [bodyBytes, boldBytes, headBytes, logoBytes, wordmarkBytes] = await Promise.all([
+  const [bodyBytes, boldBytes, wordmarkBytes, birdBytes] = await Promise.all([
     get('assets/fonts/DejaVuSans.ttf'),
     get('assets/fonts/DejaVuSans-Bold.ttf'),
-    get('assets/fonts/Literata-Bold.ttf'),
-    get('assets/marques-and-co.png'),
     get('assets/tukany-wordmark.svg'),
+    get('assets/tukany-logo.svg'),
   ]);
   const body = await doc.embedFont(bodyBytes, { subset: true }),
-    bold = await doc.embedFont(boldBytes, { subset: true }),
-    heading = await doc.embedFont(headBytes, { subset: true });
-  const logo = await doc.embedPng(logoBytes);
-  const logoSize = logo.scale(84 / logo.width);
-  // The master wordmark is a single outlined path shared by the site and print covers.
+    bold = await doc.embedFont(boldBytes, { subset: true });
+  // Use the site's original two vector marks so they stay sharp in print.
   const svg = new TextDecoder().decode(wordmarkBytes);
   const wordmarkPath = svg.match(/<path\b[^>]*?\sd="([^"]+)"/)?.[1];
-  const wordmarkWidth = Number(svg.match(/viewBox="0 0 ([\d.]+) [\d.]+"/)?.[1]);
-  if (!wordmarkPath || !wordmarkWidth) throw new Error('Cannot read the Tukany wordmark');
+  const viewBox = (source) => source.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+  const wordmarkHeight = Number(viewBox(svg)?.[2]);
   const color = (hex) =>
     rgb(
       ...hex
@@ -68,12 +91,40 @@ export async function createAtlas(
         .match(/../g)
         .map((v) => parseInt(v, 16) / 255),
     );
-  const ink = color('#20343f'),
-    muted = color('#465865'),
-    rule = color('#d0dbe2'),
-    grid = color('#bbc7ce'),
-    paper = rgb(0.985, 0.99, 0.995),
-    pale = color('#eff3f7');
+  const ink = color('#1b2925'),
+    muted = color('#53655e'),
+    accent = color('#176448'),
+    rule = color('#dce5e1'),
+    grid = color('#b4c2bb'),
+    paper = rgb(1, 1, 1),
+    pale = color('#f5f8f6');
+  const fretColors = {
+    open: '#e2ebe6',
+    octave: '#d8e5de',
+    marker: '#e8efeb',
+    upper: '#eff4f1',
+    lower: '#fbfcfb',
+  };
+  const birdSvg = new TextDecoder().decode(birdBytes);
+  const birdPaths = [...birdSvg.matchAll(/<path fill="([^"]+)" d="([^"]+)"/g)];
+  const birdBounds = viewBox(birdSvg);
+  if (!wordmarkPath || !wordmarkHeight || !birdPaths.length || !birdBounds)
+    throw new Error('Cannot read the Tukany logo');
+  function brand(page, x, top, height) {
+    for (const [, fill, d] of birdPaths)
+      page.drawSvgPath(d, {
+        x,
+        y: H - top,
+        scale: height / Number(birdBounds[2]),
+        color: fill === '#000' ? rgb(0, 0, 0) : color(fill),
+      });
+    page.drawSvgPath(wordmarkPath, {
+      x: x + height * (Number(birdBounds[1]) / Number(birdBounds[2]) + 0.12),
+      y: H - top - height * 0.27,
+      scale: height / wordmarkHeight,
+      color: rgb(0, 0, 0),
+    });
+  }
   const selected =
     scope === 'catalog'
       ? SCALES
@@ -91,7 +142,22 @@ export async function createAtlas(
       ),
     )
     .map((s) => ({ ...s, title: `${rootName(s)} ${s.scaleData.name[s.lang]}` }));
+  const collection =
+    scope === 'catalog'
+      ? t.scalesAndArpeggios
+      : scope === 'family'
+        ? FAMILIES[initial.scaleData.family][initial.lang]
+        : scaleName(initial.scaleData, initial.lang);
+  const editionTitle =
+    scope !== 'selected'
+      ? t.collectionOnRoot
+          .replace('{collection}', collection)
+          .replace('{root}', rootName(initial))
+      : allKeys
+        ? `${collection} · ${tr('All 12 keys', 'As 12 tonalidades', 'Las 12 tonalidades', 'Tutte le 12 tonalità', 'Les 12 tonalités', 'Alle 12 Tonarten')}`
+        : variants[0].title;
   const plan = guidePlan(variants, {
+    scope,
     coverTitle: tr(
       'Cover and contents',
       'Capa e sumário',
@@ -108,15 +174,37 @@ export async function createAtlas(
       'Mode d’emploi',
       'So nutzt du diesen Leitfaden',
     ),
-    contentsTitle: tr(
-      'Contents, continued',
-      'Continuação do sumário',
-      'Continuación del índice',
-      'Indice (seguito)',
-      'Sommaire (suite)',
-      'Inhalt (Fortsetzung)',
-    ),
+    contentsTitle:
+      scope === 'catalog'
+        ? tr(
+            'Alphabetical index',
+            'Índice alfabético',
+            'Índice alfabético',
+            'Indice alfabetico',
+            'Index alphabétique',
+            'Alphabetisches Register',
+          )
+        : tr(
+            'Contents, continued',
+            'Continuação do sumário',
+            'Continuación del índice',
+            'Indice (seguito)',
+            'Sommaire (suite)',
+            'Inhalt (Fortsetzung)',
+          ),
   });
+  const chartEntries = plan.entries.filter((entry) => entry.type === 'scale');
+  const catalogFamilies =
+    scope === 'catalog'
+      ? Object.entries(FAMILIES).flatMap(([id, names]) => {
+          const children = chartEntries.filter(
+            (entry) => entry.state.scaleData.family === id,
+          );
+          return children.length
+            ? [{ title: names[initial.lang], number: children[0].number, children }]
+            : [];
+        })
+      : [];
   const pages = plan.entries.map(() => {
     const p = doc.addPage([W, H]);
     p.drawRectangle({ x: 0, y: 0, width: W, height: H, color: paper });
@@ -179,7 +267,7 @@ export async function createAtlas(
       radius = 7;
     page.pushOperators(
       pdf.pushGraphicsState(),
-      pdf.setFillingColor(color(fretFill(0))),
+      pdf.setFillingColor(color(fretFill(0, fretColors))),
       pdf.moveTo(left + radius, y1),
       pdf.lineTo(right - radius, y1),
       pdf.appendQuadraticCurve(right, y1, right, y1 - radius),
@@ -194,12 +282,6 @@ export async function createAtlas(
       pdf.popGraphicsState(),
     );
   }
-  function headingRuns(str) {
-    return String(str)
-      .split(/([♯♭]+)/)
-      .filter(Boolean)
-      .map((value) => ({ value, font: /[♯♭]/.test(value) ? bold : heading }));
-  }
   function text(
     page,
     x,
@@ -212,17 +294,11 @@ export async function createAtlas(
     align = 'left',
   ) {
     str = String(str);
-    const runs = font === heading ? headingRuns(str) : [{ value: str, font }];
-    const measure = (s) =>
-      runs.reduce((n, r) => n + r.font.widthOfTextAtSize(r.value, s), 0);
-    if (width) size = Math.min(size, (size * width) / Math.max(measure(size), 1));
-    let xx =
-      x -
-      (align === 'right' ? measure(size) : align === 'center' ? measure(size) / 2 : 0);
-    for (const run of runs) {
-      page.drawText(run.value, { x: xx, y: H - top, size, font: run.font, color: fill });
-      xx += run.font.widthOfTextAtSize(run.value, size);
-    }
+    const measured = font.widthOfTextAtSize(str, size);
+    if (width && measured > width) size *= width / measured;
+    const actual = Math.min(width ?? measured, measured);
+    const xx = x - (align === 'right' ? actual : align === 'center' ? actual / 2 : 0);
+    page.drawText(str, { x: xx, y: H - top, size, font, color: fill });
   }
   function para(
     page,
@@ -250,20 +326,21 @@ export async function createAtlas(
     }
     return top;
   }
-  function note(page, x, y, pc, root, r, label = '', small = false) {
-    const fill = PALETTE[pc] ?? '#ffffff';
+  function note(page, x, y, pc, root, r, label = '', small = false, dim = false) {
+    const fill = dim ? '#e2eae5' : (PALETTE[pc] ?? '#ffffff');
     if (root) {
-      circle(page, x, y, r + 1.7, '#111111');
-      circle(page, x, y, r + 0.6, '#ffffff');
+      const ring = small ? Math.min(1.7, r * 0.34) : 1.7;
+      circle(page, x, y, r + ring, dim ? '#97a69e' : '#111111');
+      circle(page, x, y, r + ring * 0.35, '#ffffff');
     }
-    circle(page, x, y, r, fill, fill === '#ffffff' ? '#8fa2ae' : undefined);
+    circle(page, x, y, r, fill, fill === '#ffffff' ? '#28372e' : undefined);
     if (label) {
       const size = Math.min(
           small ? 7.2 : 11.2,
           r * 1.05,
           label.includes('/') ? r : label.length > 2 ? r * 0.78 : 20,
         ),
-        fill = [0, 5, 7, 9, 11].includes(pc) ? rgb(1, 1, 1) : ink;
+        fill = dim ? muted : [0, 5, 7, 9, 11].includes(pc) ? rgb(1, 1, 1) : ink;
       if (label.includes('/'))
         label
           .split('/')
@@ -297,78 +374,38 @@ export async function createAtlas(
       octaves ? midiName(m, pitchPreference(s)) : noteName(m, pitchPreference(s)),
     );
   const pitches = (s, octaves = false) => pitchNames(s, octaves).join(' - ');
-  function tuningText(page, s, x, top, width, size, align = 'left') {
-    const names = pitchNames(s),
-      value = names.join(' - ');
-    if (bold.widthOfTextAtSize(value, size) > width) {
-      const split = Math.ceil(names.length / 2);
-      for (const [i, part] of [names.slice(0, split), names.slice(split)].entries())
-        text(
-          page,
-          x,
-          top - 4 + i * 11,
-          part.join(' - '),
-          Math.min(size, 9),
-          bold,
-          ink,
-          width,
-          align,
-        );
-    } else text(page, x, top, value, size, bold, ink, width, align);
+  function footer(page, n, caption = '') {
+    const baseline = H - 23;
+    line(page, M, baseline - 13, R, baseline - 13);
+    text(page, M, baseline, 'tukany.com  ·  Lucas Marques  ·  CC BY 4.0', 7, body, muted);
+    if (caption)
+      text(page, W / 2, baseline, caption, 7.1, body, muted, (R - M) * 0.42, 'center');
+    if (pages.length > 1)
+      text(page, R, baseline, `${n} / ${pages.length}`, 7.6, bold, muted, 43, 'right');
   }
-  function footer(page, n, caption = t.oneFret) {
-    text(page, M, 566, caption, 6.8, body, muted, 620);
+  function masthead(page, s) {
+    brand(page, M, 16, 17);
+    const unit = (term) =>
+      s.lang === 'de' ? term : term.toLocaleLowerCase(LANGUAGES[s.lang].tag);
+    const setup = `${instrument(s)} · ${s.strings} ${unit(t.strings)} · ${tuningName(s)} · ${s.frets} ${unit(t.frets)} · ${hand(s)}`;
+    text(page, R, 27, setup, 9.2, bold, ink, R - M - 100, 'right');
     text(
       page,
       R,
-      566,
-      `${String(n).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}`,
-      7.1,
+      40,
+      `${t.openStringsShort}  ${pitches(s, true)}`,
+      8,
       body,
       muted,
-      undefined,
+      R - M - 100,
       'right',
     );
-    text(page, 30, 589, 'Tukany / Lucas Marques / CC BY 4.0', 5.5, body, muted);
-    page.drawImage(logo, {
-      x: (W - logoSize.width) / 2,
-      y: 16 - logoSize.height,
-      ...logoSize,
-    });
+    line(page, M, 48, R, 48);
   }
   function head(page, s, title, subtitle = '') {
-    text(
-      page,
-      M,
-      28,
-      `${instrument(s).toUpperCase()} / ${s.strings} ${t.strings.toUpperCase()} / ${s.frets} ${t.frets.toUpperCase()} / ${hand(s).toUpperCase()}`,
-      7.1,
-      bold,
-      muted,
-      510,
-    );
-    text(page, R, 28, tuningName(s).toUpperCase(), 6.9, bold, muted, 218, 'right');
-    tuningText(page, s, R, 50, 218, 11.4, 'right');
-    text(
-      page,
-      R,
-      70,
-      tr(
-        'lowest-pitched string to highest',
-        'da corda mais grave à mais aguda',
-        'de la cuerda más grave a la más aguda',
-        'dalla corda più grave alla più acuta',
-        'de la corde la plus grave à la plus aiguë',
-        'von der tiefsten zur höchsten Saite',
-      ),
-      7.2,
-      body,
-      muted,
-      218,
-      'right',
-    );
-    text(page, M, 62, title, 29, heading, ink, 515);
-    if (subtitle) text(page, M, 83, subtitle, 8.9, body, muted, 515);
+    masthead(page, s);
+    text(page, M, 80, title, 25, bold, ink, R - M);
+    if (subtitle) text(page, M, 99, subtitle, 9, body, muted, R - M);
   }
   function drawBoard(
     page,
@@ -383,8 +420,9 @@ export async function createAtlas(
       small = false,
       route,
       miniature = false,
+      focus,
+      focusPattern,
       pattern = false,
-      compact = false,
     } = {},
   ) {
     const model = boardModel(state, { lo, hi }),
@@ -398,7 +436,7 @@ export async function createAtlas(
           top,
           Math.abs(b - a),
           height,
-          color(fretFill(f)),
+          color(fretFill(f, fretColors)),
           grid,
         );
       }
@@ -419,13 +457,13 @@ export async function createAtlas(
             [b, l.edgeY(b, true)],
             [a, l.edgeY(a, true)],
           ],
-          color(fretFill(f)),
+          color(fretFill(f, fretColors)),
           grid,
         );
       }
     }
     model.rows.forEach((m, row) => {
-      const stroke = color('#94a5af'),
+      const stroke = color('#899c92'),
         thickness = miniature ? 0.3 : small ? 0.45 + row * 0.05 : 0.5 + row * 0.07;
       if (!small)
         line(
@@ -449,19 +487,7 @@ export async function createAtlas(
       const name = noteName(m, pitchPreference(state));
       if (!miniature) {
         const size = small ? 5.8 : 6.7,
-          baseline = l.y(row, lo) + (small || compact ? 2 : 9);
-        if (!small && !compact)
-          text(
-            page,
-            l.labelX,
-            l.y(row, 0) - 2,
-            row + 1,
-            9.4,
-            bold,
-            ink,
-            undefined,
-            'center',
-          );
+          baseline = l.y(row, lo) + 2;
         if (name.includes('/'))
           name
             .split('/')
@@ -501,12 +527,14 @@ export async function createAtlas(
         }))
       : model.points;
     for (const n of points) {
-      if (miniature && PALETTE[n.pc] === undefined) continue;
       const [a, b] = l.edges(n.fret),
-        radius = Math.min(
-          miniature ? 2.4 : small ? (route ? 9.2 : 5.4) : 12.1,
-          Math.abs(a - b) / 2 - 2,
-          l.rowGap / 2 - 2.1,
+        radius = Math.max(
+          0.5,
+          Math.min(
+            miniature ? 2.4 : small ? Math.min(9.2, l.rowGap * 0.34) : 12.1,
+            Math.abs(a - b) / 2 - 2,
+            l.rowGap / 2 - (small ? 0.75 : 1.5),
+          ),
         );
       const label = miniature
         ? ''
@@ -532,70 +560,53 @@ export async function createAtlas(
         radius,
         label,
         small,
+        n.inScale === false || Boolean(focus && !focus.has(`${n.row}:${n.fret}`)),
       );
     }
     if (!miniature) {
-      if (!small) {
+      if (focusPattern) {
+        const edges = [...l.edges(focusPattern.lo), ...l.edges(focusPattern.hi)];
+        const left = Math.min(...edges),
+          right = Math.max(...edges);
+        const y = top - 3;
+        line(page, left, y, right, y, accent, 0.8);
+        line(page, left, y, left, top + 2, accent, 0.8);
+        line(page, right, y, right, top + 2, accent, 0.8);
         text(
           page,
-          l.labelX,
-          top - 11,
-          tr('STRING', 'CORDA', 'CUERDA', 'CORDA', 'CORDE', 'SAITE'),
-          6.4,
+          (left + right) / 2,
+          y - 3,
+          `${t.pattern} ${focusPattern.number}`,
+          7.5,
           bold,
-          muted,
-          undefined,
-          'center',
-        );
-        text(
-          page,
-          l.center(0),
-          top - 4,
-          tr('OPEN', 'SOLTA', 'AL AIRE', 'VUOTA', 'À VIDE', 'LEER'),
-          6.6,
-          bold,
-          muted,
-          undefined,
+          accent,
+          right - left + 12,
           'center',
         );
       }
+      let previousLabel = lo;
+      const labelSize = small ? 6.6 : 8.2;
+      const fretLabel = (fret) => (fret === 0 && !small ? t.open : String(fret));
+      const labelWidth = (fret) => body.widthOfTextAtSize(fretLabel(fret), labelSize);
+      const labelsFit = (a, b) =>
+        Math.abs(l.center(a) - l.center(b)) >= (labelWidth(a) + labelWidth(b)) / 2 + 2;
       for (let f = lo; f <= hi; f++) {
         const yy = small ? top + height + 12 : l.edgeY(l.center(f), true) + 18;
+        if (f !== lo && f !== hi && (!labelsFit(previousLabel, f) || !labelsFit(f, hi)))
+          continue;
+        previousLabel = f;
         text(
           page,
           l.center(f),
           yy,
-          f,
-          small ? 6.6 : 8.2,
+          fretLabel(f),
+          labelSize,
           body,
           muted,
           undefined,
           'center',
         );
-        if (!small && !compact && f > 0 && [0, 3, 5, 7, 9].includes(f % 12)) {
-          const count = f % 12 === 0 ? 2 : 1;
-          for (let d = 0; d < count; d++)
-            circle(
-              page,
-              l.center(f) + (d - (count - 1) / 2) * 7,
-              yy + 12,
-              2.8,
-              '#111111',
-            );
-        }
       }
-      if (!small && !compact)
-        text(
-          page,
-          l.center(0),
-          l.edgeY(l.center(0), true) + 35,
-          tr('NUT', 'PESTANA', 'CEJUELA', 'CAPOTASTO', 'SILLET', 'SATTEL'),
-          6,
-          bold,
-          muted,
-          undefined,
-          'center',
-        );
     }
   }
   function addLink(page, box, target) {
@@ -608,409 +619,112 @@ export async function createAtlas(
     });
     page.node.addAnnot(doc.context.register(annot));
   }
-  function contents(page, entries, { x = M, top = 180, width = R - M, step = 20 } = {}) {
+  function contents(
+    page,
+    entries,
+    { x = M, top = 180, width = R - M, step = 22, columns = 2 } = {},
+  ) {
+    const rows = Math.ceil(entries.length / columns);
+    const columnWidth = (width - (columns - 1) * 16) / columns;
     entries.forEach((entry, i) => {
-      const col = i % 2,
-        row = Math.floor(i / 2),
-        xx = x + (col * width) / 2,
-        yy = top + row * step;
-      if (!col) line(page, x, yy - 11, x + width, yy - 11, rule, 0.4);
-      text(page, xx, yy, String(entry.number).padStart(2, '0'), 7.5, bold, muted);
-      text(page, xx + 22, yy, entry.title, 7.8, body, ink, width / 2 - 31);
-      addLink(page, [xx, yy - 10, xx + width / 2 - 5, yy + 5], entry.number);
+      const xx = x + Math.floor(i / rows) * (columnWidth + 16);
+      const yy = top + (i % rows) * step;
+      line(page, xx, yy + 7, xx + columnWidth, yy + 7);
+      text(page, xx, yy, entry.title, 9, body, ink, columnWidth - 23);
+      text(page, xx + columnWidth, yy, entry.number, 9, bold, accent, 20, 'right');
+      addLink(page, [xx, yy - 11, xx + columnWidth, yy + 7], entry.number);
     });
   }
   function callout(page, x, top, width, title, description) {
-    rect(page, x, top, width, 34, pale);
-    rect(page, x, top, 3, 34, ink);
-    text(page, x + 12, top + 13, title, 7.8, bold, ink, width - 24);
-    text(page, x + 12, top + 26, description, 7.1, body, muted, width - 24);
+    rect(page, x, top, width, 36, pale);
+    rect(page, x, top, 2, 36, accent);
+    text(page, x + 12, top + 14, title, 8.5, bold, accent, width - 24);
+    text(page, x + 12, top + 28, description, 8, body, ink, width - 24);
   }
   function cover() {
-    const page = pages[0],
-      panel = 279,
-      cx = 306,
-      cw = R - cx;
-    rect(page, 13, 0, panel - 13, 577, rgb(0.954, 0.968, 0.975));
-    Object.values(PALETTE).forEach((v, i) =>
-      rect(page, 13 + (i * (W - 26)) / 7, 0, (W - 26) / 7, 5, color(v)),
+    const page = pages[0];
+    masthead(page, initial);
+    text(
+      page,
+      M,
+      80,
+      scope === 'catalog' ? t.catalogScope : scope === 'family' ? t.scaleFamily : t.scale,
+      9,
+      bold,
+      accent,
     );
-    const coverWordmarkWidth = 132;
-    page.drawSvgPath(wordmarkPath, {
-      x: R - coverWordmarkWidth,
-      y: H - 28,
-      scale: coverWordmarkWidth / wordmarkWidth,
-      color: rgb(0, 0, 0),
+    text(page, M, 116, editionTitle, 31, bold, ink, R - M);
+    text(
+      page,
+      M,
+      138,
+      `${variants.length} ${t.scaleMaps}  ·  ${pages.length} ${t.pages}`,
+      10,
+      body,
+      muted,
+    );
+    const previewWidth = (R - M) * 0.34;
+    const indexX = M + previewWidth + 28;
+    const indexWidth = R - indexX;
+    const first = variants[0];
+    rect(page, M, 162, previewWidth, 186, pale, rule);
+    text(
+      page,
+      M + 13,
+      184,
+      `${t.fretboard}  ·  ${t.page} ${plan.firstScalePage}`,
+      8.4,
+      bold,
+      accent,
+      previewWidth - 26,
+    );
+    text(page, M + 13, 209, first.title, 13, bold, ink, previewWidth - 26);
+    drawBoard(page, first, {
+      x: M + 6,
+      top: 227,
+      width: previewWidth - 19,
+      height: 66,
+      miniature: true,
     });
     text(
       page,
-      M,
-      39,
-      tr(
-        'SCALE MAPS + GUIDED PRACTICE',
-        'MAPAS DE ESCALAS + PRÁTICA GUIADA',
-        'MAPAS DE ESCALAS + PRÁCTICA GUIADA',
-        'SCALE SULLA TASTIERA ED ESERCIZI GUIDATI',
-        'DIAGRAMMES DE GAMMES ET EXERCICES GUIDÉS',
-        'SKALENDIAGRAMME UND ÜBUNGEN',
-      ),
-      7.1,
+      M + 13,
+      321,
+      spellScale(first).join('  '),
+      9,
       bold,
-      muted,
-      210,
-    );
-    text(
-      page,
-      M - 3,
-      111,
-      instrument(initial),
-      initial.instrument === 'bass' ? 58 : 48,
-      heading,
       ink,
-      211,
+      previewWidth - 26,
     );
+    addLink(page, [M, 162, M + previewWidth, 348], plan.firstScalePage);
     text(
       page,
-      M,
-      158,
-      tr(
-        'Notes, scales,',
-        'Notas, escalas',
-        'Notas, escalas',
-        'Note, scale',
-        'Notes, gammes',
-        'Noten, Skalen',
-      ),
-      22.5,
-      heading,
+      indexX,
+      181,
+      tr('Contents', 'Sumário', 'Índice', 'Indice', 'Sommaire', 'Inhalt'),
+      16,
+      bold,
       ink,
-      214,
     );
-    text(
-      page,
-      M,
-      190,
-      tr(
-        'and improvisation',
-        'e improvisação',
-        'e improvisación',
-        'e improvvisazione',
-        'et improvisation',
-        'und Improvisation',
-      ),
-      24,
-      heading,
-      ink,
-      214,
-    );
-    para(
-      page,
-      M,
-      219,
-      tr(
-        'For experienced TAB players who want to understand the notes and create their own phrases.',
-        'Para quem já toca por TAB e quer entender as notas e criar suas frases.',
-        'Para quienes ya leen tablaturas y quieren comprender las notas y crear sus propias frases.',
-        'Per chi sa già leggere le tablature e vuole capire le note e creare frasi proprie.',
-        'Pour les musiciens qui lisent déjà les tablatures et souhaitent comprendre les notes et créer leurs propres phrases.',
-        'Für alle, die schon Tabulaturen lesen und nun die Noten verstehen und eigene Phrasen spielen möchten.',
-      ),
-      212,
-      9.5,
-      14,
-    );
-    line(page, M, 263, 248, 263);
-    text(page, M, 287, tuningName(initial).toUpperCase(), 7.1, bold, muted, 206);
-    tuningText(page, initial, M, 310, 206, 12.6);
-    text(
-      page,
-      M,
-      328,
-      tr(
-        'lowest-pitched string to highest',
-        'da corda mais grave à mais aguda',
-        'de la cuerda más grave a la más aguda',
-        'dalla corda più grave alla più acuta',
-        'de la corde la plus grave à la plus aiguë',
-        'von der tiefsten zur höchsten Saite',
-      ),
-      7.3,
-      body,
-      muted,
-      206,
-    );
-    text(
-      page,
-      M,
-      343,
-      `${initial.strings} ${t.strings.toUpperCase()} / ${initial.frets} ${t.frets.toUpperCase()}`,
-      6.4,
-      bold,
-      muted,
-      206,
-    );
-    rect(page, 34, 350, 228, 112, rgb(1, 1, 1), rule);
-    text(
-      page,
-      M,
-      368,
-      `${hand(initial).toUpperCase()} ${tr(
-        'FRETBOARD',
-        '/ MAPA DO BRAÇO',
-        '/ DIAPASÓN',
-        '/ TASTIERA',
-        '/ MANCHE',
-        '/ GRIFFBRETT',
-      )}`,
-      6.7,
-      bold,
-      muted,
-      204,
-    );
-    drawBoard(
-      page,
-      {
-        ...initial,
-        scale: 'chromatic',
-        scaleData: SCALES.find((s) => s.id === 'chromatic'),
-      },
-      { x: M - 10, top: 388, width: 214, height: 54, miniature: true },
-    );
-    text(
-      page,
-      M,
-      493,
-      tr(
-        'NOTES / DEGREES / POSITIONS / PHRASING',
-        'NOTAS / GRAUS / POSIÇÕES / FRASEADO',
-        'NOTAS / GRADOS / POSICIONES / FRASEO',
-        'NOTE / GRADI / POSIZIONI / FRASEGGIO',
-        'NOTES / DEGRÉS / POSITIONS / PHRASÉ',
-        'NOTEN / STUFEN / LAGEN / PHRASIERUNG',
-      ),
-      6.4,
-      bold,
-      muted,
-      211,
-    );
-    para(
-      page,
-      M,
-      516,
-      tr(
-        'Full fretboard maps, supported fingering patterns, and a starting point for backing tracks.',
-        'Mapas completos, padrões de digitação disponíveis e um ponto de partida para backing tracks.',
-        'Mapas del diapasón, patrones de digitación disponibles y un punto de partida para pistas de acompañamiento.',
-        'Diagrammi dell’intera tastiera, diteggiature disponibili e spunti per suonare sulle basi.',
-        'Diagrammes du manche entier, doigtés disponibles et conseils pour jouer sur un accompagnement.',
-        'Das ganze Griffbrett, passende Fingersätze und Anregungen zum Spielen mit Begleittracks.',
-      ),
-      211,
-      9.2,
-      14,
-    );
-    text(
-      page,
-      M,
-      558,
-      `${hand(initial).toUpperCase()} / ${LANGUAGES[initial.lang].label.toUpperCase()}`,
-      6.8,
-      bold,
-      muted,
-      211,
-    );
-    text(
-      page,
-      cx,
-      39,
-      tr(
-        'FOR PLAYERS WHO WANT TO UNDERSTAND',
-        'PARA QUEM JÁ TOCA E QUER ENTENDER',
-        'PARA QUIENES QUIEREN COMPRENDER',
-        'PER CAPIRE QUELLO CHE SUONI',
-        'POUR COMPRENDRE CE QUE VOUS JOUEZ',
-        'VERSTEHEN, WAS DU SPIELST',
-      ),
-      7.2,
-      bold,
-      muted,
-      cw,
-    );
-    text(
-      page,
-      cx,
-      87,
-      tr(
-        'Inside this guide',
-        'Conteúdo do guia',
-        'Contenido de esta guía',
-        'In questa guida',
-        'Dans ce guide',
-        'In diesem Leitfaden',
-      ),
-      28,
-      heading,
-      ink,
-      cw - coverWordmarkWidth - 20,
-    );
-    text(
-      page,
-      cx,
-      115,
-      tr(
-        'Your instrument, tuning, and scales in the guided-book format.',
-        'Seu instrumento, afinação e escalas no formato dos cadernos guiados.',
-        'Tu instrumento, afinación y escalas en el formato de las guías de práctica.',
-        'Il tuo strumento, la tua accordatura e le tue scale in una guida pratica.',
-        'Un guide pratique pour votre instrument, votre accordage et vos gammes.',
-        'Ein Übungsheft für dein Instrument, deine Stimmung und deine Skalen.',
-      ),
-      8.7,
-      body,
-      muted,
-      cw,
-    );
-    line(page, cx, 138, R, 138);
-    text(
-      page,
-      cx,
-      162,
-      tr(
-        'CONTENTS / PAGES',
-        'SUMÁRIO / PÁGINAS',
-        'ÍNDICE / PÁGINAS',
-        'INDICE / PAGINE',
-        'SOMMAIRE / PAGES',
-        'INHALT / SEITEN',
-      ),
-      7.6,
-      bold,
-      muted,
-    );
-    const entries = plan.entries.slice(0, 32);
+    const entries =
+      scope === 'catalog'
+        ? [
+            ...plan.entries.filter((e) => e.type === 'contents' || e.type === 'reading'),
+            ...catalogFamilies,
+          ]
+        : plan.entries.slice(1, 32);
+    const columns = entries.length > 14 ? 2 : 1;
     contents(page, entries, {
-      x: cx,
-      top: 185,
-      width: cw,
-      step: Math.min(25, 310 / Math.max(1, Math.ceil(entries.length / 2) - 1)),
+      x: indexX,
+      width: indexWidth,
+      top: 210,
+      columns,
+      step: Math.min(
+        27,
+        (H - 276) / Math.max(1, Math.ceil(entries.length / columns) - 1),
+      ),
     });
-    if (entries.length <= 8) {
-      text(
-        page,
-        cx,
-        285,
-        tr(
-          'YOUR SELECTION',
-          'SUA SELEÇÃO',
-          'TU SELECCIÓN',
-          'LA TUA SELEZIONE',
-          'VOTRE SÉLECTION',
-          'DEINE AUSWAHL',
-        ),
-        7.3,
-        bold,
-        muted,
-      );
-      text(
-        page,
-        cx,
-        315,
-        variants.length === 1
-          ? variants[0].title
-          : tr(
-              'Explore the selected collection',
-              'Explore a coleção selecionada',
-              'Explora la colección seleccionada',
-              'Esplora la raccolta selezionata',
-              'Explorer la sélection',
-              'Die ausgewählte Sammlung entdecken',
-            ),
-        20,
-        heading,
-        ink,
-        cw,
-      );
-      if (variants.length === 1) {
-        text(page, cx, 340, spellScale(initial).join(' - '), 10.8, bold, ink, cw);
-        text(
-          page,
-          cx,
-          363,
-          `${t.formula}  ${initial.scaleData.formula.map(prettyDegree).join('  ')}`,
-          9,
-          body,
-          muted,
-          cw,
-        );
-      }
-      for (const [i, value] of [
-        tr(
-          'Find the notes with a black ring. Play a few slowly.',
-          'Encontre as notas com anel preto. Toque algumas devagar.',
-          'Busca las notas rodeadas de un círculo negro. Toca unas cuantas despacio.',
-          'Trova le note cerchiate in nero. Suonane alcune lentamente.',
-          'Repérez les notes entourées de noir. Jouez-en quelques-unes lentement.',
-          'Suche die schwarz umrandeten Noten. Spiele einige davon langsam.',
-        ),
-        tr(
-          'Repeat a rhythm, leave space, and change the ending.',
-          'Repita um ritmo, deixe espaço e mude o final.',
-          'Repite un ritmo, deja espacio y cambia el final.',
-          'Ripeti un ritmo, lascia spazio e cambia il finale.',
-          'Répétez un rythme, laissez des silences et variez la fin.',
-          'Wiederhole einen Rhythmus, lass Pausen und ändere den Schluss.',
-        ),
-        tr(
-          'Check the track’s chords and aim for a chord tone.',
-          'Confira os acordes da base e mire em uma nota do acorde.',
-          'Comprueba los acordes de la pista y elige una nota del acorde que suena.',
-          'Controlla gli accordi della base e punta a una nota dell’accordo.',
-          'Repérez les accords de la piste et visez une note de l’accord en cours.',
-          'Achte auf die Akkorde der Begleitung und steuere einen Akkordton an.',
-        ),
-      ].entries())
-        text(page, cx, 407 + i * 24, `0${i + 1}   ${value}`, 8.7, body, ink, cw);
-    }
-    callout(
-      page,
-      cx,
-      517,
-      cw,
-      tr(
-        'START WITH THE READING GUIDE',
-        'COMECE PELAS INSTRUÇÕES',
-        'EMPIEZA POR LAS INSTRUCCIONES',
-        'INIZIA DALLE ISTRUZIONI DI LETTURA',
-        'COMMENCEZ PAR LE MODE D’EMPLOI',
-        'ZUERST DIE LESEHILFE',
-      ),
-      tr(
-        'Then use the maps to make short phrases and follow the chords.',
-        'Depois, use os mapas para criar frases curtas e acompanhar os acordes.',
-        'Después, usa los mapas para crear frases cortas y seguir los acordes.',
-        'Poi usa i diagrammi per creare brevi frasi seguendo gli accordi.',
-        'Puis utilisez les diagrammes pour créer de courtes phrases qui suivent les accords.',
-        'Bilde dann mit den Diagrammen kurze Phrasen, die den Akkorden folgen.',
-      ),
-    );
-    addLink(page, [cx, 517, R, 551], plan.readingPage);
-    text(
-      page,
-      cx,
-      566,
-      `${pages.length} ${tr(
-        'pages / clickable contents',
-        'páginas / sumário clicável',
-        'páginas / índice con enlaces',
-        'pagine / indice interattivo',
-        'pages / sommaire interactif',
-        'Seiten / anklickbares Inhaltsverzeichnis',
-      )}`,
-      7,
-      body,
-      muted,
-    );
-    footer(page, 1, '');
+    footer(page, 1);
   }
   function readingGuide() {
     const page = pages[plan.readingPage - 1];
@@ -1091,12 +805,12 @@ export async function createAtlas(
         ),
         [
           tr(
-            'Each pitch keeps its color with either name. Accidentals use white circles. The black ring marks the scale tonic or chord root.',
-            'Cada altura mantém sua cor com qualquer grafia. As notas alteradas usam círculos brancos. O anel preto marca a tônica da escala ou a fundamental do acorde.',
-            'Cada altura conserva su color, incluso con otro nombre. Las notas alteradas usan círculos blancos. El círculo negro marca la tónica de la escala o la fundamental del acorde.',
-            'Ogni suono conserva il suo colore anche se cambia nome. Le note alterate hanno cerchi bianchi. L’anello nero indica la tonica della scala o la fondamentale dell’accordo.',
-            'Une même hauteur garde sa couleur, même si son nom change. Les notes altérées ont un cercle blanc. L’anneau noir indique la tonique ou la fondamentale de l’accord.',
-            'Ein Ton behält seine Farbe, auch wenn sein Name wechselt. Alterierte Töne stehen in weißen Kreisen. Der schwarze Ring markiert den Grundton der Skala oder des Akkords.',
+            'The seven natural pitches each have a color. The five pitches between them use white circles. A pitch keeps its color when its name changes. A black ring marks the scale tonic or chord root.',
+            'As sete alturas naturais têm cores próprias. As cinco alturas entre elas aparecem em círculos brancos. A cor se mantém quando o nome muda. O anel preto marca a tônica da escala ou a fundamental do acorde.',
+            'Las siete alturas naturales tienen colores propios. Las cinco alturas intermedias llevan círculos blancos. El color se conserva al cambiar el nombre. El anillo negro marca la tónica de la escala o la fundamental del acorde.',
+            'Le sette altezze naturali hanno colori distinti. Le cinque altezze intermedie usano cerchi bianchi. Il colore si conserva al cambiare del nome. L’anello nero indica la tonica della scala o la fondamentale dell’accordo.',
+            'Les sept hauteurs naturelles ont chacune une couleur. Les cinq hauteurs intermédiaires sont en blanc. La couleur reste la même quand le nom change. L’anneau noir marque la tonique de la gamme ou la fondamentale de l’accord.',
+            'Die sieben Stammtöne haben eigene Farben. Die fünf dazwischenliegenden Tonhöhen erscheinen weiß. Die Farbe bleibt gleich, wenn sich der Name ändert. Der schwarze Ring markiert den Grundton der Skala oder des Akkords.',
           ),
           tr(
             'R marks the scale tonic or chord root on small maps. Degrees express intervals from that note. The signs ♯ and ♭ mean sharp and flat.',
@@ -1128,12 +842,12 @@ export async function createAtlas(
         [
           initial.instrument === 'bass'
             ? tr(
-                'The full map shows every scale or chord tone. Small maps give ascending octave routes from the two lowest strings. Follow the degrees, then reverse. If an octave is out of reach in your tuning, a nearby note map takes its place.',
-                'O mapa completo mostra todas as notas da escala ou acorde. As rotas pequenas sobem uma oitava a partir das duas cordas graves. Siga os graus e volte. Se a afinação não permitir uma oitava, aparece um mapa de notas próximas.',
-                'El mapa completo muestra las notas de la escala o del acorde. Los pequeños trazan recorridos de una octava desde las dos cuerdas más graves. Sigue los grados y vuelve a la tónica. Si la afinación impide completar la octava, aparece un mapa de notas cercanas.',
-                'Il diagramma completo mostra tutte le note della scala o dell’accordo. I piccoli diagrammi salgono di un’ottava dalle due corde più gravi. Segui i gradi, poi scendi. Se l’ottava non è raggiungibile, trovi un diagramma delle note vicine.',
-                'Le manche entier montre les notes de la gamme ou de l’accord. Les petits diagrammes montent d’une octave depuis les deux cordes graves. Suivez les degrés, puis redescendez. Si l’octave est hors de portée, un diagramme montre les notes voisines.',
-                'Das große Diagramm zeigt alle Skalen- oder Akkordtöne. Die kleinen führen von den beiden tiefsten Saiten eine Oktave aufwärts. Folge den Stufen und spiele zurück. Ist die Oktave unerreichbar, erscheinen benachbarte Töne.',
+                'Each small map shows a playable octave. Start at its marked root and follow the degrees up and back. The heading identifies the starting string. The full map shows every scale or chord tone.',
+                'Cada mapa pequeno mostra uma oitava. Comece na tônica marcada e siga os graus na subida e na volta. O título indica a corda inicial. O mapa completo mostra as notas da escala ou do acorde.',
+                'Cada diagrama pequeño muestra una octava. Empieza en la tónica marcada y sigue los grados al subir y bajar. El título indica la cuerda inicial. El diapasón completo muestra las notas de la escala o el acorde.',
+                'Ogni piccolo diagramma mostra un’ottava. Parti dalla tonica indicata e segui i gradi in salita e in discesa. Il titolo indica la corda iniziale. La tastiera completa mostra le note della scala o dell’accordo.',
+                'Chaque petit diagramme montre une octave. Partez de la tonique indiquée et suivez les degrés en montant et en descendant. Le titre indique la corde de départ. Le manche entier montre toutes les notes de la gamme ou de l’accord.',
+                'Jedes kleine Diagramm zeigt eine Oktave. Beginne am markierten Grundton und folge den Stufen aufwärts und zurück. Der Titel nennt die Startsaite. Das ganze Griffbrett zeigt alle Skalen- oder Akkordtöne.',
               )
             : tr(
                 'Small maps show the labeled fingering system: compact CAGED, two, three, or four notes per string, or pentatonic shapes with blue notes. Some patterns shift along the neck. Black rings mark tonics. Unsupported setups keep the full note map.',
@@ -1144,12 +858,12 @@ export async function createAtlas(
                 'Die kleinen Diagramme zeigen CAGED-Lagen, zwei, drei oder vier Töne pro Saite oder Pentatonik mit Blue Notes. Manche erfordern Lagenwechsel. Schwarze Ringe markieren Grundtöne. Gibt es keinen Fingersatz, siehst du das ganze Griffbrett.',
               ),
           tr(
-            'TAB reads left to right in time. Changing the tuning changes the shapes. These notes are calculated for your selected tuning.',
-            'A tablatura é lida da esquerda para a direita no tempo. Mudar a afinação muda os desenhos. Estas notas são calculadas para a afinação escolhida.',
-            'Las tablaturas se leen de izquierda a derecha en el tiempo. Cambiar la afinación cambia los patrones. Aquí las notas se calculan para la afinación elegida.',
-            'La tablatura si legge da sinistra a destra nel tempo. Cambiando accordatura cambiano le forme. Queste note corrispondono all’accordatura scelta.',
-            'La tablature se lit de gauche à droite dans le temps. Les positions changent avec l’accordage. Les notes affichées correspondent à votre accordage.',
-            'Lies Tabulaturen zeitlich von links nach rechts. Mit der Stimmung ändern sich die Griffbilder. Die Töne hier entsprechen deiner gewählten Stimmung.',
+            'The staff shows the pitches used by the patterns. Without a pattern, it shows a playable range of the scale. Guitar and bass notation is written one octave above the sounding pitch.',
+            'A pauta mostra as alturas usadas nos desenhos. Sem um desenho, mostra uma região tocável da escala. A notação da guitarra e do baixo fica uma oitava acima do som real.',
+            'El pentagrama muestra las alturas de los patrones. Si no hay un patrón, muestra un registro tocable de la escala. La guitarra y el bajo se escriben una octava por encima del sonido real.',
+            'Il pentagramma mostra le altezze delle diteggiature. Se non sono disponibili, mostra un registro suonabile della scala. Chitarra e basso si scrivono un’ottava sopra il suono reale.',
+            'La portée indique les hauteurs des doigtés disponibles. Sans doigté, elle présente une partie jouable de la gamme. La guitare et la basse s’écrivent une octave au-dessus de leur son réel.',
+            'Die Noten zeigen die Tonhöhen der Griffmuster. Ohne Griffmuster siehst du einen spielbaren Bereich der Skala. Gitarre und Bass werden eine Oktave höher notiert als sie klingen.',
           ),
           tr(
             'Start with three notes. Repeat a rhythm, leave a rest, and vary the ending. Listen before adding more notes.',
@@ -1163,11 +877,13 @@ export async function createAtlas(
       ],
     ];
     columns.forEach(([title, paragraphs], i) => {
-      const x = M + i * 258;
-      text(page, x, 135, `0${i + 1}`, 9, bold, muted);
-      text(page, x, 158, title, 16, heading, ink, 230);
-      let y = 184;
-      for (const value of paragraphs) y = para(page, x, y, value, 231, 9, 14) + 13;
+      const gap = 22,
+        width = (R - M - 2 * gap) / 3;
+      const x = M + i * (width + gap);
+      line(page, x, 126, x + width, 126, rule, 1);
+      text(page, x, 149, title, 14, bold, accent, width);
+      let y = 174;
+      for (const value of paragraphs) y = para(page, x, y, value, width, 9.1, 13.3) + 10;
     });
     line(page, M, 408, R, 408);
     text(
@@ -1233,412 +949,257 @@ export async function createAtlas(
       page,
       plan.readingPage,
       tr(
-        'Sounding pitches. Middle C = C4.',
-        'Alturas reais. Dó central = C4.',
-        'Alturas reales. Do central = C4.',
-        'Altezze reali. Do centrale = C4.',
-        'Hauteurs réelles. Do central = C4.',
-        'Klingende Tonhöhen. Mittleres C = C4.',
+        'Middle C = C4.',
+        'Dó central = C4.',
+        'Do central = C4.',
+        'Do centrale = C4.',
+        'Do central = C4.',
+        'Mittleres C = C4.',
       ),
     );
   }
-  function scaleLegend(page, s) {
-    line(page, M, 506, R, 506);
+  function formulaRow(page, s) {
+    const top = 89,
+      end = M + (R - M) * 0.69;
+    const rowX = M + Math.min(64, bold.widthOfTextAtSize(t.formula, 9) + 10);
+    const names = spellScale(s);
+    const cell = Math.min(36, (end - rowX) / names.length);
+    text(page, M, top + 16, t.formula, 9, bold, muted);
+    names.forEach((name, i) => {
+      const x = rowX + i * cell,
+        center = x + (cell - 3) / 2;
+      rect(page, x, top, cell - 3, 25, pale, rule);
+      text(
+        page,
+        center,
+        top + 10,
+        prettyDegree(s.scaleData.formula[i]),
+        8.1,
+        bold,
+        ink,
+        cell - 7,
+        'center',
+      );
+      const pc = (s.root + s.scaleData.intervals[i]) % 12;
+      const nameWidth = Math.min(cell - 14, bold.widthOfTextAtSize(name, 8.2));
+      circle(
+        page,
+        center - nameWidth / 2 - 2.8,
+        top + 18,
+        2.4,
+        PALETTE[pc] ?? '#ffffff',
+        PALETTE[pc] ? undefined : ink,
+      );
+      text(page, center + 2.8, top + 21, name, 8.2, bold, ink, cell - 14, 'center');
+    });
+    const legendX = end + 14;
+    note(page, legendX, top + 9, s.root, true, 5.5, rootMarker(s), true);
+    text(page, legendX + 12, top + 12, rootTerm(s), 8.5, bold, ink, R - legendX - 12);
+    text(
+      page,
+      legendX - 6,
+      top + 24,
+      s.hand === 'left' ? t.nutRight : t.nutLeft,
+      7.8,
+      body,
+      muted,
+      R - legendX + 6,
+    );
+  }
+  function drawStaff(page, layout, top, height, focus) {
+    const x = M + 118;
+    const scale = Math.min(1.05, (R - x) / layout.width, height / layout.height);
+    const left = x + (R - x - layout.width * scale) / 2;
+    const margin = (height - layout.height * scale) / 2;
+    const sx = (v) => left + scale * v;
+    const sy = (v) => top + margin + scale * (v - layout.top);
+    text(page, M, top + height / 2 - 3, t[layout.clef.label], 10, bold, ink, 107);
+    const range = [layout.notes[0]?.name, layout.notes.at(-1)?.name]
+      .filter(Boolean)
+      .join(' – ');
     text(
       page,
       M,
-      520,
-      s.scaleData.family === 'arpeggio'
-        ? tr(
-            'CHORD NOTES + DEGREES',
-            'NOTAS DO ACORDE + GRAUS',
-            'NOTAS DEL ACORDE + GRADOS',
-            'NOTE DELL’ACCORDO E GRADI',
-            'NOTES DE L’ACCORD ET DEGRÉS',
-            'AKKORDTÖNE UND STUFEN',
-          )
-        : tr(
-            'SCALE NOTES + DEGREES',
-            'NOTAS DA ESCALA + GRAUS',
-            'NOTAS DE LA ESCALA + GRADOS',
-            'NOTE DELLA SCALA E GRADI',
-            'NOTES DE LA GAMME ET DEGRÉS',
-            'SKALENTÖNE UND STUFEN',
-          ),
-      6.7,
-      bold,
+      top + height / 2 + 11,
+      `${t.writtenPitch}  ${range}`,
+      7.5,
+      body,
       muted,
+      107,
     );
-    const names = spellScale(s),
-      step = Math.min(42, 310 / names.length),
-      radius = Math.min(10.5, step * 0.37);
-    names.forEach((name, i) => {
-      const x = M + 12 + i * step;
-      note(page, x, 537, (s.root + s.scaleData.intervals[i]) % 12, i === 0, radius, name);
-      text(
+    for (let i = 0; i < 5; i++)
+      line(
         page,
-        x,
-        555,
-        prettyDegree(s.scaleData.formula[i]),
-        6.8,
-        bold,
+        sx(6),
+        sy(staffTop + i * lineGap),
+        sx(layout.width - 5),
+        sy(staffTop + i * lineGap),
         ink,
-        step - 2,
-        'center',
+        0.7 * scale,
       );
+    // Bravura clefs use a y-up baseline; ordinary SVG paths and the staff layout use y-down.
+    page.pushOperators(
+      pdf.pushGraphicsState(),
+      pdf.translate(sx(13), H - sy(staffY(layout.clef.anchorStep, layout.clef))),
+      pdf.scale(1, -1),
+    );
+    page.drawSvgPath(layout.clef.path, {
+      x: 0,
+      y: 0,
+      scale: (scale * lineGap) / 250,
+      color: ink,
     });
-    circle(page, 382, 537, 9.6, rgb(1, 1, 1), ink, 1.7);
-    text(page, 382, 540.5, rootMarker(s), 9.5, bold, ink, undefined, 'center');
-    text(page, 401, 532, rootTerm(s), 8.5, bold);
-    text(
-      page,
-      401,
-      547,
-      tr(
-        'Black ring. R on small maps.',
-        'Anel preto. T ou F nos mapas pequenos.',
-        'Círculo negro. T o F en los diagramas pequeños.',
-        'Anello nero. T o F nei piccoli diagrammi.',
-        'Anneau noir. T ou F sur les petits diagrammes.',
-        'Schwarzer Ring. G in kleinen Diagrammen.',
-      ),
-      6.8,
-      body,
-      muted,
-      175,
+    page.pushOperators(pdf.popGraphicsState());
+    const accidental = (sign, x, y) =>
+      page.drawSvgPath(accidentalPaths[sign], {
+        x: sx(x),
+        y: H - sy(y),
+        scale,
+        borderColor: ink,
+        borderWidth: 1.25,
+      });
+    keySignaturePositions(layout.signature, layout.clef).forEach(({ sign, x, y }) =>
+      accidental(sign, x, y),
     );
-    line(page, 592, 520, 592, 549);
-    text(
-      page,
-      606,
-      531,
-      s.hand === 'left'
-        ? tr(
-            'NUT ON THE RIGHT',
-            'PESTANA À DIREITA',
-            'CEJUELA A LA DERECHA',
-            'CAPOTASTO A DESTRA',
-            'SILLET À DROITE',
-            'SATTEL RECHTS',
-          )
-        : tr(
-            'NUT ON THE LEFT',
-            'PESTANA À ESQUERDA',
-            'CEJUELA A LA IZQUIERDA',
-            'CAPOTASTO A SINISTRA',
-            'SILLET À GAUCHE',
-            'SATTEL LINKS',
-          ),
-      6.8,
-      bold,
-      muted,
-    );
-    text(
-      page,
-      606,
-      545,
-      s.hand === 'left'
-        ? tr(
-            'Higher frets to the left.',
-            'Numeração das casas aumenta à esquerda.',
-            'Trastes más altos hacia la izquierda.',
-            'I numeri dei tasti aumentano verso sinistra.',
-            'Numéros de cases croissants vers la gauche.',
-            'Nach links steigen die Bundnummern.',
-          )
-        : tr(
-            'Higher frets to the right.',
-            'Numeração das casas aumenta à direita.',
-            'Trastes más altos hacia la derecha.',
-            'I numeri dei tasti aumentano verso destra.',
-            'Numéros de cases croissants vers la droite.',
-            'Nach rechts steigen die Bundnummern.',
-          ),
-      6.6,
-      body,
-      muted,
-      R - 606,
-    );
+    for (const n of layout.notes) {
+      for (const delta of n.ledger)
+        line(
+          page,
+          sx(n.x - 9),
+          sy(n.y + delta),
+          sx(n.x + 9),
+          sy(n.y + delta),
+          ink,
+          scale,
+        );
+      n.glyphs.forEach((sign, i) =>
+        accidental(sign, n.x - 12 - (n.glyphs.length - 1 - i) * 8, n.y),
+      );
+      const stemX = sx(n.x + (n.stemEnd < 0 ? 4.5 : -4.5));
+      line(page, stemX, sy(n.y), stemX, sy(n.y + n.stemEnd), ink, scale);
+      page.drawEllipse({
+        x: sx(n.x),
+        y: H - sy(n.y),
+        xScale: 5.1 * scale,
+        yScale: 3.55 * scale,
+        rotate: pdf.degrees(23),
+        color: focus ? color(n.fill) : ink,
+        borderColor: ink,
+        borderWidth: focus ? 0.65 * scale : 0,
+      });
+    }
   }
   function scalePage(entry) {
     const s = entry.state,
-      page = pages[entry.number - 1],
-      family = FAMILIES[s.scaleData.family]?.[s.lang] ?? t.custom;
-    head(
-      page,
-      s,
-      entry.title,
-      `${family} · ${s.scaleData.intervals.length} ${tr(
-        'notes',
-        'notas',
-        'notas',
-        'note',
-        'notes',
-        'Töne',
-      )}`,
+      page = pages[entry.number - 1];
+    const { system, patterns } = practicePatterns(s);
+    const focused = plan.readingPage
+      ? undefined
+      : patterns.find((p) => p.id === input.range);
+    const points = focused && new Set(focused.points.map((p) => `${p.row}:${p.fret}`));
+    const model = boardModel(s);
+    const staff = staffLayout(
+      {
+        state: s,
+        points: focused ? focused.points : practiceStaffPoints(model, patterns),
+      },
+      focused,
     );
-    text(
-      page,
-      M,
-      105,
-      `${t.formula.toUpperCase()}  ${s.scaleData.formula.map(prettyDegree).join('  ')}`,
-      9,
-      bold,
-      ink,
-      610,
-    );
-    const height = s.instrument === 'guitar' ? 140 : s.strings === 4 ? 156 : 180;
-    drawBoard(page, s, { top: 128, height, compact: s.instrument === 'guitar' });
-    if (s.instrument === 'guitar') {
-      const { system, patterns } = scalePatterns(s);
-      text(
-        page,
-        M,
-        301,
-        patterns.length
-          ? `${t.patterns} · ${t.patternSystems[system]}`.toLocaleUpperCase(
-              LANGUAGES[s.lang].tag,
-            )
-          : tr(
-              'FULL-NECK NOTE MAP',
-              'MAPA COMPLETO DO BRAÇO',
-              'MAPA COMPLETO DEL DIAPASÓN',
-              'DIAGRAMMA DELL’INTERA TASTIERA',
-              'DIAGRAMME DU MANCHE ENTIER',
-              'DAS GANZE GRIFFBRETT',
-            ),
-        7.1,
-        bold,
-        muted,
-      );
-      if (patterns.length) {
-        const columns = Math.ceil(patterns.length / 2);
-        const gap = 14;
-        const width = (R - M - (columns - 1) * gap) / columns;
-        patterns.forEach((pattern, i) => {
-          const x = M + (i % columns) * (width + gap);
-          const top = 326 + Math.floor(i / columns) * 100;
-          const label = tr(
-            'Pattern',
-            'Padrão',
-            'Patrón',
-            'Diteggiatura',
-            'Position',
-            'Griffmuster',
-          );
-          const detail = pattern.shape
-            ? t.patternShape.replace('{shape}', pattern.shape)
-            : `${t.degree} ${pattern.startDegree}`;
-          text(
-            page,
-            x,
-            top - 11,
-            `${label} ${pattern.number} · ${detail}`,
-            8.2,
-            bold,
-            ink,
-            width,
-          );
-          drawBoard(page, s, {
-            x,
-            top,
-            width,
-            height: 64,
-            lo: pattern.lo,
-            hi: pattern.hi,
-            small: true,
-            route: pattern,
-            pattern: true,
-          });
-        });
-      } else {
-        para(
-          page,
-          M,
-          326,
-          tr(
-            'No supported fingering pattern is available for this scale and tuning. Use the full-neck note map above; it shows scale tones, not a prescribed fingering.',
-            'Não há um padrão de digitação disponível para esta escala e afinação. Use o mapa completo acima: ele mostra as notas da escala, sem prescrever uma digitação.',
-            'No hay un patrón de digitación disponible para esta escala y afinación. Usa el mapa completo de arriba: muestra las notas de la escala, sin indicar una digitación específica.',
-            'Per questa scala e accordatura non è disponibile una diteggiatura. Il diagramma completo in alto mostra tutte le note della scala. Scegli tu come diteggiarle.',
-            'Aucun doigté n’est disponible pour cette gamme dans cet accordage. Le diagramme du manche entier donne les notes de la gamme. À vous de choisir le doigté.',
-            'Für diese Skala und Stimmung liegt kein Fingersatz vor. Das große Diagramm oben zeigt die Skalentöne. Den Fingersatz kannst du selbst wählen.',
-          ),
-          560,
-          10,
-          16,
-        );
-      }
-    } else {
-      const lower = s.strings > 4 ? 13 : 0;
-      let complete = true;
-      for (const [i, row] of [s.strings - 1, s.strings - 2].entries()) {
-        const route = bassRoute(s, row),
-          x = M + i * 260,
-          name = noteName(s.tuningData.notes[s.strings - row - 1], pitchPreference(s));
+    masthead(page, s);
+    const title = `${rootName(s)} ${scaleName(s.scaleData, s.lang)}`;
+    text(page, M, 77, title, 24, bold, ink, (R - M) * 0.68);
+    const family = FAMILIES[s.scaleData.family]?.[s.lang] ?? t.custom;
+    text(page, R, 74, family, 9, bold, accent, (R - M) * 0.3, 'right');
+    formulaRow(page, s);
+    const boardTop = 137;
+    const manyPositions = patterns.length > 4;
+    const dense = patterns.length > 6;
+    const boardHeight = dense ? 94 : manyPositions ? 104 : patterns.length ? 120 : 184;
+    const boardEnd = boardTop + boardHeight + 25;
+    const staffHeight = dense ? 48 : manyPositions ? 54 : patterns.length ? 66 : 80;
+    const sectionTop = boardEnd + staffHeight + 16;
+    const top = sectionTop + 17;
+    const width = R - M;
+    const { boxes, neckWidth } = guidePatternLayout(patterns, {
+      neck: guideBoardLayout(s, { width, height: boardHeight }),
+      strings: s.strings,
+      width,
+      height: H - 41 - top,
+    });
+    const neckX = M + (width - neckWidth) / 2;
+    rect(page, neckX - 5, boardTop - 17, neckWidth + 10, boardEnd - boardTop + 17, pale);
+    drawBoard(page, s, {
+      x: neckX,
+      width: neckWidth,
+      top: boardTop,
+      height: boardHeight,
+      focus: points,
+      focusPattern: focused,
+    });
+    drawStaff(page, staff, boardEnd + 3, staffHeight, focused);
+    line(page, M, sectionTop - 5, R, sectionTop - 5);
+    if (patterns.length) {
+      const caption = `${t.patterns} · ${t.patternSystems[system]}`;
+      text(page, M, sectionTop + 9, caption, 9.5, bold, accent, R - M);
+      patterns.forEach((pattern, i) => {
+        const box = boxes[i],
+          x = M + box.x,
+          y = top + box.top;
+        const label = `${t.pattern} ${pattern.number}`;
+        const detail =
+          s.instrument === 'bass'
+            ? `${t.string} ${pattern.startRow + 1}`
+            : pattern.shape
+              ? t.patternShape.replace('{shape}', pattern.shape)
+              : `${t.degree} ${pattern.startDegree}`;
+        if (pattern === focused) {
+          rect(page, x, y - 17, box.captionWidth, 15, color('#e6f2eb'));
+          rect(page, x, y - 17, 2, 15, accent);
+        }
         text(
           page,
-          x,
-          347 + lower,
-          tr(
-            `${rootTerm(s)} on string ${row + 1} · ${name}`,
-            `${rootTerm(s)} na corda ${row + 1} · ${name}`,
-            `${rootTerm(s)} en la cuerda ${row + 1} · ${name}`,
-            `${rootTerm(s)} sulla corda ${row + 1} · ${name}`,
-            `${rootTerm(s)} sur la corde ${row + 1} · ${name}`,
-            `${rootTerm(s)} auf Saite ${row + 1} · ${name}`,
-          ),
-          10.3,
-          bold,
-          ink,
-          245,
-        );
-        const rootFret = mod(s.root - s.tuningData.notes[s.strings - row - 1]);
-        const range = route ?? {
-          lo: Math.max(0, rootFret - 2),
-          hi: Math.min(s.frets, rootFret + 2),
-        };
-        if (!route) complete = false;
-        text(
-          page,
-          x,
-          367 + lower,
-          route
-            ? tr(
-                `Start at fret ${route.startFret} (${rootName(s)})`,
-                `Início na casa ${route.startFret} (${rootName(s)})`,
-                `Inicio en el traste ${route.startFret} (${rootName(s)})`,
-                `Inizia dal tasto ${route.startFret} (${rootName(s)})`,
-                `Partez de la case ${route.startFret} (${rootName(s)})`,
-                `Beginn am ${route.startFret}. Bund (${rootName(s)})`,
-              )
-            : tr(
-                `Nearby notes · frets ${range.lo}-${range.hi}`,
-                `Notas próximas · casas ${range.lo}-${range.hi}`,
-                `Notas cercanas · trastes ${range.lo}-${range.hi}`,
-                `Note vicine · tasti ${range.lo}–${range.hi}`,
-                `Notes voisines · cases ${range.lo}–${range.hi}`,
-                `Benachbarte Töne · Bünde ${range.lo}–${range.hi}`,
-              ),
+          x + 4,
+          y - 7,
+          `${label} · ${detail}`,
           8.2,
-          body,
-          ink,
-          245,
+          bold,
+          pattern === focused ? accent : ink,
+          box.captionWidth - 8,
         );
         drawBoard(page, s, {
           x,
-          top: 382 + lower,
-          width: 236,
-          height: 94 - lower,
-          lo: range.lo,
-          hi: range.hi,
+          top: y,
+          width: box.width,
+          height: box.height,
+          lo: pattern.lo,
+          hi: pattern.hi,
           small: true,
-          route,
+          route: pattern,
+          pattern: s.instrument !== 'bass',
         });
-      }
-      const x = M + 520;
-      text(
-        page,
-        x,
-        347 + lower,
-        tr(
-          'Make a short phrase',
-          'Crie uma frase curta',
-          'Crea una frase corta',
-          'Crea una breve frase',
-          'Créer une courte phrase',
-          'Eine kurze Phrase spielen',
-        ),
-        10.3,
-        bold,
-        ink,
-        R - x,
-      );
-      para(
-        page,
-        x,
-        368 + lower,
-        complete
-          ? tr(
-              'Play the octave in degree order, then descend. Shift your hand when needed.',
-              'Toque a oitava na ordem dos graus e depois volte. Mude a posição da mão quando precisar.',
-              'Toca la octava en orden de grados y luego desciende. Cambia la posición de la mano cuando lo necesites.',
-              'Sali di un’ottava seguendo i gradi, poi scendi. Sposta la mano quando serve.',
-              'Montez d’une octave en suivant les degrés, puis redescendez. Changez de position si nécessaire.',
-              'Spiele den Oktavlauf Stufe für Stufe aufwärts und wieder abwärts. Wechsle bei Bedarf die Lage.',
-            )
-          : tr(
-              'Choose three nearby notes. Begin and end on a black-ringed note. Shift your hand when needed.',
-              'Escolha três notas próximas. Comece e termine na nota com anel preto. Mude a posição da mão quando precisar.',
-              'Elige tres notas cercanas. Empieza y termina en la nota rodeada por el círculo negro. Cambia la posición de la mano cuando lo necesites.',
-              'Scegli tre note vicine. Inizia e finisci su una nota cerchiata in nero. Sposta la mano quando serve.',
-              'Choisissez trois notes voisines. Commencez et terminez sur une note entourée de noir. Déplacez la main si nécessaire.',
-              'Wähle drei benachbarte Töne. Beginne und ende auf einem schwarz umrandeten Ton. Wechsle bei Bedarf die Lage.',
-            ),
-        R - x,
-        8.8,
-        13,
-      );
-      para(
-        page,
-        x,
-        426,
-        tr(
-          'Repeat a rhythm, leave space, and resolve to a tone of the current chord.',
-          'Repita um ritmo, deixe espaço e resolva em uma nota do acorde atual.',
-          'Repite un ritmo, deja espacio y resuelve en una nota del acorde que está sonando.',
-          'Ripeti un ritmo, lascia spazio e risolvi su una nota dell’accordo in corso.',
-          'Répétez un rythme, laissez un silence et terminez sur une note de l’accord en cours.',
-          'Wiederhole einen Rhythmus, lass Pausen und löse die Phrase in einen Ton des aktuellen Akkords auf.',
-        ),
-        R - x,
-        8.8,
-        13,
-      );
-      text(
-        page,
-        x,
-        489,
-        complete
-          ? tr(
-              `Small maps span an octave, from ${rootMarker(s)} to ${rootMarker(s)}.`,
-              `Mapas pequenos de ${rootMarker(s)} a ${rootMarker(s)}, uma oitava.`,
-              `Mapas pequeños de ${rootMarker(s)} a ${rootMarker(s)}, una octava.`,
-              `I piccoli diagrammi coprono un’ottava, da ${rootMarker(s)} a ${rootMarker(s)}.`,
-              `Les petits diagrammes couvrent une octave, de ${rootMarker(s)} à ${rootMarker(s)}.`,
-              `Die kleinen Diagramme umfassen eine Oktave, von ${rootMarker(s)} bis ${rootMarker(s)}.`,
-            )
-          : tr(
-              'Small maps show routes or nearby fret ranges.',
-              'Mapas pequenos mostram rotas ou regiões próximas.',
-              'Mapas pequeños con recorridos o regiones cercanas.',
-              'I piccoli diagrammi mostrano percorsi o zone vicine della tastiera.',
-              'Les petits diagrammes montrent des parcours ou des zones voisines du manche.',
-              'Die kleinen Diagramme zeigen Spielwege oder benachbarte Bünde.',
-            ),
-        6.9,
-        body,
-        muted,
-        R - x,
-      );
+      });
+    } else {
+      text(page, M, sectionTop + 13, t.patterns, 10, bold, accent);
+      para(page, M, sectionTop + 34, t.patternUnavailable, R - M, 10, 15);
     }
-    scaleLegend(page, s);
     footer(page, entry.number);
   }
-  cover();
+  if (plan.readingPage) cover();
+  const chartIndex =
+    scope === 'catalog'
+      ? [...chartEntries].sort((a, b) =>
+          a.state.scaleData.name[initial.lang].localeCompare(
+            b.state.scaleData.name[initial.lang],
+            LANGUAGES[initial.lang].tag,
+          ),
+        )
+      : [];
   for (let i = 0; i < plan.extra; i++) {
     const page = pages[i + 1];
     head(
       page,
       initial,
-      tr(
-        'Contents, continued',
-        'Continuação do sumário',
-        'Continuación del índice',
-        'Indice (seguito)',
-        'Sommaire (suite)',
-        'Inhalt (Fortsetzung)',
-      ),
+      plan.entries[i + 1].title,
       tr(
         'Click a title to go directly to its scale map.',
         'Clique em um título para abrir o mapa da escala.',
@@ -1648,10 +1209,18 @@ export async function createAtlas(
         'Klicke auf einen Titel, um direkt zum zugehörigen Diagramm zu springen.',
       ),
     );
-    contents(page, plan.entries.slice(32 + i * 48, 32 + (i + 1) * 48), {
-      top: 128,
-      step: 17.5,
-    });
+    if (scope === 'catalog') {
+      const entries = chartIndex.slice(
+        i * catalogIndexCapacity,
+        (i + 1) * catalogIndexCapacity,
+      );
+      contents(page, entries, { top: 128, step: 17.5, columns: catalogIndexColumns });
+    } else {
+      contents(page, plan.entries.slice(32 + i * 48, 32 + (i + 1) * 48), {
+        top: 128,
+        step: 17.5,
+      });
+    }
     footer(
       page,
       i + 2,
@@ -1665,44 +1234,46 @@ export async function createAtlas(
       ),
     );
   }
-  readingGuide();
+  if (plan.readingPage) readingGuide();
   let rendered = 0;
-  for (const entry of plan.entries.filter((e) => e.type === 'scale')) {
+  for (const entry of chartEntries) {
     checkAbort();
     scalePage(entry);
     progress(++rendered, variants.length);
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
-  const outline = doc.context.obj({ Type: 'Outlines', Count: plan.entries.length }),
-    outlineRef = doc.context.register(outline),
-    refs = plan.entries.map(() => doc.context.nextRef());
-  plan.entries.forEach((entry, i) => {
-    const item = doc.context.obj({
-      Title: PDFHexString.fromText(entry.title),
-      Parent: outlineRef,
-      Dest: [pages[i].ref, 'Fit'],
+  function addBookmarks(parent, parentRef, entries) {
+    const refs = entries.map(() => doc.context.nextRef());
+    entries.forEach((entry, i) => {
+      const item = doc.context.obj({
+        Title: PDFHexString.fromText(entry.title),
+        Parent: parentRef,
+        Dest: [pages[entry.number - 1].ref, 'Fit'],
+      });
+      if (i) item.set(PDFName.of('Prev'), refs[i - 1]);
+      if (i + 1 < refs.length) item.set(PDFName.of('Next'), refs[i + 1]);
+      if (entry.children) {
+        addBookmarks(item, refs[i], entry.children);
+        item.set(PDFName.of('Count'), doc.context.obj(-entry.children.length));
+      }
+      doc.context.assign(refs[i], item);
     });
-    if (i) item.set(PDFName.of('Prev'), refs[i - 1]);
-    if (i + 1 < refs.length) item.set(PDFName.of('Next'), refs[i + 1]);
-    doc.context.assign(refs[i], item);
-  });
-  outline.set(PDFName.of('First'), refs[0]);
-  outline.set(PDFName.of('Last'), refs.at(-1));
-  doc.catalog.set(PDFName.of('Outlines'), outlineRef);
+    parent.set(PDFName.of('First'), refs[0]);
+    parent.set(PDFName.of('Last'), refs.at(-1));
+  }
+  if (plan.readingPage) {
+    const bookmarks =
+      scope === 'catalog'
+        ? [...plan.entries.filter((e) => e.type !== 'scale'), ...catalogFamilies]
+        : plan.entries;
+    const outline = doc.context.obj({ Type: 'Outlines', Count: bookmarks.length });
+    const outlineRef = doc.context.register(outline);
+    addBookmarks(outline, outlineRef, bookmarks);
+    doc.catalog.set(PDFName.of('Outlines'), outlineRef);
+  }
   doc.catalog.set(PDFName.of('Lang'), PDFString.of(LANGUAGES[initial.lang].tag));
   doc.setTitle(
-    `Tukany · ${instrument(initial)} · ${
-      variants.length === 1
-        ? variants[0].title
-        : tr(
-            'Scale atlas',
-            'Atlas de escalas',
-            'Atlas de escalas',
-            'Atlante delle scale',
-            'Atlas des gammes',
-            'Skalenatlas',
-          )
-    } · ${tuningName(initial)}`,
+    `Tukany · ${instrument(initial)} · ${editionTitle} · ${tuningName(initial)}`,
   );
   doc.setAuthor('Lucas Marques');
   doc.setSubject(
@@ -1713,7 +1284,7 @@ export async function createAtlas(
       'Diagrammi di scale per esercizi guidati',
       'Diagrammes de gammes et exercices guidés',
       'Skalendiagramme für angeleitetes Üben',
-    ) + ' · Marques & Co.',
+    ),
   );
   doc.setKeywords([
     'Tukany',

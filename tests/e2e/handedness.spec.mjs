@@ -88,12 +88,8 @@ test('choosing Left-handed mirrors the fretboard and preserves the shared finger
   await expect(pattern).toHaveAccessibleDescription(/Frets 10–7/);
   expect(await points(page)).toEqual(selected);
 
-  await page.evaluate(() =>
-    Object.defineProperty(navigator, 'clipboard', { value: undefined }),
-  );
   await page.keyboard.press('Escape');
-  await page.locator('#share').click();
-  const shared = await page.locator('#share-url').inputValue();
+  const shared = page.url();
   expect(new URL(shared).searchParams.get('hand')).toBe('left');
   await page.goto('/');
   await page.locator('#instrument-toggle').click();

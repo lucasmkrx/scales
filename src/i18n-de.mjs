@@ -3,12 +3,14 @@
 export default {
   pdfDownloads: 'PDF-Downloads',
   scalesAndArpeggios: 'Tonleitern und Arpeggien',
-  pdfFormat: 'A4 quer',
+  paperSize: 'Papierformat',
+  letterPaper: 'US-Letter',
+  practiceSheet: 'Übungsblatt',
+  page: 'Seite',
+  collectionOnRoot: '{collection} auf {root}',
   backToTop: 'Nach oben',
   themeLabel: 'Darstellung: {current}. Zu „{next}“ wechseln.',
   themeModes: { light: 'Hell', dark: 'Dunkel' },
-  quickNavigation: 'Schnellnavigation',
-  goToBoard: 'Zum Griffbrett',
   patternShape: '{shape}-Form',
   patternDetails: 'Tiefster Ton: {note} (Stufe {degree})',
   patternLabels: {
@@ -123,7 +125,6 @@ export default {
   scaleSettings: 'Tonleiter',
   singleNote: 'Ton',
   openStringsShort: 'Leersaiten',
-  manualCopy: 'Diesen Link kopieren',
   keyboardNotes:
     'Wechsle mit den Pfeiltasten zwischen den Tönen. Drücke die Eingabe- oder Leertaste, um einen Ton zu hören.',
   instrument: 'Instrument',
@@ -142,7 +143,6 @@ export default {
   degrees: 'Stufen',
   showAll: 'Weitere Töne anzeigen',
   pdf: 'PDF herunterladen',
-  share: 'Link kopieren',
   formula: 'Stufenformel',
   openStrings: 'Leersaiten · von tief nach hoch',
   nutRight: 'Sattel rechts · höhere Bünde links',
@@ -154,7 +154,6 @@ export default {
   familyScope: 'Aktuelle Familie',
   catalogScope: 'Gesamter Katalog',
   exporting: 'PDF wird erstellt',
-  saved: 'Link kopiert. Er enthält deine Auswahl.',
   ready: 'Bereit',
   credits: 'Von Lucas Marques',
   source: 'Quellcode und Mitarbeit',
@@ -172,7 +171,6 @@ export default {
   outsideChord: 'Akkordfremd',
   editInstrument: 'Instrument bearbeiten',
   fretboard: 'Griffbrett',
-  circleOfFifths: 'Quintenzirkel',
   degreesHint:
     'Die 1 bezeichnet den Grundton. Die Stufen geben die Intervalle zum Grundton an. Ein ♭ erniedrigt die entsprechende Stufe der Durtonleiter um einen Halbton, ein ♯ erhöht sie um einen Halbton.',
   tuningFieldsHint:

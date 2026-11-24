@@ -40,7 +40,6 @@ const visualAssets = [
   'assets/flags/fr.svg',
   'assets/flags/de.svg',
   'assets/tukany-social.jpg',
-  'assets/marques-and-co.png',
   'assets/instruments/telecaster-headstock.png',
   'assets/instruments/bass-headstock.png',
 ];

@@ -2,13 +2,13 @@
 
 import { isAccidentalPitch, pitchColor, pitchLabelColor } from './board.mjs';
 import { copy } from './i18n.mjs';
-import { midiName, mod, spelledMidiName } from './music.mjs';
+import { lowestPlayableTonic, midiName, mod, spelledMidiName } from './music.mjs';
 import { bassClefPath, trebleClefPath } from './staff-glyphs.mjs';
 import { staffKeySignature, staffSpellingState } from './staff-key.mjs';
 
 const letters = 'CDEFGAB';
-const lineGap = 8;
-const staffTop = 24;
+export const lineGap = 8;
+export const staffTop = 24;
 const staffBottom = staffTop + 4 * lineGap;
 const staffStart = 6;
 const engravingScale = 1.5;
@@ -33,9 +33,10 @@ const clefs = {
     path: bassClefPath,
   },
 };
-const staffY = (step, clef) => staffBottom + (clef.bottomStep - step) * (lineGap / 2);
+export const staffY = (step, clef) =>
+  staffBottom + (clef.bottomStep - step) * (lineGap / 2);
 
-const accidentalPaths = {
+export const accidentalPaths = {
   '♯': 'M-2-6v13M2-8V5M-4-1l8-2m-8 6 8-2',
   '♭': 'M-2-9V5Q5 2 4-1Q3-4-2 0',
   '♮': 'M-2-7V4l5-2V-5l-5 2M3 2v5',
@@ -68,17 +69,11 @@ export function practiceStaffPoints({ state, points }, patterns) {
   const scalePoints = points.filter((point) => point.inScale);
   const pitches = new Set(scalePoints.map((point) => point.midi));
   const intervals = [...state.scaleData.intervals, 12];
-  const tonic = Math.min(
-    ...scalePoints
-      .filter(
-        (point) => point.root && intervals.every((i) => pitches.has(point.midi + i)),
-      )
-      .map((point) => point.midi),
-  );
+  const tonic = lowestPlayableTonic(pitches, state.root, intervals);
   // A short custom tuning may have no complete tonic-to-tonic octave.
   // Its lowest twelve semitones still contain every scale degree.
-  const low = Number.isFinite(tonic) ? tonic : Math.min(...pitches);
-  const high = low + (Number.isFinite(tonic) ? 12 : 11);
+  const low = tonic ?? Math.min(...pitches);
+  const high = low + (tonic === undefined ? 11 : 12);
   return scalePoints.filter((point) => point.midi >= low && point.midi <= high);
 }
 
@@ -165,9 +160,8 @@ function staffLines(start, end) {
   return `<path class="staff-lines" d="${lines.join('')}" fill="none" stroke="currentColor" stroke-width=".85"/>`;
 }
 
-function keySignatureMarkup(signature, clef) {
-  if (!signature.length) return '';
-  const paths = signature.map(([letter, sign], i) => {
+export function keySignaturePositions(signature, clef) {
+  return signature.map(([letter, sign], i) => {
     // In treble clef the sharps occupy A4–G5, the flats F4–E5.
     // Bass uses the same arrangement two octaves lower.
     const index = letters.indexOf(letter);
@@ -175,6 +169,13 @@ function keySignatureMarkup(signature, clef) {
     const octave = clef.signatureOctave + Number(wraps);
     const y = staffY(octave * 7 + index, clef);
     const x = clefWidth + (i + 0.5) * signatureSpacing;
+    return { letter, sign, x, y };
+  });
+}
+
+function keySignatureMarkup(signature, clef) {
+  if (!signature.length) return '';
+  const paths = keySignaturePositions(signature, clef).map(({ letter, sign, x, y }) => {
     return `<path data-pitch="${letter}${sign}" d="${accidentalPaths[sign]}" transform="translate(${x} ${y})"/>`;
   });
   return `<g class="staff-key-signature" data-clef="${clef.id}" fill="none" stroke="currentColor" stroke-width="1.3">${paths.join('')}</g>`;

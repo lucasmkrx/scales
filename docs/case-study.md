@@ -19,8 +19,7 @@ keep consistent.
 
 - Support guitar and bass, including extended string counts and altered tunings.
 - Keep both handedness options and all six languages equally usable.
-- Preserve the light fretboard design, pitch colors, Literata headings, and
-  discreet Marques & Co. branding in printable output.
+- Preserve the light fretboard design and pitch colors in printable output.
 - Serve the tool directly from a public GitHub repository with no application server.
 - Keep detailed theory available while making root and scale easy to choose.
 
@@ -41,8 +40,9 @@ Browsing retains the current musical selection until the player chooses a result
 PDF exports evolved into a complete reference layout: cover, clickable contents,
 reading instructions, a full neck, smaller position maps, and note/degree legends.
 
-The browser offers separate download cards for the current family and the full catalog.
-Each card shows the instrument setup, root, map count, page count, and print format.
+The download section offers a one-page chart, a family guide, and a full catalog.
+Players choose A4 or US Letter for all three. The catalog includes family bookmarks
+and an alphabetical chart index.
 
 Individual notes use a procedural plucked-string model with different guitar and bass
 settings. This adds an audible connection to the diagram without introducing a

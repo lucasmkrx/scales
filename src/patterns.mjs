@@ -406,3 +406,15 @@ export function scalePatterns(input, { lo = 0, hi } = {}) {
   }
   return { system, patterns, reason: patterns.length ? null : 'no-fit' };
 }
+
+// Use the same whole fingering on the screen and on the printed chart.
+export function practicePatterns(state) {
+  const result = scalePatterns(state);
+  if (state.instrument === 'bass' || !result.patterns.length) return result;
+  const lower = scalePatterns(state, { hi: 12 }).patterns;
+  const byId = new Map(lower.map((pattern) => [pattern.id, pattern]));
+  return {
+    ...result,
+    patterns: result.patterns.map((pattern) => byId.get(pattern.id) ?? pattern),
+  };
+}

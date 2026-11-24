@@ -43,8 +43,9 @@ making the main task easier to identify.
 The scale browser leads into the fretboard. A prominent button in the fretboard
 header shows the current instrument and tuning. It opens a settings dropdown
 over the diagram so the neck stays in position.
-Two download cards below the playing surface describe the current family PDF
-and the full catalog PDF.
+The single download section below the playing surface offers a practice chart,
+a related-family guide, and a smaller full-catalog action. Its paper selector
+applies to every download.
 
 The Scale card has a music note icon. The PDF downloads card uses the same
 heading style with a PDF icon. The larger fretboard heading shows the selected
@@ -56,12 +57,13 @@ scales or arpeggios into view. Each name has its degree formula underneath.
 Selecting a name applies it to the fretboard. A solid green background and a
 checkmark identify the selected scale. Names occupy two columns on wide
 screens and one on phones.
-Each formula button pairs a degree with its spelled note in playing order.
-Pressing it sounds the note and highlights that pitch on the fretboard.
+Below the fretboard title, each formula button pairs a degree with its spelled
+note. The buttons play in ascending pitch order from the root and highlight the
+corresponding pitch on the fretboard.
 
-On phones, a sticky current-scale shortcut gives a direct route to the fretboard
-and focuses its heading. A caption identifies the selected pattern and its
-lowest note and degree. The bracket supplies its fret span.
+On phones, the instrument and tuning appear in a compact control, and the
+formula buttons use a four-column grid. A caption identifies the selected
+pattern and its lowest note and degree. The bracket supplies its fret span.
 The fretboard and circle center use the tonic spelling chosen for the scale
 formula or supplied by a practice link.
 The Notes/Degrees switch and Show other notes checkbox sit alongside the root legend
@@ -100,10 +102,30 @@ Motion is brief feedback for selection, button activation, and sounding notes.
 It does not stretch or move the neck. Reduced-motion preferences disable those
 animations and transitions while retaining the same visible states.
 
+### Printed charts
+
+One landscape page keeps the neck, staff, and available fingerings together.
+The guitar layout follows the whole-neck and position views used in
+[Fretwork’s one-page chart](https://guitarfretwork.com/printables/minor-pentatonic-scale-chart/).
+The bass layout pairs the instrument diagram with staff notation, as in
+[Better Bass Lessons’ printable chart](https://blog.betterbasslessons.com/bass-scale-chart/).
+
+The generator uses the physical dimensions of the chosen paper. Fingering
+diagrams use the main fretboard’s equal-tempered spacing. Frets near the nut
+are wider, and the open strings have their own lane. The diagrams wrap into
+rows as space permits. On a crowded sheet the overview and all its patterns
+use the same reduced scale, so a given fret has exactly the same printed width
+everywhere on that page.
+[W3C page-size definitions](https://www.w3.org/TR/css-page-3/#page-size)
+
+Longer books offer linked contents. The catalog adds an alphabetical index and
+bookmarks grouped by family so readers can look up a chart by name or browse
+related sounds. [W3C bookmark guidance](https://www.w3.org/WAI/WCAG22/Techniques/pdf/PDF2)
+
 ## Constraints
 
 - Settings remain on the homepage, including the expanded tuning list.
-- Scale selection stays above the fretboard. The two PDF download cards sit below it.
+- Scale selection stays above the fretboard. The PDF downloads sit below it.
 - The fretboard spans the configured number of frets at a fixed scale. Narrow
   screens start at the nut and scroll horizontally. Pattern selection grays out
   notes outside the chosen string/fret point set.

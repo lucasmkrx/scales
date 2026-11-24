@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { runInThisContext } from 'node:vm';
 import { createAtlas } from '../src/pdf.mjs';
 import { LANGUAGES } from '../src/locales.mjs';
-import { SCALES } from '../src/catalog.mjs';
+import { FAMILIES, SCALES } from '../src/catalog.mjs';
 import { copy } from '../src/i18n.mjs';
 for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
   runInThisContext(
@@ -15,12 +15,7 @@ for (const name of ['pdf-lib.min.js', 'fontkit.umd.min.js'])
   );
 const asset = async (path) =>
   new Uint8Array(await readFile(new URL(`../public/${path}`, import.meta.url)));
-test('downloaded guides embed the book fonts and link the contents to real pages', async () => {
-  const coverTitles = {
-    it: 'Copertina e indice',
-    fr: 'Couverture et sommaire',
-    de: 'Titelblatt und Inhaltsverzeichnis',
-  };
+test('individual charts are single, localized pages for guitar and bass', async () => {
   for (const state of [
     { instrument: 'guitar', strings: 6, root: 7, scale: 'major', lang: 'en' },
     { instrument: 'guitar', strings: 6, root: 5, scale: 'minor-blues', lang: 'it' },
@@ -90,51 +85,72 @@ test('downloaded guides embed the book fonts and link the contents to real pages
     const bytes = await createAtlas(state, { asset }),
       doc = await PDFLib.PDFDocument.load(bytes);
     assert.match(doc.getTitle(), /^Tukany · /);
-    assert.equal(doc.getPageCount(), 3);
-    assert.deepEqual(doc.getPage(2).getSize(), { width: 841.89, height: 595.28 });
+    assert.equal(doc.getPageCount(), 1);
+    assert.deepEqual(doc.getPage(0).getSize(), { width: 841.89, height: 595.28 });
     assert.equal(
       doc.catalog.get(PDFLib.PDFName.of('Lang')).decodeText(),
       LANGUAGES[state.lang].tag,
     );
-    if (coverTitles[state.lang]) {
-      const outlines = doc.context.lookup(doc.catalog.get(PDFLib.PDFName.of('Outlines')));
-      const first = doc.context.lookup(outlines.get(PDFLib.PDFName.of('First')));
-      assert.equal(
-        first.get(PDFLib.PDFName.of('Title')).decodeText(),
-        coverTitles[state.lang],
-      );
-      const scale = SCALES.find((entry) => entry.id === state.scale);
-      assert.ok(doc.getTitle().includes(scale.name[state.lang]));
-      assert.ok(doc.getTitle().includes(copy[state.lang][state.instrument]));
-    }
+    const scale = SCALES.find((entry) => entry.id === state.scale);
+    assert.ok(doc.getTitle().includes(scale.name[state.lang]));
+    assert.ok(doc.getTitle().includes(copy[state.lang][state.instrument]));
     if (state.lang === 'es') {
-      assert.match(doc.getTitle(), /Guitarra|Bajo/);
-      assert.ok(
-        doc.getTitle().includes(SCALES.find((scale) => scale.id === state.scale).name.es),
-      );
       assert.match(doc.getSubject(), /práctica guiada/);
       assert.match(doc.getKeywords(), /es-ES/);
-      const outlines = doc.context.lookup(doc.catalog.get(PDFLib.PDFName.of('Outlines')));
-      const first = doc.context.lookup(outlines.get(PDFLib.PDFName.of('First')));
-      assert.equal(
-        first.get(PDFLib.PDFName.of('Title')).decodeText(),
-        'Portada e índice',
-      );
-    }
-    const annots = doc.getPage(0).node.Annots();
-    assert.equal(annots.size(), 4);
-    for (let i = 0; i < annots.size(); i++) {
-      const link = doc.context.lookup(annots.get(i));
-      const dest = link.get(PDFLib.PDFName.of('Dest'));
-      assert.ok(doc.getPages().some((p) => p.ref.toString() === dest.get(0).toString()));
     }
     const names = [...doc.context.enumerateIndirectObjects()]
       .filter(([, o]) => o instanceof PDFLib.PDFDict)
       .map(([, o]) => o.get(PDFLib.PDFName.of('BaseFont'))?.toString() ?? '')
       .join(' ');
-    assert.match(names, /Literata/);
+    assert.match(names, /\/DejaVuSans(?:-\d+)?(?:\s|$)/);
     assert.match(names, /DejaVuSans-Bold/);
   }
+});
+test('Letter catalog has correctly sized pages, linked indexes, and bookmarks grouped by family', async () => {
+  const state = { scale: 'major', lang: 'fr' };
+  const doc = await PDFLib.PDFDocument.load(
+    await createAtlas(state, { scope: 'catalog', paperSize: 'letter', asset }),
+  );
+  const pages = doc.getPages();
+  assert.equal(pages.length, 70);
+  for (const page of pages) assert.deepEqual(page.getSize(), { width: 792, height: 612 });
+  const key = PDFLib.PDFName.of;
+  const get = (dict, field) => doc.context.lookup(dict.get(key(field)));
+  const destination = (item) => get(item, 'Dest').get(0).toString();
+  const links = (page) =>
+    page.node
+      .Annots()
+      .asArray()
+      .map((ref) => doc.context.lookup(ref));
+  const pageRefs = pages.map((page) => page.ref.toString());
+  const coverTargets = links(pages[0]).map(destination);
+  assert.ok(coverTargets.includes(pageRefs[1]));
+  const alphaTargets = links(pages[1]).map(destination);
+  const frOrder = [...SCALES].sort((a, b) => a.name.fr.localeCompare(b.name.fr, 'fr-FR'));
+  assert.deepEqual(
+    alphaTargets,
+    frOrder.map((scale) => pageRefs[3 + SCALES.indexOf(scale)]),
+  );
+  const outlines = get(doc.catalog, 'Outlines');
+  let item = get(outlines, 'First');
+  assert.equal(get(item, 'Title').decodeText(), 'Couverture et sommaire');
+  for (let i = 0; i < 3; i++) item = get(item, 'Next');
+  for (const [id, family] of Object.entries(FAMILIES)) {
+    const scales = SCALES.filter((scale) => scale.family === id);
+    assert.equal(get(item, 'Title').decodeText(), family.fr);
+    assert.equal(get(item, 'Count').asNumber(), -scales.length);
+    assert.ok(coverTargets.includes(destination(item)));
+    let child = get(item, 'First');
+    assert.equal(destination(item), destination(child));
+    for (const scale of scales) {
+      assert.equal(destination(child), pageRefs[3 + SCALES.indexOf(scale)]);
+      assert.ok(get(child, 'Title').decodeText().includes(scale.name.fr));
+      child = get(child, 'Next');
+    }
+    assert.equal(child, undefined);
+    item = get(item, 'Next');
+  }
+  assert.equal(item, undefined);
 });
 test('all-key exports keep one scale per map page and support cancellation', async () => {
   const bytes = await createAtlas(
@@ -143,7 +159,15 @@ test('all-key exports keep one scale per map page and support cancellation', asy
     ),
     doc = await PDFLib.PDFDocument.load(bytes);
   assert.equal(doc.getPageCount(), 14);
-  assert.equal(doc.getPage(0).node.Annots().size(), 15);
+  const destinations = doc
+    .getPage(0)
+    .node.Annots()
+    .asArray()
+    .map((ref) =>
+      doc.context.lookup(ref).get(PDFLib.PDFName.of('Dest')).get(0).toString(),
+    );
+  for (const page of doc.getPages().slice(1))
+    assert.ok(destinations.includes(page.ref.toString()));
   const controller = new AbortController();
   controller.abort();
   await assert.rejects(() => createAtlas({}, { asset, signal: controller.signal }), {
@@ -169,25 +193,22 @@ test('main-scale exports name the actual fingering system and include every patt
         rendered.length = 0;
         const bytes = await createAtlas({ scale, root: 9, frets: 24, lang }, { asset });
         const doc = await PDFLib.PDFDocument.load(bytes);
-        assert.equal(doc.getPageCount(), 3);
+        assert.equal(doc.getPageCount(), 1);
         const map = rendered.filter(
-          (item) => item.page === doc.getPage(2).ref.toString(),
+          (item) => item.page === doc.getPage(0).ref.toString(),
         );
-        const heading =
-          `${copy[lang].patterns} · ${copy[lang].patternSystems[system]}`.toLocaleUpperCase(
-            LANGUAGES[lang].tag,
-          );
+        const heading = `${copy[lang].patterns} · ${copy[lang].patternSystems[system]}`;
         assert.ok(
           map.some((item) => item.value === heading),
           `${lang}: ${scale}`,
         );
-        const captions = map.filter((item) =>
-          /^(Pattern|Padrão|Patrón) \d+ ·/.test(item.value),
+        const captions = map.filter(
+          (item) =>
+            item.value.startsWith(copy[lang].pattern + ' ') && /\d+ ·/.test(item.value),
         );
         assert.equal(captions.length, count, `${lang}: ${scale}`);
         assert.ok(captions.every((item) => item.size >= 7));
-        // Captions leave room for a full diagram and fret labels above the legend.
-        assert.ok(captions.every((item) => 595.28 - item.y + 11 + 64 + 12 < 506));
+        assert.ok(captions.every((item) => item.y > 90));
       }
     }
   } finally {
@@ -214,18 +235,35 @@ test('key-spelled PDFs retain distinct enharmonic tonics and written scale notes
         { asset },
       );
       const doc = await PDFLib.PDFDocument.load(bytes);
-      const map = rendered.filter((item) => item.page === doc.getPage(2).ref.toString());
+      const map = rendered.filter((item) => item.page === doc.getPage(0).ref.toString());
       assert.ok(
         map.some((item) => item.value === expected),
         `${tonic}: ${expected}`,
       );
       assert.ok(!map.some((item) => item.value === unwanted), `${tonic}: no ${unwanted}`);
       assert.ok(doc.getTitle().includes(tonic.replace('#', '♯').replace('b', '♭')));
-      const reading = rendered.filter(
-        (item) => item.page === doc.getPage(1).ref.toString(),
+    }
+  } finally {
+    PDFLib.PDFPage.prototype.drawText = drawText;
+  }
+});
+
+test('individual charts honor the selected fingering and outside-note display', async () => {
+  const drawText = PDFLib.PDFPage.prototype.drawText;
+  const printed = new Set();
+  PDFLib.PDFPage.prototype.drawText = function (value, options) {
+    printed.add(value);
+    return drawText.call(this, value, options);
+  };
+  try {
+    for (const allNotes of [false, true]) {
+      printed.clear();
+      await createAtlas(
+        { scale: 'major', root: 0, range: 'caged-major-1', spelling: 'sharp', allNotes },
+        { asset },
       );
-      assert.ok(reading.some((item) => item.value.includes('E♯')));
-      assert.ok(reading.some((item) => item.value === 'E2 - A2 - D3 - G3 - B3 - E4'));
+      assert.ok(printed.has('Pattern 1'));
+      assert.equal(printed.has('G♯'), allNotes);
     }
   } finally {
     PDFLib.PDFPage.prototype.drawText = drawText;

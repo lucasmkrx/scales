@@ -288,35 +288,82 @@ export function boardModel(input, { lo = 0, hi } = {}) {
   });
   return { state: s, rows, lo, hi, points };
 }
+export function lowestPlayableTonic(pitches, root, intervals) {
+  let lowest;
+  for (const midi of pitches) {
+    if (
+      mod(midi) === root &&
+      (lowest === undefined || midi < lowest) &&
+      intervals.every((interval) => pitches.has(midi + interval))
+    )
+      lowest = midi;
+  }
+  return lowest;
+}
+
+export function formulaPlaybackPitches({ state, points }, pattern) {
+  const { root, scaleData } = state;
+  const { intervals } = scaleData;
+  const pitches = new Set(
+    points.filter((point) => point.inScale).map(({ midi }) => midi),
+  );
+  const patternPitches = new Set(pattern?.points.map(({ midi }) => midi));
+  const tonic =
+    lowestPlayableTonic(patternPitches, root, intervals) ??
+    lowestPlayableTonic(pitches, root, intervals);
+  if (tonic !== undefined) return intervals.map((interval) => tonic + interval);
+
+  // Widely spaced custom strings can leave gaps within every tonic octave.
+  const ascending = [...pitches].sort((a, b) => a - b);
+  let previous = -Infinity;
+  return intervals.map((interval) => {
+    const midi = ascending.find(
+      (pitch) => pitch > previous && mod(pitch - root) === interval,
+    );
+    previous = midi ?? Infinity;
+    return midi;
+  });
+}
+
+const stringLabelMargin = 48,
+  endMargin = 40,
+  openStringWidth = 28;
+
+function boardWidth(frets) {
+  return 72 + (frets + 1) * 45;
+}
+
+export function boardDimensions({ frets, strings }) {
+  return { width: boardWidth(frets), height: 74 + (strings - 1) * 31 };
+}
+
+// Distance to the far edge of a fret. The open strings have their own lane before the nut.
+export function fretRuler(
+  lo,
+  hi,
+  width = boardWidth(hi) - stringLabelMargin - endMargin,
+) {
+  const open = lo === 0 ? openStringWidth : 0;
+  const start = 2 ** (-Math.max(0, lo - 1) / 12);
+  const span = start - 2 ** (-hi / 12);
+  const scale = span === 0 ? 0 : (width - open) / span;
+  return (fret) => (fret < lo ? 0 : open + (start - 2 ** (-fret / 12)) * scale);
+}
+
 export function layoutBoard(model, { width = 1100, height = 270 } = {}) {
   const { lo, hi, rows, state } = model;
-  const margin = 40;
-  const labelMargin = 48;
-  const left = state.hand === 'left' ? margin : labelMargin;
-  const right = state.hand === 'left' ? width - labelMargin : width - margin;
+  const left = state.hand === 'left' ? endMargin : stringLabelMargin;
+  const right = width - (state.hand === 'left' ? stringLabelMargin : endMargin);
   const top = 35;
   const bottom = height - 42;
-  const start = left + (lo === 0 ? 28 : 0);
-  const count = hi - Math.max(1, lo) + 1;
-  // Real equal-tempered fret spacing; mirror geometry, never the text or row order.
-  const ratios = Array.from(
-    { length: Math.max(0, count) + 1 },
-    (_, i) => 1 - 2 ** (-i / 12),
-  );
-  const denominator = ratios.at(-1) || 1;
-  const rawBound = (i) => start + ((right - start) * ratios[i]) / denominator;
+  const bound = fretRuler(lo, hi, right - left);
   const mirror = (x) => (state.hand === 'left' ? left + right - x : x);
-  const center = (f) =>
-    mirror(
-      f === 0
-        ? left + 12
-        : (rawBound(f - Math.max(1, lo)) + rawBound(f - Math.max(1, lo) + 1)) / 2,
-    );
+  const center = (f) => mirror(left + (f === 0 ? 12 : (bound(f - 1) + bound(f)) / 2));
   const y = (row) =>
     top + (bottom - top) * (rows.length === 1 ? 0.5 : row / (rows.length - 1));
   const edges = (f) => {
-    const a = f === 0 ? left : rawBound(f - Math.max(1, lo));
-    const z = f === 0 ? start : rawBound(f - Math.max(1, lo) + 1);
+    const a = left + bound(f - 1);
+    const z = left + bound(f);
     return [Math.min(mirror(a), mirror(z)), Math.max(mirror(a), mirror(z))];
   };
   return {
@@ -329,7 +376,7 @@ export function layoutBoard(model, { width = 1100, height = 270 } = {}) {
     center,
     y,
     edges,
-    nut: lo === 0 ? mirror(start) : null,
+    nut: lo === 0 ? mirror(left + bound(0)) : null,
     labelX: state.hand === 'left' ? right + 20 : left - 20,
   };
 }

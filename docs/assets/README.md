@@ -6,12 +6,12 @@ the tuning or handedness recalculates the fretboard and any PDF you export.
 
 ## Current homepage
 
-- [Light desktop](desktop.png) shows C major on a right-handed, six-string guitar in E standard. C is selected on the circle of fifths. The formula pairs the seven degrees with their notes. The 21-fret neck shows all five CAGED patterns, and the treble staff covers the pitches they use. The PDF cards show the 9-page Major & modes family and the 70-page full catalog.
-- [Dark desktop](desktop-dark.png) shows the same setup and layout after switching themes. Both full-page captures measure 1360 × 2223 pixels.
+- [Light desktop](desktop.png) shows C major on a right-handed, six-string guitar in E standard. C is selected on the circle of fifths. The formula below the fretboard title pairs the seven degrees with their notes. The 21-fret neck shows all five CAGED patterns, and the treble staff covers the pitches they use. These desktop captures predate the one-page chart button and paper-size selector.
+- [Dark desktop](desktop-dark.png) shows the same setup and layout after switching themes. Both full-page captures measure 1360 × 2169 pixels.
 
 ## Printable output
 
-- [C major on left-handed guitar](pdf-reference.png) shows an A4 landscape page from a generated atlas. It includes the full neck and five compact CAGED positions.
+- [C major on left-handed guitar](pdf-reference.png) shows the one-page A4 practice chart. It includes the note and degree formula, full neck, treble staff, and five compact CAGED positions.
 
 ## Earlier interface
 
@@ -39,4 +39,4 @@ The mobile screenshots and walkthrough document the previous homepage with its 0
   some extra space below its content.
 
 The original educational material and screenshots follow [CC BY 4.0](../../CONTENT-LICENSE.md).
-Marques & Co. branding and third-party assets retain their respective rights.
+Third-party assets retain their respective rights.

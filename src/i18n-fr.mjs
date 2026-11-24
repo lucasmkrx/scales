@@ -3,12 +3,14 @@
 export default {
   pdfDownloads: 'Téléchargements PDF',
   scalesAndArpeggios: 'Gammes et arpèges',
-  pdfFormat: 'A4 paysage',
+  paperSize: 'Format du papier',
+  letterPaper: 'Lettre US',
+  practiceSheet: 'Fiche de pratique',
+  page: 'page',
+  collectionOnRoot: '{collection} en {root}',
   backToTop: 'Haut de page',
   themeLabel: 'Thème actuel : {current}. Passer au thème {next}.',
   themeModes: { light: 'clair', dark: 'sombre' },
-  quickNavigation: 'Navigation rapide',
-  goToBoard: 'Aller au manche',
   patternShape: 'Forme de {shape}',
   patternDetails: 'Note la plus grave : {note} ({degree})',
   patternLabels: {
@@ -124,7 +126,6 @@ export default {
   scaleSettings: 'Gamme',
   singleNote: 'note',
   openStringsShort: 'Cordes à vide',
-  manualCopy: 'Copier ce lien',
   keyboardNotes:
     'Utilisez les flèches pour passer d’une note à l’autre. Appuyez sur Entrée ou Espace pour jouer la note.',
   instrument: 'Instrument',
@@ -143,7 +144,6 @@ export default {
   degrees: 'Degrés',
   showAll: 'Afficher les autres notes',
   pdf: 'Télécharger le PDF',
-  share: 'Copier le lien',
   formula: 'Formule',
   openStrings: 'Cordes à vide · du grave à l’aigu',
   nutRight: 'Sillet à droite · numéros de cases croissants vers la gauche',
@@ -156,7 +156,6 @@ export default {
   familyScope: 'Famille sélectionnée',
   catalogScope: 'Catalogue complet',
   exporting: 'Création du PDF',
-  saved: 'Lien copié. L’adresse contient votre sélection.',
   ready: 'Prêt',
   credits: 'Créé par Lucas Marques',
   source: 'Code source et contributions',
@@ -174,7 +173,6 @@ export default {
   outsideChord: 'Hors accord',
   editInstrument: 'Modifier l’instrument',
   fretboard: 'Manche',
-  circleOfFifths: 'Cycle des quintes',
   degreesHint:
     'Le degré 1 est la tonique. Chaque degré indique un intervalle à partir de cette note. Le bémol abaisse d’un demi-ton le degré correspondant de la gamme majeure, le dièse l’élève d’un demi-ton.',
   tuningFieldsHint:

@@ -2,13 +2,13 @@
 
 > Tukany is a free interactive guitar and bass fretboard by Lucas Marques. Players can see and hear scales, modes, and chord arpeggios, practice fingering patterns, and download printable scale diagrams.
 
-The explorer maps 67 named scales, modes, and arpeggios to all 12 roots. It supports six- and seven-string guitars and four-, five-, and six-string basses, with 44 tuning presets, custom tunings, and diagrams for either hand. Select a fret or staff note to hear its pitch. Use Copy link to share a practice setup.
+The explorer maps 67 named scales, modes, and arpeggios to all 12 roots. It supports six- and seven-string guitars and four-, five-, and six-string basses, with 44 tuning presets, custom tunings, and diagrams for either hand. Select a fret or staff note to hear its pitch. Share the browser address after choosing a practice setup.
 
 ## Explorer by language
 
 - [Guitar and bass scale explorer in English](https://tukany.com/)
 - [Escalas para guitarra e baixo em português do Brasil](https://tukany.com/pt/)
-- [Escalas para guitarra y bajo en español de España](https://tukany.com/es/)
+- [Escalas para guitarra y bajo en español](https://tukany.com/es/)
 - [Scale per chitarra e basso in italiano](https://tukany.com/it/)
 - [Gammes pour guitare et basse en français](https://tukany.com/fr/)
 - [Tonleitern für Gitarre und Bass auf Deutsch](https://tukany.com/de/)

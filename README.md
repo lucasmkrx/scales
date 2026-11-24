@@ -4,7 +4,7 @@ Tukany is a free, open-source interactive fretboard for guitar and bass. Pick a 
 and scale to see its notes, hear each pitch, and print a scale chart for your own
 tuning and handedness.
 
-[**Open the explorer**](https://tukany.com/) · [Português (Brasil)](https://tukany.com/pt/) · [Español (España)](https://tukany.com/es/) · [Italiano](https://tukany.com/it/) · [Français](https://tukany.com/fr/) · [Deutsch](https://tukany.com/de/)
+[**Open the explorer**](https://tukany.com/) · [Português (Brasil)](https://tukany.com/pt/) · [Español](https://tukany.com/es/) · [Italiano](https://tukany.com/it/) · [Français](https://tukany.com/fr/) · [Deutsch](https://tukany.com/de/)
 
 [![Tests, formatting, and deployment](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml/badge.svg)](https://github.com/lucasmkrx/tukany/actions/workflows/pages.yml)
 [![Code license: MPL 2.0](https://img.shields.io/badge/code-MPL--2.0-20343f)](LICENSE)
@@ -25,9 +25,10 @@ to play it in Tukany. [Backing tracks and practice drones](docs/backing-tracks.m
 | [C major on left-handed guitar](https://tukany.com/?key=C&hand=left)                                          | Play a fret to find the same pitch on the treble staff.                                     |
 | [D natural minor on Drop C bass](https://tukany.com/?key=D&scale=natural-minor&instrument=bass&tuning=drop-c) | Switch the fret labels to degrees to find the root, minor third, and fifth across the neck. |
 
-**Copy link** captures the key, scale, instrument setup, and selected pattern
-so another player can open the same diagram. Opening a language edition without
-a practice query resumes the instrument and scale saved on that device.
+After you change a practice setting, the browser address captures the key,
+scale, instrument setup, and selected pattern. Share that address to open the
+same diagram on another device. Opening a language edition without a practice
+query resumes the instrument and scale saved on that device.
 
 ### Find notes and fingering patterns
 
@@ -36,8 +37,6 @@ first on a fresh visit. To find Dorian, for example, open **Scale family**, choo
 **Major & modes**, then select **Dorian**. Browsing families keeps the current
 scale on the fretboard. The formula pairs each degree with its note name.
 Select a pair to hear it and highlight the pitch on the neck, or choose **Edit** to enter your own degrees.
-On phones, a sticky current-scale shortcut jumps directly to the fretboard while
-keeping every setting on the homepage.
 
 The button in the fretboard header shows your instrument and tuning. Open its
 dropdown to change instrument, handedness, tuning, string count, or fret count. Your
@@ -93,9 +92,14 @@ See the [dark desktop preview](docs/assets/desktop-dark.png).
 
 ## Printable guitar and bass guides
 
-The two download cards below the fretboard generate the current scale family or
-the full named catalog in your selected key. Each card shows its scope, number
-of maps, page count, and instrument setup. Opening a saved custom scale offers its formula as a single-scale PDF.
+The PDF downloads section below the fretboard uses your current instrument setup
+and root. Choose a one-page practice chart, a guide to the selected scale family,
+or the full catalog. Custom scales have their own one-page chart. Choose A4 or US
+Letter once for all downloads. Both sizes print in landscape, and Tukany remembers
+your choice on this device.
+
+The guides have linked contents and one chart per scale. The catalog opens with
+a list of families and includes an alphabetical index and expandable bookmarks.
 
 <details>
 <summary>Printable output</summary>
@@ -111,7 +115,7 @@ of maps, page count, and instrument setup. Opening a saved custom scale offers i
   plus custom tuning pitches.
 - Left- and right-handed fretboards with 20, 21, 22, or 24 frets, note or degree labels,
   and shared sharp/flat names on a single pitch marker.
-- American English, Brazilian Portuguese, Spanish from Spain, Italian, French, and German.
+- American English, Brazilian Portuguese, Spanish, Italian, French, and German.
 - Remembered instrument setups, keyboard controls, and shareable URLs.
 - Scale-derived fingering patterns that highlight exact string and fret positions,
   plus a note-map fallback for unsupported shapes.
@@ -193,8 +197,9 @@ node scripts/generate.mjs --instrument=bass --strings=6 \
   --scale=natural-minor --output=work/d-minor-bass.pdf
 ```
 
-Use `--scope=family` or `--scope=catalog` for an atlas. `--allKeys=true` applies
-to one selected scale. The CLI shares the browser's PDF generator.
+The default is one A4 chart. Use `--paperSize=letter` for US Letter,
+`--scope=family` or `--scope=catalog` for a book, or `--allKeys=true` for
+one scale in all 12 keys. The CLI shares the browser's PDF generator.
 
 ## Project notes
 
@@ -219,5 +224,4 @@ Copyright © 2026 Lucas Marques.
 
 - Code: [Mozilla Public License 2.0](LICENSE).
 - Original educational content and guides: [CC BY 4.0](CONTENT-LICENSE.md).
-- Marques & Co. logo: [separate branding terms](BRANDING.md).
 - Icons, fonts, and vendored libraries have their own [third-party notices](THIRD-PARTY-NOTICES.md).

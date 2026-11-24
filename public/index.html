@@ -14,7 +14,6 @@
       ><style>
         .skip,
         main .workspace,
-        main .mobile-shortcut,
         .masthead .select-control,
         #theme-toggle {
           display: none;
@@ -96,6 +95,8 @@
             id="coffee-link"
             class="coffee-link"
             href="https://buymeacoffee.com/lucasmkrx?l=en"
+            data-i18n-aria="buyMeACoffee"
+            aria-label="Buy me a coffee"
           >
             <img src="./assets/buy-me-a-coffee.svg" alt="" width="884" height="1279" />
             <span data-i18n="buyMeACoffee">Buy me a coffee</span>
@@ -110,17 +111,6 @@
       <p class="script-instruction" data-i18n="noScript">
         Enable JavaScript to play notes and customize your fretboard.
       </p>
-      <nav
-        class="mobile-shortcut"
-        data-i18n-aria="quickNavigation"
-        aria-label="Quick navigation"
-      >
-        <strong id="mobile-scale-title"></strong>
-        <a id="jump-to-board" href="#fretboard"
-          ><span data-i18n="goToBoard">Go to fretboard</span
-          ><i class="icon fa-solid fa-arrow-down" aria-hidden="true"></i
-        ></a>
-      </nav>
       <div class="workspace" id="explorer" tabindex="-1">
         <section
           class="panel settings-card scale-settings-card"
@@ -130,9 +120,8 @@
             <i class="icon fa-solid fa-music" aria-hidden="true"></i>
             <span data-i18n="scaleSettings">Scale</span>
           </h2>
-          <fieldset id="root-picker" aria-describedby="root-hint">
+          <fieldset id="root-picker">
             <legend id="root-caption" data-i18n="root">Root note</legend>
-            <p id="root-hint" data-i18n="circleOfFifths">Circle of fifths</p>
             <div class="root-wheel" id="root-wheel">
               <span class="root-wheel-pointer" aria-hidden="true"></span>
               <output class="root-wheel-current" aria-live="polite" aria-atomic="true">
@@ -158,10 +147,6 @@
               aria-label="Scale choices"
             ></div>
           </div>
-          <div class="scale-formula">
-            <p class="formula-label" id="formula-label" data-i18n="formula">Formula</p>
-            <div id="formula-degrees" role="group" aria-labelledby="formula-label"></div>
-          </div>
         </section>
         <section
           class="scale-panel panel"
@@ -185,6 +170,7 @@
               aria-haspopup="dialog"
               aria-expanded="false"
               aria-controls="instrument-settings"
+              aria-labelledby="instrument-caption setup-summary"
             >
               <i class="icon fa-solid fa-pen" aria-hidden="true"></i>
               <span class="instrument-button-label">
@@ -195,6 +181,14 @@
               </span>
               <i class="icon fa-solid fa-chevron-down" aria-hidden="true"></i>
             </button>
+            <div class="scale-formula">
+              <p class="formula-label" id="formula-label" data-i18n="formula">Formula</p>
+              <div
+                id="formula-degrees"
+                role="group"
+                aria-labelledby="formula-label"
+              ></div>
+            </div>
           </header>
           <div
             class="instrument-settings"
@@ -379,12 +373,6 @@
                 >
               </div>
               <p id="degrees-hint" class="sr-only" hidden data-i18n="degreesHint"></p>
-              <div class="toolbar">
-                <button type="button" class="text-button" id="share">
-                  <i class="icon fa-solid fa-link" aria-hidden="true"></i
-                  ><span data-i18n="share">Copy link</span>
-                </button>
-              </div>
             </div>
             <p id="scroll-hint" class="scroll-hint" hidden data-i18n="scrollHint"></p>
           </div>
@@ -455,10 +443,6 @@
           </section>
           <span class="sr-only" id="keyboard-notes" data-i18n="keyboardNotes"></span>
           <p id="status" class="status" role="status" aria-live="polite"></p>
-          <label id="share-fallback" hidden
-            ><span data-i18n="manualCopy">Copy this link</span
-            ><input type="url" id="share-url" readonly
-          /></label>
         </section>
 
         <section
@@ -466,11 +450,42 @@
           id="pdf-export"
           aria-labelledby="export-heading"
         >
-          <h2 class="settings-heading" id="export-heading">
-            <i class="icon fa-solid fa-file-pdf" aria-hidden="true"></i>
-            <span data-i18n="pdfDownloads">PDF downloads</span>
-          </h2>
+          <div class="export-header">
+            <h2 class="settings-heading" id="export-heading">
+              <i class="icon fa-solid fa-file-pdf" aria-hidden="true"></i>
+              <span data-i18n="pdfDownloads">PDF downloads</span>
+            </h2>
+            <fieldset class="export-paper" id="export-paper">
+              <legend data-i18n="paperSize">Paper size</legend>
+              <div class="segmented">
+                <label
+                  ><input type="radio" name="paperSize" value="a4" checked /><span
+                    >A4</span
+                  ></label
+                >
+                <label
+                  ><input type="radio" name="paperSize" value="letter" /><span
+                    data-i18n="letterPaper"
+                    >US Letter</span
+                  ></label
+                >
+              </div>
+            </fieldset>
+          </div>
+          <p class="export-setup" id="export-setup"></p>
           <div class="export-cards">
+            <button type="button" class="export-card" data-export="selected">
+              <span class="export-scope"
+                ><i class="icon fa-solid fa-file-pdf" aria-hidden="true"></i
+                ><span data-i18n="practiceSheet">Practice chart</span></span
+              >
+              <strong class="export-title"></strong>
+              <span class="export-estimate"></span>
+              <span class="export-action"
+                ><span data-i18n="pdf">Download PDF</span
+                ><i class="icon fa-solid fa-download" aria-hidden="true"></i
+              ></span>
+            </button>
             <button type="button" class="export-card" data-export="family">
               <span class="export-scope"
                 ><i class="icon fa-solid fa-book-open" aria-hidden="true"></i
@@ -478,28 +493,20 @@
               >
               <strong class="export-title"></strong>
               <span class="export-estimate"></span>
-              <span class="export-setup"></span>
-              <span class="export-action"
-                ><span data-i18n="pdf">Download PDF</span
-                ><i class="icon fa-solid fa-download" aria-hidden="true"></i
-              ></span>
-            </button>
-            <button type="button" class="export-card" data-export="catalog">
-              <span class="export-scope"
-                ><i class="icon fa-solid fa-book" aria-hidden="true"></i
-                ><span data-i18n="catalogScope">Full catalog</span></span
-              >
-              <strong class="export-title" data-i18n="scalesAndArpeggios"
-                >Scales and arpeggios</strong
-              >
-              <span class="export-estimate"></span>
-              <span class="export-setup"></span>
               <span class="export-action"
                 ><span data-i18n="pdf">Download PDF</span
                 ><i class="icon fa-solid fa-download" aria-hidden="true"></i
               ></span>
             </button>
           </div>
+          <button type="button" class="export-catalog" data-export="catalog">
+            <strong class="export-title"></strong>
+            <span class="export-estimate"></span>
+            <span class="export-action"
+              ><span data-i18n="pdf">Download PDF</span
+              ><i class="icon fa-solid fa-download" aria-hidden="true"></i
+            ></span>
+          </button>
           <p id="export-status" class="hint" role="status" aria-live="polite"></p>
         </section>
       </div>
@@ -523,23 +530,34 @@
               height="619"
             />
           </a>
-          <div class="footer-links">
-            <a href="https://github.com/lucasmkrx/tukany" data-i18n="source"
-              >Source &amp; contributions</a
-            >
-            <a
-              href="https://github.com/lucasmkrx/tukany/blob/main/THIRD-PARTY-NOTICES.md#instrument-selector-icons"
-              data-i18n="iconCredits"
-              >Icon credits</a
-            >
-            <a href="#top" data-i18n="backToTop">Back to top</a>
-          </div>
+          <a class="footer-top" href="#top">
+            <span data-i18n="backToTop">Back to top</span>
+            <i class="icon fa-solid fa-arrow-up" aria-hidden="true"></i>
+          </a>
         </div>
-        <div class="footer-credits">
-          <a href="https://lucasgmarques.com/" data-i18n="credits"
-            >Made by Lucas Marques</a
-          >
-          <p data-i18n="license"></p>
+        <div class="footer-meta">
+          <ul class="footer-links">
+            <li>
+              <a href="https://github.com/lucasmkrx/tukany">
+                <i class="icon fa-solid fa-code" aria-hidden="true"></i>
+                <span data-i18n="source">Source &amp; contributions</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://github.com/lucasmkrx/tukany/blob/main/THIRD-PARTY-NOTICES.md#instrument-selector-icons"
+              >
+                <i class="icon fa-solid fa-circle-info" aria-hidden="true"></i>
+                <span data-i18n="iconCredits">Icon credits</span>
+              </a>
+            </li>
+          </ul>
+          <div class="footer-credits">
+            <a href="https://lucasgmarques.com/" data-i18n="credits"
+              >Made by Lucas Marques</a
+            >
+            <p data-i18n="license"></p>
+          </div>
         </div>
       </div>
     </footer>

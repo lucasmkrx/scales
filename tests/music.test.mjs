@@ -11,6 +11,7 @@ import {
   selection,
   spellScale,
   boardModel,
+  formulaPlaybackPitches,
   layoutBoard,
   normalizeState,
   sharedState,
@@ -33,6 +34,26 @@ test('every named scale has unique ascending intervals consistent with its degre
 test('modes are rotated interval structures, not merely renamed roots', () => {
   assert.deepEqual(mode([0, 2, 4, 5, 7, 9, 11], 1), [0, 2, 3, 5, 7, 9, 10]);
   assert.deepEqual(mode([0, 2, 3, 5, 7, 8, 11], 4), [0, 1, 4, 5, 7, 8, 10]);
+});
+test('formula playback chooses an ascending sequence from the root', () => {
+  const model = boardModel({ root: 0, allNotes: true });
+  assert.deepEqual(formulaPlaybackPitches(model), [48, 50, 52, 53, 55, 57, 59]);
+  const points = model.points.filter(({ midi }) => midi >= 59 && midi <= 71);
+  assert.deepEqual(
+    formulaPlaybackPitches(model, { points }),
+    [60, 62, 64, 65, 67, 69, 71],
+  );
+  assert.deepEqual(
+    formulaPlaybackPitches(model, { points: points.filter(({ midi }) => midi !== 64) }),
+    [48, 50, 52, 53, 55, 57, 59],
+  );
+  const restricted = boardModel({
+    tuning: 'custom',
+    customTuning: 'C-1 C1 C3 C5 C7 C9',
+    frets: 20,
+    root: 11,
+  });
+  assert.deepEqual(formulaPlaybackPitches(restricted), [11, 13, 15, 16, 18, 20, 34]);
 });
 test('Both labels name the same sounding pitch in every scale and key', () => {
   assert.equal(noteName(1, 'both'), 'C♯/D♭');

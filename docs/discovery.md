@@ -9,7 +9,7 @@ addresses when linking from a lesson, a repository, or a translation.
 | ------------------ | ---------------------------------------- | ------------- |
 | English (US)       | [tukany.com](https://tukany.com/)        | `en-US`       |
 | Português (Brasil) | [tukany.com/pt/](https://tukany.com/pt/) | `pt-BR`       |
-| Español (España)   | [tukany.com/es/](https://tukany.com/es/) | `es-ES`       |
+| Español            | [tukany.com/es/](https://tukany.com/es/) | `es-ES`       |
 | Italiano           | [tukany.com/it/](https://tukany.com/it/) | `it-IT`       |
 | Français           | [tukany.com/fr/](https://tukany.com/fr/) | `fr-FR`       |
 | Deutsch            | [tukany.com/de/](https://tukany.com/de/) | `de-DE`       |
@@ -21,9 +21,9 @@ language codes such as `es` so speakers in any country can find that edition.
 The HTML language tag identifies the regional wording. The English root is the
 `x-default` fallback. [Google’s guide to localized pages](https://developers.google.com/search/docs/specialty/international/localized-versions)
 
-To point someone to a particular scale, use **Copy link** in the fretboard. A
-practice link opens the active language edition and carries the musical setup
-in the query string. For example, a Portuguese link to A minor pentatonic opens
+To point someone to a particular scale, share the browser address after choosing
+a practice setup. A practice link carries the musical setup in the query string.
+For example, a Portuguese link to A minor pentatonic opens
 `/pt/?key=A&scale=minor-pentatonic`. These configurations share the canonical
 URL of their language edition. Older links with `?lang=pt`
 or other supported language codes still work. [Practice link examples](../README.md#start-with-a-scale)

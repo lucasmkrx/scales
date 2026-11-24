@@ -16,6 +16,8 @@ import {
   parseTuning,
   sharedState,
   boardModel,
+  boardDimensions,
+  formulaPlaybackPitches,
   pitchPreference,
 } from './music.mjs';
 import { PluckedStringPlayer } from './string-audio.mjs';
@@ -45,7 +47,7 @@ import { enableSlideSwitch } from './slide-switch.mjs';
 import { createDropdowns, enableInstrumentDropdown } from './dropdown.mjs';
 import { createAtlas } from './pdf.mjs';
 import { intervalName } from './intervals.mjs';
-import { scalePatterns } from './patterns.mjs';
+import { practicePatterns } from './patterns.mjs';
 import { patternSummary } from './pattern-summary.mjs';
 import {
   entryPracticeParams,
@@ -57,6 +59,7 @@ let saved = {};
 try {
   saved = readPreferences(localStorage.getItem(STORAGE_KEY));
 } catch {}
+let paperSize = saved.paperSize === 'letter' ? 'letter' : 'a4';
 const projectRoot = new URL('../', import.meta.url);
 const routeLanguage = document.documentElement.dataset.pageLanguage;
 const entryParams = new URLSearchParams(location.search);
@@ -117,7 +120,7 @@ function tuningSummary(s) {
   return s.tuningData.notes.map((midi) => midiName(midi, preference)).join(' ');
 }
 function persist() {
-  saved = rememberWorkspace(saved, { ...state, range });
+  saved = { ...rememberWorkspace(saved, { ...state, range }), paperSize };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   } catch {}
@@ -186,13 +189,7 @@ function currentPattern(id = range) {
 function syncPatterns() {
   const key = sharedState(state);
   if (key !== patternKey) {
-    patternInfo = scalePatterns(state);
-    // Prefer the lower-octave fingering when a complete shape fits in two places.
-    const lower = scalePatterns(state, { hi: 12 }).patterns;
-    const byId = new Map(lower.map((pattern) => [pattern.id, pattern]));
-    patternInfo.patterns = patternInfo.patterns.map(
-      (pattern) => byId.get(pattern.id) ?? pattern,
-    );
+    patternInfo = practicePatterns(state);
     patternKey = key;
   }
   if (range !== 'full' && !currentPattern()) {
@@ -280,10 +277,9 @@ function selectStaffNote(midi) {
   }
   revealStaffNote(note);
 }
-function renderBoard() {
+function renderBoard(model) {
   const board = $('board');
-  const width = 72 + (state.frets + 1) * 45;
-  const height = 74 + (state.strings - 1) * 31;
+  const { width, height } = boardDimensions(state);
   const setup = [
     state.instrument,
     state.strings,
@@ -303,7 +299,6 @@ function renderBoard() {
     ? document.activeElement.dataset
     : null;
   board.dir = state.hand === 'left' ? 'rtl' : 'ltr';
-  const model = boardModel(state);
   boardNotes = model.points;
   board.innerHTML = boardMarkup(state, {
     model,
@@ -342,9 +337,11 @@ function renderBoard() {
 }
 function renderContent() {
   syncPatterns();
-  const s = selection(state),
+  const model = boardModel(state),
+    s = model.state,
     t = copy[state.lang],
-    names = spellScale(s);
+    names = spellScale(s),
+    pitches = formulaPlaybackPitches(model, currentPattern());
   $('family-label').textContent = FAMILIES[s.scaleData.family]?.[s.lang] ?? t.custom;
   $('note-count').textContent =
     `${names.length} ${names.length === 1 ? t.singleNote : t.noteCount}`;
@@ -356,7 +353,7 @@ function renderContent() {
       const degree = s.scaleData.formula[index];
       const symbol = prettyDegree(degree);
       const description = `${t.degree} ${symbol}, ${name}, ${intervalName(degree, s.lang)}`;
-      return `<button type="button" class="tone-button" data-pitch="${pitch}" aria-pressed="false" aria-label="${escape(description)}"><span class="formula-degree">${escape(symbol)}</span><span class="formula-note"><i aria-hidden="true" class="color-dot${isAccidentalPitch(pitch) ? ' accidental-pitch' : ''}" style="background:${pitchColor(pitch)}"></i>${escape(name)}</span></button>`;
+      return `<button type="button" class="tone-button" data-pitch="${pitch}" data-formula-midi="${pitches[index]}" aria-pressed="false" aria-label="${escape(description)}"><span class="formula-degree">${escape(symbol)}</span><span class="formula-note"><i aria-hidden="true" class="color-dot${isAccidentalPitch(pitch) ? ' accidental-pitch' : ''}" style="background:${pitchColor(pitch)}"></i>${escape(name)}</span></button>`;
     })
     .join('');
   $('orientation').textContent = s.hand === 'left' ? t.nutRight : t.nutLeft;
@@ -371,7 +368,7 @@ function renderContent() {
   $('pattern-summary').innerHTML = summary
     ? `<strong>${escape(summary.title)}</strong><span>${escape(summary.detail)}</span>`
     : '';
-  renderBoard();
+  renderBoard(model);
   $('degrees-hint').hidden = s.labels !== 'degrees';
 }
 function changeRange(id) {
@@ -380,8 +377,8 @@ function changeRange(id) {
   stopNoteAudio();
   persist();
   status('');
-  $('share-fallback').hidden = true;
   renderContent();
+  renderExport();
   saveURL();
 }
 function togglePattern(id) {
@@ -442,39 +439,43 @@ function renderTuningFields() {
 }
 const exportCards = [...document.querySelectorAll('[data-export]')];
 
-function atlasScope(cardScope, input) {
-  // A custom formula has one map and no named catalog family.
-  return cardScope === 'family' && input.scale === 'custom' ? 'selected' : cardScope;
-}
-
 function renderExport({ resetStatus = true } = {}) {
   if (!exporting && resetStatus) $('export-status').textContent = '';
+  const s = selection(exporting?.snapshot ?? state);
+  const t = copy[state.lang];
+  const root = rootName(s);
+  const pattern = exporting ? exporting.pattern : currentPattern();
+  const paper = $('export-paper');
+  paper.disabled = Boolean(exporting);
+  paper.querySelector(`input[value="${paperSize}"]`).checked = true;
+  $('export-setup').textContent = [
+    `${t[s.instrument]} (${s.strings} ${t.strings.toLowerCase()})`,
+    tuningSummary(s),
+    `${s.frets} ${t.frets.toLowerCase()}`,
+    t[s.hand],
+    t[s.labels],
+    LANGUAGES[s.lang].label,
+  ].join(' · ');
   for (const card of exportCards) {
+    const scope = card.dataset.export;
     const active = exporting?.card === card;
-    const s = selection(active ? exporting.snapshot : state);
-    const t = copy[state.lang];
-    const scope = atlasScope(card.dataset.export, s);
+    card.hidden = scope === 'family' && s.scale === 'custom';
+    if (card.hidden) continue;
     const { count, pages } = exportPreview(s, { scope });
-    if (card.dataset.export === 'family') {
-      card.querySelector('.export-scope span').textContent =
-        scope === 'selected' ? t.selected : t.familyScope;
-      card.querySelector('.export-title').textContent =
-        FAMILIES[s.scaleData.family]?.[state.lang] ?? t.customScaleTitle;
-    }
-    card.querySelector('.export-estimate').textContent = [
-      `${count} ${count === 1 ? t.scaleMap : t.scaleMaps}`,
-      `${pages} ${t.pages}`,
-      t.pdfFormat,
-      LANGUAGES[s.lang].label,
-    ].join(' · ');
-    card.querySelector('.export-setup').textContent = [
-      `${t.root} ${rootName(s)}`,
-      `${t[s.instrument]} (${s.strings} ${t.strings.toLowerCase()})`,
-      tuningSummary(s),
-      `${s.frets} ${t.frets.toLowerCase()}`,
-      t[s.hand],
-      t[s.labels],
-    ].join(' · ');
+    const collection =
+      scope === 'family' ? FAMILIES[s.scaleData.family]?.[state.lang] : t.catalogScope;
+    card.querySelector('.export-title').textContent =
+      scope === 'selected'
+        ? `${root} ${scaleName(s.scaleData, state.lang)}`
+        : t.collectionOnRoot.replace('{collection}', collection).replace('{root}', root);
+    const pageCount = `${pages} ${pages === 1 ? t.page : t.pages}`;
+    const detail =
+      scope === 'selected'
+        ? pattern && `${t.pattern} ${pattern.number}`
+        : `${count} ${count === 1 ? t.scaleMap : t.scaleMaps}`;
+    card.querySelector('.export-estimate').textContent = [detail, pageCount]
+      .filter(Boolean)
+      .join(' · ');
     card.querySelector('.export-action span').textContent = active ? t.cancel : t.pdf;
     card.querySelector('.export-action i').className =
       `icon fa-solid fa-${active ? 'xmark' : 'download'}`;
@@ -540,7 +541,6 @@ function render() {
   );
   const scaleTitle = `${note} ${scale}`;
   $('fretboard-heading').textContent = scaleTitle;
-  $('mobile-scale-title').textContent = scaleTitle;
   renderBackingTracks();
   renderScalePicker();
   renderContent();
@@ -554,7 +554,6 @@ function update(values, { setup = false } = {}) {
   state = changeSetup(state, values, saved);
   persist();
   status('');
-  $('share-fallback').hidden = true;
   $('setup-status').textContent = '';
   render();
   saveURL();
@@ -749,17 +748,10 @@ staff.addEventListener('keydown', (event) => {
   if (next?.matches('[data-staff-midi]')) next.focus({ preventScroll: true });
 });
 $('formula-degrees').addEventListener('click', (event) => {
-  const button = event.target.closest('button[data-pitch]');
-  if (!button) return;
-  const pitch = Number(button.dataset.pitch);
-  const candidates = boardNotes
-    .filter((point) => point.pc === pitch)
-    .sort((a, b) => a.midi - b.midi);
-  const highlighted = candidates.find(isHighlighted);
-  const note = highlighted ?? candidates[0];
-  if (!note) return;
-  inspectNote({ ...note, visible: Boolean(highlighted) });
-  soundNote(note.midi);
+  const midi = Number(
+    event.target.closest('button[data-formula-midi]')?.dataset.formulaMidi,
+  );
+  if (Number.isInteger(midi)) playNote(midi);
 });
 $('board').addEventListener('focusin', (event) => {
   const note = event.target.closest('[data-midi]');
@@ -768,11 +760,6 @@ $('board').addEventListener('focusin', (event) => {
 window.addEventListener('pagehide', stopNoteAudio);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopNoteAudio();
-});
-$('jump-to-board').addEventListener('click', (event) => {
-  event.preventDefault();
-  $('fretboard-heading').focus({ preventScroll: true });
-  $('fretboard').scrollIntoView({ block: 'start' });
 });
 enableBoardNavigation($('board'), playNote);
 $('instrument').addEventListener('change', (event) => {
@@ -866,23 +853,6 @@ $('language').addEventListener('change', () => update({ lang: $('language').valu
 $('allNotes').addEventListener('change', () =>
   update({ allNotes: $('allNotes').checked }),
 );
-$('share').addEventListener('click', async () => {
-  saveURL();
-  const url = new URL(explorerPath(state.lang), projectRoot);
-  url.search = location.search;
-  url.searchParams.delete('lang');
-  $('share-fallback').hidden = true;
-  try {
-    await navigator.clipboard.writeText(url.href);
-    status(copy[state.lang].saved);
-  } catch {
-    status('');
-    $('share-url').value = url.href;
-    $('share-fallback').hidden = false;
-    $('share-url').focus();
-    $('share-url').select();
-  }
-});
 function loadScript(path) {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
@@ -907,10 +877,11 @@ async function downloadAtlas(card) {
     if (exporting.card === card) exporting.controller.abort();
     return;
   }
-  const snapshot = { ...state };
-  const scope = atlasScope(card.dataset.export, snapshot);
+  const snapshot = { ...state, range };
+  const scope = card.dataset.export;
+  const exportPaper = paperSize;
   const controller = new AbortController();
-  exporting = { card, controller, snapshot };
+  exporting = { card, controller, snapshot, pattern: currentPattern() };
   renderExport();
   $('export-status').textContent = copy[state.lang].exporting;
   try {
@@ -918,6 +889,7 @@ async function downloadAtlas(card) {
     controller.signal.throwIfAborted();
     const bytes = await createAtlas(snapshot, {
       scope,
+      paperSize: exportPaper,
       signal: controller.signal,
       progress: (n, total) => {
         $('export-status').textContent =
@@ -929,12 +901,14 @@ async function downloadAtlas(card) {
     const link = document.createElement('a');
     const edition =
       scope === 'family'
-        ? selection(snapshot).scaleData.family
+        ? `family-${selection(snapshot).scaleData.family}`
         : scope === 'catalog'
           ? 'catalog'
-          : snapshot.scale;
+          : `chart-${snapshot.scale}`;
+    const patternSuffix =
+      scope === 'selected' && snapshot.range !== 'full' ? `-${snapshot.range}` : '';
     link.href = url;
-    link.download = `tukany-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${edition}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat')}-${snapshot.hand}-${snapshot.lang}.pdf`;
+    link.download = `tukany-${snapshot.instrument}-${snapshot.strings}-${snapshot.tuning}-${edition}-${rootName(snapshot).replaceAll('♯', 'sharp').replaceAll('♭', 'flat')}${patternSuffix}-${snapshot.hand}-${exportPaper}-${snapshot.lang}.pdf`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 30000);
     $('export-status').textContent = copy[state.lang].ready;
@@ -948,6 +922,11 @@ async function downloadAtlas(card) {
     renderExport({ resetStatus: false });
   }
 }
+$('export-paper').addEventListener('change', (event) => {
+  paperSize = event.target.value;
+  persist();
+  renderExport();
+});
 exportCards.forEach((card) => card.addEventListener('click', () => downloadAtlas(card)));
 $('theme-toggle').addEventListener('click', () => {
   const theme = window.tukanyTheme;

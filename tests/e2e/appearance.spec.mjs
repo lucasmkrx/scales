@@ -50,7 +50,7 @@ test('the coffee button follows all six languages and fits with the header contr
     await expect(coffee).toHaveAccessibleName(label);
     await expect(coffee).toHaveAttribute('href', `${coffeePage}${destination}`);
     await page.evaluate(() => document.fonts.ready);
-    for (const width of [320, 401, 441, 560, 1280]) {
+    for (const width of [320, 401, 441, 560, 667, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       const controls = await page
         .locator('#theme-toggle, #language-trigger, .coffee-link')
@@ -65,8 +65,14 @@ test('the coffee button follows all six languages and fits with the header contr
       expect(theme.right).toBeLessThan(selector.left);
       expect(selector.right).toBeLessThan(button.left);
       expect(button.right).toBeLessThanOrEqual(width);
-      const labelBounds = await coffee.locator('span').boundingBox();
-      expect(labelBounds.x + labelBounds.width).toBeLessThan(button.right);
+      const brand = await page.locator('.masthead .brand').boundingBox();
+      if (width <= 720) {
+        expect(brand.x + brand.width).toBeLessThan(theme.left);
+        await expect(coffee.locator('span')).toBeHidden();
+      } else {
+        const labelBounds = await coffee.locator('span').boundingBox();
+        expect(labelBounds.x + labelBounds.width).toBeLessThan(button.right);
+      }
       for (const control of controls) {
         expect(control.top).toBeCloseTo(theme.top, 0);
         expect(control.height).toBeCloseTo(44, 0);
@@ -75,6 +81,29 @@ test('the coffee button follows all six languages and fits with the header contr
   }
   await page.reload();
   await expect(coffee).toHaveAttribute('href', `${coffeePage}de`);
+});
+
+test('footer links fit at phone width and the top link returns to the header', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 675 });
+  await page.goto(url({ lang: 'de' }));
+  const footer = page.locator('.site-footer');
+  const source = footer.getByRole('link', { name: 'Quellcode und Mitarbeit' });
+  const credits = footer.getByRole('link', { name: 'Bildnachweise für Symbole' });
+  const top = footer.getByRole('link', { name: 'Nach oben' });
+  await expect(source).toHaveAttribute('href', 'https://github.com/lucasmkrx/tukany');
+  await expect(credits).toHaveAttribute('href', /THIRD-PARTY-NOTICES\.md/);
+  for (const link of [source, credits, top]) {
+    const bounds = await link.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+    expect(bounds.height).toBeGreaterThanOrEqual(44);
+  }
+  expect((await source.boundingBox()).y).toBeLessThan((await credits.boundingBox()).y);
+  await top.click();
+  await expect(page).toHaveURL(/#top$/);
+  await expect(page.locator('.site-header')).toBeInViewport({ ratio: 1 });
 });
 
 test('dropdown corners stay capped and the selectors retain their rounded shapes', async ({
@@ -242,7 +271,7 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
   const roots = page.getByRole('group', { name: 'Tônica', exact: true });
   await expect(roots.getByRole('radio')).toHaveCount(12);
-  await expect(roots.locator('#root-hint')).toHaveText('Círculo das quintas');
+  await expect(roots.getByText('Círculo das quintas', { exact: true })).toHaveCount(0);
   await roots.getByRole('radio', { name: 'C', exact: true }).press('ArrowRight');
   const nextRoot = roots.getByRole('radio', { name: 'G', exact: true });
   await expect(nextRoot).toBeChecked();
@@ -718,13 +747,16 @@ test('scale names, formulas, and selection marks fit on desktop and phones', asy
       expect(choice.width, choice.label).toBeGreaterThanOrEqual(44);
       expect(choice.fits, choice.label).toBe(true);
     }
-    const tones = page.locator('#formula-degrees button');
+    const tones = page.locator('#fretboard .scale-header #formula-degrees button');
     await expect(tones).toHaveCount(12);
-    for (const tone of await sizes(tones)) {
+    const toneSizes = await sizes(tones);
+    for (const tone of toneSizes) {
       expect(tone.label).not.toContain('/');
-      expect(tone.width, tone.label).toBeGreaterThanOrEqual(24);
+      expect(tone.width, tone.label).toBeGreaterThanOrEqual(44);
+      expect(tone.height, tone.label).toBeGreaterThanOrEqual(44);
       expect(tone.fits, tone.label).toBe(true);
     }
+    if (width === 320) expect(new Set(toneSizes.map((tone) => tone.x)).size).toBe(4);
     const formula = await tones.allTextContents();
     const degrees = await tones.locator('.formula-degree').allTextContents();
     await expect(selected.locator('.scale-choice-formula')).toHaveText(degrees.join(' '));

@@ -13,8 +13,6 @@ All browser assets are served locally; no CDN or account is needed to use Tukany
 | DejaVu Sans (regular and bold) | supplied font files; https://dejavu-fonts.github.io/                                     | Bitstream Vera / DejaVu notices, `public/assets/fonts/LICENSE-DejaVu.txt`                                                                    |
 | Prettier (development only)    | 3.9.10, https://github.com/prettier/prettier                                             | MIT; installed package `LICENSE`                                                                                                             |
 
-Marques & Co. branding has its own terms in BRANDING.md.
-
 The favicons and home-screen icons use the supplied [Tukany toucan](public/assets/tukany-logo.svg).
 
 The support button uses the [official Buy Me a Coffee cup](public/assets/buy-me-a-coffee.svg) from its [website button embed](https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js). Its lettering uses [Cookie by Ania Kruk](https://fonts.google.com/specimen/Cookie), distributed under the [SIL Open Font License 1.1](public/assets/fonts/OFL-Cookie.txt).

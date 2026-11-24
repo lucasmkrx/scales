@@ -79,10 +79,8 @@ systems and density constraints, so they have separate layout functions.
 
 Each renderer needs its own visual checks. The PDF uses a continuous tapered neck.
 Both renderers use the shared guitar pattern model. The homepage favors complete
-first-octave instances where available; the PDF can use a different whole-octave
-instance on the full instrument neck. Each renderer uses exact pattern points.
-The bass PDF shows octave routes from the two lowest strings; the homepage
-offers compact routes from any viable starting string. Unavailable fingerings
+first-octave instances where available, and the PDF uses the same choice.
+Both renderers use exact pattern points and the same compact bass octave routes. Unavailable fingerings
 retain an explicitly labeled note-map fallback.
 
 ### Sounding pitches, note labels, and degree formulas
@@ -153,12 +151,11 @@ Left-handed updates the fretboard geometry, range labels, and PDF output.
 Native radio groups expose the available string and fret counts directly.
 The full-width tuning picker includes the open pitches from lowest to highest.
 Choosing a custom tuning reveals its pitch fields in place.
-One shared listbox serves tuning, language, scale family, and tonic spelling.
-Keyboard, pointer, and touch selections use the same
-change handlers. On phones, a sticky current-scale shortcut scrolls to the
-fretboard and focuses its heading.
+One shared listbox serves tuning, language, and scale family. Keyboard, pointer,
+and touch selections use the same change handlers.
 
-The formula pairs each degree with its spelled note in a playable button.
+The formula below the fretboard title pairs each degree with its spelled note in
+a playable button.
 Selecting a scale updates those degrees. Shared links and saved sessions can also
 display a custom formula. Custom tuning validation appears next to its inputs.
 Keyboard selection returns focus to the chosen result after its active state updates.
@@ -248,7 +245,7 @@ pattern fades the current pluck. A version token cancels pending audio starts
 and prevents an older pluck from clearing the current note's highlight when it
 ends.
 
-The Scale card’s formula buttons also control playback. Activating a tone
+The formula buttons in the fretboard header also control playback. Activating a tone
 highlights its pitch class across the visible neck and shows its interval and
 location. Board notes retain their actual string and fret in the detail readout.
 
@@ -259,16 +256,15 @@ perceptual realism. References are recorded in [references.md](references.md).
 
 ### PDF layout and cancellation
 
-pdf-lib and fontkit load on demand. Fonts and the publisher logo are local assets.
-The generator plans the cover, contents, reading page, and scale pages before
-rendering. Export estimates reuse that planner, including additional contents
-pages for a large catalog.
+pdf-lib and fontkit load on demand. Fonts, the Tukany toucan, and the wordmark are local assets.
+The planner emits one independent chart for an individual scale or custom formula.
+Family and catalog books add linked contents and a reading guide before the charts.
+The catalog links each family to its first chart and includes a localized alphabetical
+index and a bookmark tree. The browser uses the same planner for its page estimates.
 
-The two download cards describe their contents, map and page counts, format, and
-instrument configuration. One exports the selected family in the current key,
-or the individual scale for a custom formula. The other exports the full catalog
-in that key.
-The browser captures the selected configuration and export scope before awaiting
+Each export has a native landscape page box for the selected paper size. A4 is
+the default. The browser remembers the paper preference separately from practice
+links. It captures the selected setup, paper size, and export scope before awaiting
 libraries or rendering. Progress and cancellation operate on that export, so a
 later state change cannot silently rename a PDF generated from an earlier state.
 Larger atlases still require more browser memory and time.
@@ -286,8 +282,8 @@ revision. CI verifies the published references and tests/builds before deploymen
 
 ## Licensing boundaries
 
-Code uses MPL 2.0. Original educational content uses CC BY 4.0. Logo rights and
-third-party font/library licenses are documented separately. No recorded samples
+Code uses MPL 2.0. Original educational content uses CC BY 4.0. Third-party
+font and library licenses are documented in [the notices](../THIRD-PARTY-NOTICES.md). No recorded samples
 are bundled. YouTube hosts the backing tracks and serves the embedded player
 when the user plays a track in Tukany.
 

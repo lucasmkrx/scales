@@ -65,7 +65,7 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
 - Open and dismiss the instrument dropdown at desktop and phone widths. Check that
   the button shows the active instrument and tuning, and that opening the dropdown
   keeps the fretboard in position. Verify the display controls sit inside the diagram
-  and the two PDF download cards sit below the playing surface.
+  and the PDF downloads sit below the playing surface.
 - Switch guitar/bass and every supported string count; confirm available tunings
   and fret defaults, then confirm a previous setup can be recalled.
 - Open the tuning picker by pointer and keyboard. Check that long pitch names
@@ -125,9 +125,11 @@ Serve a fresh build with `node scripts/serve.mjs` and check the following:
   guitar in standard tuning, English labels, and the full fretboard. Open a
   legacy link with numeric `root` and `neck=octave`, then copy its link and
   check that the compact URL reopens the same selection on a second device.
-- Download the current family and full catalog using the two cards. Compare
-  their map and page counts to the files. Try the family card with a custom
-  formula and confirm it generates a single scale map. Cancel an export, then
+- Download the individual chart, current family and full catalog. Compare the
+  displayed counts with the files. Switch from A4 to US Letter and verify the
+  page dimensions and remembered choice. Try a custom formula, then open its
+  single-page chart. Follow a family bookmark and an alphabetical index link
+  in the catalog. Cancel an export, then
   change the musical setup during another and check that its PDF reflects the
   configuration captured at the start.
 - Compare all five major and natural-minor CAGED positions and the pentatonic

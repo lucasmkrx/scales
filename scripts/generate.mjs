@@ -21,6 +21,7 @@ await mkdir(resolve(output, '..'), { recursive: true });
 const bytes = await createAtlas(args, {
   scope: args.scope ?? 'selected',
   allKeys: args.allKeys === 'true',
+  paperSize: args.paperSize,
   asset: async (path) =>
     new Uint8Array(await readFile(new URL(`../public/${path}`, import.meta.url))),
   progress: (n, total) => {

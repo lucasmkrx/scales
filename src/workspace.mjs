@@ -107,7 +107,7 @@ export function exportPreview(input, { scope = 'selected', allKeys = false } = {
   if (!count) return { count: 0, pages: 0 };
   const plan = guidePlan(
     Array.from({ length: count }, () => ({ title: '' })),
-    { coverTitle: '', readTitle: '', contentsTitle: '' },
+    { scope, coverTitle: '', readTitle: '', contentsTitle: '' },
   );
   return { count, pages: plan.entries.length };
 }

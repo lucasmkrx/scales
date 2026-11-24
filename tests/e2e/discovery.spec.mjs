@@ -90,20 +90,16 @@ test('language changes retain the practice session on the homepage', async ({ pa
   await expect(page.getByRole('radio', { name: 'A', exact: true })).toBeChecked();
   await page.goto('/?lang=pt');
   await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
-  await page.evaluate(() =>
-    Object.defineProperty(navigator, 'clipboard', { value: undefined }),
-  );
-  await page.locator('#share').click();
+  await page.getByRole('radio', { name: 'G', exact: true }).check();
   await expect(page).toHaveURL(
-    (url) => url.pathname === '/' && url.search === '?key=A&lang=pt',
+    (url) => url.pathname === '/' && url.search === '?key=G&lang=pt',
   );
-  const shared = new URL(await page.locator('#share-url').inputValue());
-  expect(shared.pathname + shared.search).toBe('/pt/?key=A');
-  const preview = await page.request.get(shared.href);
-  expect(await preview.text()).toContain('property="og:locale" content="pt_BR"');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+  await expect(page.getByRole('radio', { name: 'G', exact: true })).toBeChecked();
 });
 
-test('an old practice link copies as a compact setup and restores across preferences', async ({
+test('an old practice link becomes a compact setup and restores across preferences', async ({
   page,
 }) => {
   await page.goto(
@@ -111,19 +107,12 @@ test('an old practice link copies as a compact setup and restores across prefere
   );
   const compact = '?key=F&scale=minor-blues&hand=left';
   await expect(page).toHaveURL((url) => url.search === compact && url.hash === '#top');
-  await page.evaluate(() =>
-    Object.defineProperty(navigator, 'clipboard', { value: undefined }),
-  );
-  await page.locator('#share').click();
-  const shared = new URL(await page.locator('#share-url').inputValue());
-  expect(shared.search).toBe(compact);
-  expect(shared.hash).toBe('');
-  expect(new URL(page.url()).hash).toBe('#top');
+  const shared = page.url();
 
   await page.goto('/?key=D&instrument=bass&strings=5&frets=24&notes=all&lang=pt');
   await expect(page.locator('#board .board-string')).toHaveCount(5);
   await expect(page.locator('#allNotes')).toBeChecked();
-  await page.goto(shared.href);
+  await page.goto(shared);
   await expect(page.locator('#fretboard-heading')).toHaveText('F Minor blues');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en-US');
   await expect(page.locator('#setup-summary')).toHaveText('Guitar · E standard');

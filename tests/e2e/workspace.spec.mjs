@@ -150,9 +150,9 @@ test('the mobile instrument dropdown overlays the board and keeps the current tu
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(url());
-  await page.locator('#jump-to-board').click();
-  await expect(page.locator('#fretboard-heading')).toBeFocused();
+  await page.goto(`${url()}#fretboard`);
+  const formula = page.locator('#fretboard').getByRole('group', { name: 'Formula' });
+  await expect(formula).toBeInViewport({ ratio: 1 });
   const heading = await page.locator('#fretboard-heading').boundingBox();
   expect(heading.y).toBeGreaterThanOrEqual(0);
   expect(heading.y).toBeLessThan(300);
@@ -160,6 +160,7 @@ test('the mobile instrument dropdown overlays the board and keeps the current tu
   const menu = page.getByRole('dialog', { name: 'Edit instrument', includeHidden: true });
   const summary = setup.locator('#setup-summary');
   await expect(setup.getByText('Edit instrument', { exact: true })).toBeVisible();
+  await expect(summary).toBeVisible();
   await expect(summary).toHaveText('Guitar · E standard');
   await expect(menu).toBeHidden();
   const boardTop = () =>
@@ -252,7 +253,7 @@ test.describe('touch workspace', () => {
       await button.tap();
       await expect(button.getByRole('radio')).toBeChecked();
       await expect(wheel.locator('#root-wheel-note')).toHaveText(note);
-      await expect(page.locator('#mobile-scale-title')).toHaveText(`${note} Major`);
+      await expect(page.locator('#fretboard-heading')).toHaveText(`${note} Major`);
     }
     await page.setViewportSize({ width: 667, height: 320 });
     await buttons.first().tap();
@@ -262,10 +263,9 @@ test.describe('touch workspace', () => {
   test('a phone can rotate with settings open, change tuning and play the retuned string', async ({
     page,
   }) => {
-    await page.goto(url());
+    await page.goto(`${url()}#fretboard`);
     const setup = page.locator('#instrument-toggle');
     const menu = page.locator('#instrument-settings');
-    await page.locator('#jump-to-board').tap();
     await setup.tap();
     await expect(menu).toBeVisible();
     await page.setViewportSize({ width: 667, height: 320 });
@@ -292,9 +292,8 @@ test.describe('touch workspace', () => {
   test('a custom pitch stays visible above the phone keyboard and can be applied', async ({
     page,
   }) => {
-    await page.goto(url());
+    await page.goto(`${url()}#fretboard`);
     const setup = page.locator('#instrument-toggle');
-    await page.locator('#jump-to-board').tap();
     await setup.tap();
     await page.locator('#tuning').tap();
     await page.getByRole('option', { name: 'Custom', exact: true }).tap();
@@ -569,7 +568,28 @@ test('auditioning a note highlights its pitch on the fretboard and in the formul
   await expect(referenceNote).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('PDF customization can cancel and then download a valid localized reference', async ({
+test('the formula ascends from the root even when the selected pattern starts lower', async ({
+  page,
+}) => {
+  await page.goto(url({ scale: 'minor-blues', range: 'blues-4' }));
+  const tones = page.locator('#formula-degrees button');
+  const sequence = [48, 51, 53, 54, 55, 58];
+  await expect(tones).toHaveCount(sequence.length);
+  for (const [index, midi] of sequence.entries()) {
+    const tone = tones.nth(index);
+    await tone.click();
+    await expect(tone).toHaveClass(/\bsounding\b/);
+    await expect(page.locator('#staff-notation .is-selected')).toHaveAttribute(
+      'data-staff-midi',
+      String(midi),
+    );
+    await expect(
+      page.locator(`#board .note.sounding[data-midi="${midi}"]`).first(),
+    ).toBeVisible();
+  }
+});
+
+test('PDF downloads share a saved paper size and support cancellation', async ({
   page,
 }) => {
   let release;
@@ -582,22 +602,54 @@ test('PDF customization can cancel and then download a valid localized reference
   await expect(page.getByRole('button', { name: /^Editar instrumento/ })).toBeVisible();
   const heading = page.getByRole('heading', { name: 'Descargas en PDF' });
   await expect(heading.locator('.fa-file-pdf[aria-hidden="true"]')).toBeVisible();
+  const sheet = page.locator('[data-export="selected"]');
   const family = page.locator('[data-export="family"]');
   const catalog = page.locator('[data-export="catalog"]');
-  await expect(page.locator('#pdf-export button')).toHaveCount(2);
+  const paper = page.getByRole('group', { name: 'Tamaño del papel' });
+  await expect(paper.getByRole('radio', { name: 'A4' })).toBeChecked();
+  await paper.getByText('Carta (EE. UU.)').click();
+  await page.reload();
+  await expect(paper.getByRole('radio', { name: 'Carta (EE. UU.)' })).toBeChecked();
+  await expect(page.locator('#pdf-export button:visible')).toHaveCount(3);
+  await expect(sheet).toContainText('1 página');
+  await expect(sheet).toContainText('A Menor armónica');
   await expect(family).toContainText('9 páginas');
   await expect(catalog).toContainText('70 páginas');
   await family.click();
   await expect(family).toContainText('Cancelar');
   await expect(catalog).toBeDisabled();
+  await expect(paper.getByRole('radio', { name: 'A4' })).toBeDisabled();
   await family.click();
   release();
   await expect(page.locator('#export-status')).toContainText('cancel');
   await expect(catalog).toBeEnabled();
   const [download] = await Promise.all([page.waitForEvent('download'), family.click()]);
   expect(await download.failure()).toBeNull();
-  expect(download.suggestedFilename()).toMatch(/^tukany-.*harmonic-minor.*-es\.pdf$/);
+  expect(download.suggestedFilename()).toMatch(
+    /family-harmonic-minor-A-right-letter-es\.pdf$/,
+  );
   const bytes = await readFile(await download.path());
   expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
-  expect(bytes.length).toBeGreaterThan(20000);
+  const inspect = (bytes) =>
+    page.evaluate(async (base64) => {
+      const doc = await window.PDFLib.PDFDocument.load(base64);
+      return { pages: doc.getPageCount(), ...doc.getPage(0).getSize() };
+    }, bytes.toString('base64'));
+  expect(await inspect(bytes)).toEqual({ pages: 9, width: 792, height: 612 });
+  await paper.getByText('A4', { exact: true }).click();
+  await marker(page, 'three-per-string-1').click();
+  await expect(sheet).toContainText('Patrón 1');
+  const [chart] = await Promise.all([page.waitForEvent('download'), sheet.click()]);
+  expect(chart.suggestedFilename()).toMatch(
+    /chart-harmonic-minor-A-three-per-string-1-right-a4-es\.pdf$/,
+  );
+  expect(await inspect(await readFile(await chart.path()))).toEqual({
+    pages: 1,
+    width: 841.89,
+    height: 595.28,
+  });
+  await page.goto(url({ scale: 'custom', formula: '1 b3 5' }));
+  await expect(family).toBeHidden();
+  await expect(sheet).toBeEnabled();
+  await expect(catalog).toBeEnabled();
 });

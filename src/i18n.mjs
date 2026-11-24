@@ -24,12 +24,14 @@ export const copy = {
   en: {
     pdfDownloads: 'PDF downloads',
     scalesAndArpeggios: 'Scales and arpeggios',
-    pdfFormat: 'A4 landscape',
+    paperSize: 'Paper size',
+    letterPaper: 'US Letter',
+    practiceSheet: 'Practice chart',
+    page: 'page',
+    collectionOnRoot: '{collection} on {root}',
     backToTop: 'Back to top',
     themeLabel: 'Theme: {current}. Switch to {next}.',
     themeModes: { light: 'Light', dark: 'Dark' },
-    quickNavigation: 'Quick navigation',
-    goToBoard: 'Go to fretboard',
     patternShape: '{shape} shape',
     patternDetails: 'Lowest note: {note} ({degree})',
     patternLabels: {
@@ -133,7 +135,6 @@ export const copy = {
     scaleSettings: 'Scale',
     singleNote: 'note',
     openStringsShort: 'Open strings',
-    manualCopy: 'Copy this link',
     keyboardNotes:
       'Use the arrow keys to move between notes. Press Enter or Space to play.',
     instrument: 'Instrument',
@@ -152,7 +153,6 @@ export const copy = {
     degrees: 'Degrees',
     showAll: 'Show other notes',
     pdf: 'Download PDF',
-    share: 'Copy link',
     formula: 'Formula',
     openStrings: 'Open strings · lowest to highest',
     nutRight: 'Nut on the right · higher frets to the left',
@@ -164,7 +164,6 @@ export const copy = {
     familyScope: 'Current family',
     catalogScope: 'Full catalog',
     exporting: 'Building PDF',
-    saved: 'Link copied. Your selection is in the URL.',
     ready: 'Ready',
     credits: 'Made by Lucas Marques',
     source: 'Source & contributions',
@@ -182,7 +181,6 @@ export const copy = {
     outsideChord: 'Outside the chord',
     editInstrument: 'Edit instrument',
     fretboard: 'Fretboard',
-    circleOfFifths: 'Circle of fifths',
     degreesHint:
       '1 is the reference note. Degrees show intervals from it. Flats lower and sharps raise the corresponding major-scale degree by a half step.',
     tuningFieldsHint:
@@ -218,12 +216,14 @@ export const copy = {
   pt: {
     pdfDownloads: 'Downloads em PDF',
     scalesAndArpeggios: 'Escalas e arpejos',
-    pdfFormat: 'A4 horizontal',
+    paperSize: 'Tamanho do papel',
+    letterPaper: 'Carta (EUA)',
+    practiceSheet: 'Ficha de prática',
+    page: 'página',
+    collectionOnRoot: '{collection} em {root}',
     backToTop: 'Voltar ao topo',
     themeLabel: 'Tema: {current}. Mudar para {next}.',
     themeModes: { light: 'Claro', dark: 'Escuro' },
-    quickNavigation: 'Navegação rápida',
-    goToBoard: 'Ir ao braço',
     patternShape: 'Forma de {shape}',
     patternDetails: 'Nota mais grave: {note} ({degree})',
     patternLabels: {
@@ -327,7 +327,6 @@ export const copy = {
     scaleSettings: 'Escala',
     singleNote: 'nota',
     openStringsShort: 'Cordas soltas',
-    manualCopy: 'Copie este link',
     keyboardNotes:
       'Use as setas para navegar entre as notas. Pressione Enter ou Espaço para tocar.',
     instrument: 'Instrumento',
@@ -346,7 +345,6 @@ export const copy = {
     degrees: 'Graus',
     showAll: 'Mostrar outras notas',
     pdf: 'Baixar PDF',
-    share: 'Copiar link',
     formula: 'Fórmula',
     openStrings: 'Cordas soltas · da mais grave à mais aguda',
     nutRight: 'Pestana à direita · casas de numeração maior à esquerda',
@@ -359,7 +357,6 @@ export const copy = {
     familyScope: 'Família atual',
     catalogScope: 'Catálogo completo',
     exporting: 'Gerando PDF',
-    saved: 'Link copiado. Sua seleção está no endereço.',
     ready: 'Pronto',
     credits: 'Criado por Lucas Marques',
     source: 'Código e contribuições',
@@ -377,7 +374,6 @@ export const copy = {
     outsideChord: 'Fora do acorde',
     editInstrument: 'Editar instrumento',
     fretboard: 'Braço',
-    circleOfFifths: 'Círculo das quintas',
     degreesHint:
       '1 é a nota de referência. Os graus indicam intervalos a partir dela. O bemol abaixa e o sustenido eleva em um semitom o grau correspondente da escala maior.',
     tuningFieldsHint:
@@ -413,12 +409,14 @@ export const copy = {
   es: {
     pdfDownloads: 'Descargas en PDF',
     scalesAndArpeggios: 'Escalas y arpegios',
-    pdfFormat: 'A4 horizontal',
+    paperSize: 'Tamaño del papel',
+    letterPaper: 'Carta (EE. UU.)',
+    practiceSheet: 'Ficha de práctica',
+    page: 'página',
+    collectionOnRoot: '{collection} en {root}',
     backToTop: 'Volver arriba',
     themeLabel: 'Tema: {current}. Cambiar a {next}.',
     themeModes: { light: 'Claro', dark: 'Oscuro' },
-    quickNavigation: 'Navegación rápida',
-    goToBoard: 'Ir al diapasón',
     patternShape: 'Forma de {shape}',
     patternDetails: 'Nota más grave: {note} ({degree})',
     patternLabels: {
@@ -524,7 +522,6 @@ export const copy = {
     scaleSettings: 'Escala',
     singleNote: 'nota',
     openStringsShort: 'Cuerdas al aire',
-    manualCopy: 'Copia este enlace',
     keyboardNotes:
       'Usa las flechas para recorrer las notas. Pulsa Intro o la barra espaciadora para tocar la nota seleccionada.',
     instrument: 'Instrumento',
@@ -543,7 +540,6 @@ export const copy = {
     degrees: 'Grados',
     showAll: 'Mostrar otras notas',
     pdf: 'Descargar PDF',
-    share: 'Copiar enlace',
     formula: 'Fórmula',
     openStrings: 'Cuerdas al aire · de la más grave a la más aguda',
     nutRight: 'Cejuela a la derecha · trastes de mayor número a la izquierda',
@@ -556,7 +552,6 @@ export const copy = {
     familyScope: 'Familia actual',
     catalogScope: 'Catálogo completo',
     exporting: 'Generando PDF',
-    saved: 'Se ha copiado el enlace con tu selección.',
     ready: 'Listo',
     credits: 'Creado por Lucas Marques',
     source: 'Código y contribuciones',
@@ -575,7 +570,6 @@ export const copy = {
     outsideChord: 'Fuera del acorde',
     editInstrument: 'Editar instrumento',
     fretboard: 'Diapasón',
-    circleOfFifths: 'Círculo de quintas',
     degreesHint:
       '1 es la nota de referencia. Los grados indican intervalos desde ella. El bemol baja y el sostenido sube un semitono el grado correspondiente de la escala mayor.',
     tuningFieldsHint:

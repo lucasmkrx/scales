@@ -263,8 +263,8 @@ test('inspecting or playing a note marks its exact octave on the staff', async (
   await expect(page.locator('#staff-range')).toHaveText('F5');
 
   await page.locator('#formula-degrees [data-pitch="4"]').click();
-  await expect(selected).toHaveAttribute('data-staff-midi', '40');
-  await expect(page.locator('#staff-range')).toHaveText('E3');
+  await expect(selected).toHaveAttribute('data-staff-midi', '52');
+  await expect(page.locator('#staff-range')).toHaveText('E4');
 });
 
 test('the staff follows bass tuning and scrolls within a phone viewport', async ({
