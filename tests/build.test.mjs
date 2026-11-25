@@ -39,6 +39,8 @@ test('published assets use one revision across the entry point, module graph, an
     ['assets/flags/de.svg', html],
     ['assets/tukany-logo.svg', pdf],
     ['assets/tukany-wordmark.svg', pdf],
+    ['assets/tukany-wordmark-dark.svg', css],
+    ['assets/tukany-logo-dark.svg', css],
     ['assets/fonts/fa-solid-900.woff2', css],
     ['assets/fonts/cookie.woff2', css],
     ['assets/instruments/telecaster-headstock.png', css],

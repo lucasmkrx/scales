@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
-"""Rebuild the website's icon and share images from its two original SVGs."""
+"""Rebuild the dark-mode logo, icons, and share image from the original SVGs."""
 
 from io import BytesIO
 from pathlib import Path
@@ -37,6 +37,15 @@ def tile(icon, size, coverage, radius=0, *, background="white", offset=(0, 0)):
     top = (size - height) // 2 + offset[1]
     canvas.alpha_composite(mark, (left, top))
     return canvas
+
+
+def dark_mark(source):
+    root = ET.parse(source).getroot()
+    for path in root.iter(f"{{{SVG}}}path"):
+        if path.get("fill", "").lower() == "#12171b":
+            path.set("fill", "#FAF8F2")
+    ET.indent(root, space="  ")
+    source.with_name(f"{source.stem}-dark.svg").write_bytes(ET.tostring(root) + b"\n")
 
 
 def favicon(source):
@@ -84,6 +93,9 @@ def social_image(icon, wordmark):
 
 def main():
     source = ASSETS / "tukany-logo.svg"
+    wordmark = ASSETS / "tukany-wordmark.svg"
+    dark_mark(source)
+    dark_mark(wordmark)
     icon = render(source, 768)
     favicon(source)
     tab = tile(icon, 256, 0.90, radius=43)
@@ -97,7 +109,7 @@ def main():
         ("icon.png", 512, 0.65),
     ):
         tile(icon, size, coverage).convert("RGB").save(ASSETS / name, optimize=True)
-    social_image(icon, render(ASSETS / "tukany-wordmark.svg", 470))
+    social_image(icon, render(wordmark, 470))
 
 
 if __name__ == "__main__":

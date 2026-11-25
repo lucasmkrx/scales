@@ -6,11 +6,12 @@ The toucan is 75% of the wordmark's SVG height in the header, footer, and
 printable charts and guides. Its wing starts just above the capital T, and its
 tail lines up with the foot of the T. The y descends below the tail.
 Charcoal (`#12171B`) colors the plumage and lettering, and orange (`#D85A16`)
-colors the musical note. The site's dark theme places the same logo on a cream
-background for contrast.
+colors the musical note. In dark mode, cream (`#FAF8F2`) colors the plumage and
+lettering, with the orange note on a transparent background.
 
-After updating either SVG, regenerate the favicons, home-screen icons, and
-social preview before building the site. From the repository root, run
+After updating either SVG, regenerate the dark-mode logo, favicons,
+home-screen icons, and social preview before building the site. From the
+repository root, run
 
 ```sh
 python -m pip install -r scripts/requirements.txt

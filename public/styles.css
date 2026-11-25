@@ -571,8 +571,11 @@ input::placeholder {
   /* The capital T ends 73% down the SVG. Align its foot with the toucan's tail. */
   margin-block-start: calc(var(--wordmark-height) * 0.02);
 }
-:root[data-theme='dark'] .brand {
-  background: var(--brand-cream);
+:root[data-theme='dark'] .brand-icon {
+  content: url('./assets/tukany-logo-dark.svg');
+}
+:root[data-theme='dark'] .brand-wordmark {
+  content: url('./assets/tukany-wordmark-dark.svg');
 }
 .language {
   flex: none;
