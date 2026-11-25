@@ -385,8 +385,8 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   const lightLogoSizes = await checkLogos();
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  for (const icon of await logos.locator('.brand-icon').all())
-    await expect(icon).toHaveCSS('content', /tukany-logo-dark\.svg/);
+  for (const logo of await logos.all())
+    await expect(logo).toHaveCSS('background-color', 'rgb(250, 248, 242)');
   expect(await checkLogos()).toEqual(lightLogoSizes);
   await expect(toggle).toBeChecked();
   await expect(sun).toBeVisible();

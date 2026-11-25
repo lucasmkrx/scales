@@ -32,7 +32,6 @@ const visualAssets = [
   'assets/apple-touch-icon.png',
   'assets/tukany-wordmark.svg',
   'assets/tukany-logo.svg',
-  'assets/tukany-logo-dark.svg',
   'assets/buy-me-a-coffee.svg',
   'assets/flags/us.svg',
   'assets/flags/br.svg',

@@ -39,14 +39,6 @@ def tile(icon, size, coverage, radius=0, *, background="white", offset=(0, 0)):
     return canvas
 
 
-def dark_logo(source):
-    root = ET.parse(source).getroot()
-    plumage = root.find(f"{{{SVG}}}path")
-    plumage.set("fill", "#fff")
-    ET.indent(root, space="  ")
-    (ASSETS / "tukany-logo-dark.svg").write_bytes(ET.tostring(root) + b"\n")
-
-
 def favicon(source):
     root = ET.parse(source).getroot()
     _, _, w, h = map(float, root.attrib["viewBox"].split())
@@ -93,7 +85,6 @@ def social_image(icon, wordmark):
 def main():
     source = ASSETS / "tukany-logo.svg"
     icon = render(source, 768)
-    dark_logo(source)
     favicon(source)
     tab = tile(icon, 256, 0.90, radius=43)
     tab.save(PUBLIC / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
