@@ -328,7 +328,7 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   await expect(page.locator('#board .fretboard-map')).toBeVisible();
   const header = page.locator('.site-header');
   await expect(header).toHaveCSS('background-color', 'rgb(250, 248, 242)');
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(241, 245, 243)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(240, 238, 234)');
   const toggle = page.locator('#theme-toggle');
   const sun = toggle.locator('.fa-sun');
   const moon = toggle.locator('.fa-moon');
