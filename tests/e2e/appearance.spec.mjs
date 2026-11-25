@@ -322,6 +322,9 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
     release();
   }
   await expect(page.locator('#board .fretboard-map')).toBeVisible();
+  const header = page.locator('.site-header');
+  await expect(header).toHaveCSS('background-color', 'rgb(250, 248, 242)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(241, 245, 243)');
   const toggle = page.locator('#theme-toggle');
   const sun = toggle.locator('.fa-sun');
   const moon = toggle.locator('.fa-moon');
@@ -385,6 +388,7 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   const lightLogoSizes = await checkLogos();
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(header).toHaveCSS('background-color', 'rgb(50, 62, 58)');
   for (const logo of await logos.all())
     await expect(logo).toHaveCSS('background-color', 'rgb(250, 248, 242)');
   expect(await checkLogos()).toEqual(lightLogoSizes);

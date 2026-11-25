@@ -124,6 +124,7 @@
   font-display: swap;
 }
 :root {
+  --brand-cream: #faf8f2;
   --ink: #1b2925;
   --muted: #53655e;
   --paper: #fff;
@@ -131,6 +132,7 @@
   --pale: #e6f2eb;
   --accent: #176448;
   --background: #f1f5f3;
+  --header-background: var(--brand-cream);
   --control-border: #bacac2;
   --hover-border: #739986;
   --accent-solid: #176448;
@@ -186,6 +188,7 @@
   --pale: #40564c;
   --accent: #a1d9bd;
   --background: #28332f;
+  --header-background: var(--paper);
   --control-border: #64746c;
   --hover-border: #8aaa99;
   --accent-solid: #a1d9bd;
@@ -451,7 +454,7 @@ input[type='checkbox'] {
 }
 .site-header {
   padding-block-start: clamp(16px, 2.5vw, 28px);
-  background: var(--paper);
+  background: var(--header-background);
   border-bottom: 1px solid var(--rule);
 }
 .masthead,
@@ -569,7 +572,7 @@ input::placeholder {
   margin-block-start: calc(var(--wordmark-height) * 0.02);
 }
 :root[data-theme='dark'] .brand {
-  background: #faf8f2;
+  background: var(--brand-cream);
 }
 .language {
   flex: none;
