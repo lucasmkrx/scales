@@ -65,7 +65,7 @@ async function expectStaffColors(page, monochromeInk) {
     const active = !monochromeInk && pitch.fretColor;
     const expectedInk = monochromeInk ?? pitch.fretColor;
     expect(pitch.headStroke, `notehead border at MIDI ${pitch.midi}`).toBe(
-      active && pitch.accidental ? (dark ? 'rgb(35, 49, 43)' : black) : 'none',
+      active && pitch.accidental ? (dark ? 'rgb(34, 33, 36)' : black) : 'none',
     );
     expect(pitch.letters, `pitch label at MIDI ${pitch.midi}`).toEqual(
       active ? [pitch.writtenLetter] : [],
@@ -148,18 +148,18 @@ test('selected patterns outline white notes and keep stems neutral in either the
             .evaluate((lines) => getComputedStyle(lines).stroke);
     await expectStaffColors(page, ink);
     await bracket.click();
-    const sharpColor = theme === 'light' ? white : 'rgb(228, 234, 231)';
+    const sharpColor = theme === 'light' ? white : 'rgb(238, 234, 228)';
     await expect(sharp).toHaveCSS('fill', sharpColor);
     await expect(sharpFret).toHaveCSS('background-color', sharpColor);
     await expect(sharpDot).toHaveCSS('background-color', sharpColor);
     if (theme === 'light') {
-      await expect(sharpFret).toHaveCSS('color', 'rgb(40, 55, 46)');
+      await expect(sharpFret).toHaveCSS('color', 'rgb(37, 35, 35)');
       await expect(sharpFret).toHaveCSS('--rim-color', '#000');
       await expect(sharpFret).toHaveCSS('--rim-width', '1px');
       await expect(sharpDot).toHaveCSS('box-shadow', /rgb\(0, 0, 0\).*1px.*inset/);
       await expect(sharpNote.locator('.staff-pitch-letter')).toHaveCSS(
         'fill',
-        'rgb(40, 55, 46)',
+        'rgb(37, 35, 35)',
       );
     }
     await expect(sharpNote.locator('.staff-pitch-letter')).toHaveText('F');

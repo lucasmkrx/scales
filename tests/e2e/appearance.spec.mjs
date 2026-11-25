@@ -239,7 +239,7 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
     await expect(list).toHaveAccessibleName(label);
     await expect(page.locator('.choice-popup')).toHaveCSS(
       'background-color',
-      id === 'language' ? 'rgb(250, 248, 242)' : 'rgb(255, 255, 255)',
+      id === 'language' ? 'rgb(250, 248, 242)' : 'rgb(253, 252, 249)',
     );
     await expect(list.locator('[aria-selected="true"]')).toBeFocused();
     const bounds = await list.boundingBox();
@@ -329,6 +329,16 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   const header = page.locator('.site-header');
   await expect(header).toHaveCSS('background-color', 'rgb(250, 248, 242)');
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(240, 238, 234)');
+  const instrument = page.locator('#instrument-toggle');
+  await expect(instrument).toHaveCSS('background-color', 'rgb(48, 51, 55)');
+  await expect(page.locator('.diagram')).toHaveCSS(
+    'background-color',
+    'rgb(248, 246, 242)',
+  );
+  await expect(page.locator('#board .fret').first()).toHaveCSS(
+    'background-color',
+    'rgb(239, 235, 229)',
+  );
   const toggle = page.locator('#theme-toggle');
   const sun = toggle.locator('.fa-sun');
   const moon = toggle.locator('.fa-moon');
@@ -392,7 +402,9 @@ test('a fresh visit starts in light mode before the app loads, even on a dark de
   const lightLogoSizes = await checkLogos();
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await expect(header).toHaveCSS('background-color', 'rgb(50, 62, 58)');
+  await expect(header).toHaveCSS('background-color', 'rgb(41, 41, 44)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(29, 29, 31)');
+  await expect(instrument).toHaveCSS('background-color', 'rgb(217, 210, 199)');
   for (const logo of await logos.all()) {
     await expect(logo).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(logo).toHaveAccessibleName('Tukany');
@@ -619,7 +631,7 @@ test('dark appearance keeps controls contained and preserves mirrored pattern ge
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
       'content',
-      '#323e3a',
+      '#29292c',
     );
     await expect(page.locator('body')).toHaveCSS('background-image', 'none');
     await expect(page.locator('#fretboard-heading')).toHaveCSS(

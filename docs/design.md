@@ -93,10 +93,12 @@ selected language. Light is the default in
 every operating-system theme. Choosing Dark keeps it active on future visits until
 the player switches back to Light.
 
-Both themes use the same layout, typography, and component shapes. Dark mode uses
-muted green-gray surfaces, lighter text, and a matching set of pitch colors.
-Changing the palette preserves the player’s position, selection, and audio.
-Printable references use a separate light palette.
+Both themes use IBM Plex Sans for headings and interface copy, and IBM Plex Mono
+for diagram labels. Light mode pairs charcoal controls with off-white panels
+and fretboards. Dark mode uses warm stone controls against charcoal.
+Each natural pitch has a distinct color in both themes. Changing the palette
+preserves the player’s position, selection, and audio. Printable references
+use a separate light palette.
 
 Motion is brief feedback for selection, button activation, and sounding notes.
 It does not stretch or move the neck. Reduced-motion preferences disable those
