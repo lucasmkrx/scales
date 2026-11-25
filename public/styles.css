@@ -929,6 +929,9 @@ button.tuning-picker {
     0 12px 30px var(--shadow),
     0 2px 6px var(--shadow-soft);
 }
+.choice-popup:has(> [aria-labelledby='language-label']) {
+  background: var(--header-background);
+}
 .choice-list {
   position: relative;
   overflow-y: auto;

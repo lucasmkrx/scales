@@ -237,6 +237,10 @@ test('settings open the same listbox and apply localized keyboard and pointer ch
     await trigger.click();
     await expect(list).toHaveAttribute('id', 'choice-list');
     await expect(list).toHaveAccessibleName(label);
+    await expect(page.locator('.choice-popup')).toHaveCSS(
+      'background-color',
+      id === 'language' ? 'rgb(250, 248, 242)' : 'rgb(255, 255, 255)',
+    );
     await expect(list.locator('[aria-selected="true"]')).toBeFocused();
     const bounds = await list.boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
